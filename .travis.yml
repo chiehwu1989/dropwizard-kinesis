@@ -1,0 +1,10 @@
+sudo: false
+language: java
+jdk:
+  - oraclejdk8
+cache:
+  directories:
+    - $HOME/.m2
+install: mvn -DskipTests=true -Dbasepom.check.skip-all=true -B install
+after_success:
+  - bash .travis_after_success.sh
