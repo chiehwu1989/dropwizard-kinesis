@@ -158,9 +158,10 @@ public class ConsumerProcessFactory {
     }
 
 
-    public Worker buildKinesisConsumerService(Environment environment, String name)  {
+    public Worker buildKinesisConsumerService(String name, Environment environment, IRecordProcessorFactory recordProcessorFactory)  {
+
         final String healthCheckName = "KinesisConsumerHealthCheck";
-        final AmazonKinesis kinesisClient = KinesisClientUtil.createKinesisClient(region, endpoint, environment.getName());
+        final AmazonKinesis kinesisClient = KinesisClientUtil.createKinesisClient(region, endpoint, name);
         final KinesisHealthCheck healthCheck = new KinesisHealthCheck(kinesisClient, streamName);
         environment.healthChecks().register(healthCheckName, healthCheck);
 
@@ -172,22 +173,30 @@ public class ConsumerProcessFactory {
 
         KinesisClientLibConfiguration kinesisClientLibConfiguration =
                 new KinesisClientLibConfiguration(
-                        environment.getName(),
+                        name,
                         streamName,
                         credentialsProvider,
                         workerId);
         kinesisClientLibConfiguration.withInitialPositionInStream(initialPositionInStream);
 
-        IRecordProcessorFactory recordProcessorFactory = new KinesisRecordProcessorFactory();
         final Worker.Builder builder = new Worker.Builder();
 
         final ExecutorService executorService = environment.lifecycle()
                 .executorService(name + "-executor")
                 .maxThreads(consumerThreads).build();
+
         builder.recordProcessorFactory(recordProcessorFactory)
-            .config(kinesisClientLibConfiguration)
-            .execService(executorService);
-        return builder.build();
+                .config(kinesisClientLibConfiguration)
+                .execService(executorService);
+
+        final Worker worker = builder.build();
+
+        final ExecutorService shardHandler = environment.lifecycle()
+                .executorService(name + "-shard-handler")
+                .minThreads(1).maxThreads(1).build();
+
+        shardHandler.submit(worker::run);
+        return worker;
     }
 
     private String calcWorkerID(String name) {

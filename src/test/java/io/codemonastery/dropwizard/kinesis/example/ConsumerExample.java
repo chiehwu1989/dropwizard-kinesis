@@ -1,5 +1,4 @@
-package io.codemonastery.dropwizard.kinesis;
-
+package io.codemonastery.dropwizard.kinesis.example;
 
 
 import com.amazonaws.AmazonClientException;
@@ -9,6 +8,7 @@ import com.amazonaws.services.dynamodbv2.AmazonDynamoDBClient;
 import com.amazonaws.services.kinesis.AmazonKinesis;
 import com.amazonaws.services.kinesis.AmazonKinesisClient;
 import com.amazonaws.services.kinesis.model.ResourceNotFoundException;
+import io.codemonastery.dropwizard.kinesis.CredentialUtils;
 import io.codemonastery.dropwizard.kinesis.clientlibrary.interfaces.v2.IRecordProcessorFactory;
 import io.codemonastery.dropwizard.kinesis.clientlibrary.lib.worker.InitialPositionInStream;
 import io.codemonastery.dropwizard.kinesis.clientlibrary.lib.worker.KinesisClientLibConfiguration;
@@ -20,9 +20,10 @@ import java.util.UUID;
 /**
  * Sample Amazon Kinesis Application.
  */
-public final class AmazonKinesisApplicationSample {
+public final class ConsumerExample {
 
-    public static final String SAMPLE_APPLICATION_STREAM_NAME = "test-kinesis-app-stream";
+//    public static final String SAMPLE_APPLICATION_STREAM_NAME = "test-kinesis-app-stream";
+    public static final String SAMPLE_APPLICATION_STREAM_NAME = "test-circle";
 
     private static final String SAMPLE_APPLICATION_NAME = "test-kinesis-app";
 
@@ -61,7 +62,7 @@ public final class AmazonKinesisApplicationSample {
                         workerId);
         kinesisClientLibConfiguration.withInitialPositionInStream(SAMPLE_APPLICATION_INITIAL_POSITION_IN_STREAM);
 
-        IRecordProcessorFactory recordProcessorFactory = new KinesisRecordProcessorFactory();
+        IRecordProcessorFactory recordProcessorFactory = new KinesisRecordProcessorFactoryExample();
         final Worker.Builder builder = new Worker.Builder();
         builder.recordProcessorFactory(recordProcessorFactory);
         builder.config(kinesisClientLibConfiguration);

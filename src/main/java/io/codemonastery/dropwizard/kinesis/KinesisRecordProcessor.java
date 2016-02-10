@@ -1,5 +1,6 @@
 package io.codemonastery.dropwizard.kinesis;
 
+import com.amazonaws.services.kinesis.model.Record;
 import io.codemonastery.dropwizard.kinesis.clientlibrary.exceptions.InvalidStateException;
 import io.codemonastery.dropwizard.kinesis.clientlibrary.exceptions.ShutdownException;
 import io.codemonastery.dropwizard.kinesis.clientlibrary.exceptions.ThrottlingException;
@@ -9,11 +10,9 @@ import io.codemonastery.dropwizard.kinesis.clientlibrary.types.InitializationInp
 import io.codemonastery.dropwizard.kinesis.clientlibrary.types.ProcessRecordsInput;
 import io.codemonastery.dropwizard.kinesis.clientlibrary.types.ShutdownInput;
 import io.codemonastery.dropwizard.kinesis.clientlibrary.types.ShutdownReason;
-import com.amazonaws.services.kinesis.model.Record;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.nio.charset.CharacterCodingException;
 import java.nio.charset.Charset;
 import java.nio.charset.CharsetDecoder;
 import java.util.List;
@@ -21,7 +20,7 @@ import java.util.List;
 /**
  * Processes records and checkpoints progress.
  */
-public class KinesisRecordProcessor implements IRecordProcessor {
+public abstract class KinesisRecordProcessor implements IRecordProcessor {
 
     private static final Logger LOG = LoggerFactory.getLogger(KinesisRecordProcessor.class);
 
@@ -109,25 +108,26 @@ public class KinesisRecordProcessor implements IRecordProcessor {
      *
      * @param record The record to be processed.
      */
-    private void processSingleRecord(Record record) {
-        // TODO Add your own record processing logic here
-
-        String data = null;
-        try {
-            // For this app, we interpret the payload as UTF-8 chars.
-            data = decoder.decode(record.getData()).toString();
-            // Assume this record came from AmazonKinesisSample and log its age.
-            long recordCreateTime = new Long(data.substring("testData-".length()));
-            long ageOfRecordInMillis = System.currentTimeMillis() - recordCreateTime;
-
-            LOG.info(record.getSequenceNumber() + ", " + record.getPartitionKey() + ", " + data + ", Created "
-                    + ageOfRecordInMillis + " milliseconds ago.");
-        } catch (NumberFormatException e) {
-            LOG.info("Record does not match sample record format. Ignoring record with data; " + data);
-        } catch (CharacterCodingException e) {
-            LOG.error("Malformed data: " + data, e);
-        }
-    }
+    public abstract void processSingleRecord(Record record);
+//    private void processSingleRecord(Record record) {
+//        // TODO Add your own record processing logic here
+//
+//        String data = null;
+//        try {
+//            // For this app, we interpret the payload as UTF-8 chars.
+//            data = decoder.decode(record.getData()).toString();
+//            // Assume this record came from AmazonKinesisSample and log its age.
+//            long recordCreateTime = new Long(data.substring("testData-".length()));
+//            long ageOfRecordInMillis = System.currentTimeMillis() - recordCreateTime;
+//
+//            LOG.info(record.getSequenceNumber() + ", " + record.getPartitionKey() + ", " + data + ", Created "
+//                    + ageOfRecordInMillis + " milliseconds ago.");
+//        } catch (NumberFormatException e) {
+//            LOG.info("Record does not match sample record format. Ignoring record with data; " + data);
+//        } catch (CharacterCodingException e) {
+//            LOG.error("Malformed data: " + data, e);
+//        }
+//    }
 
     /**
      * {@inheritDoc}
