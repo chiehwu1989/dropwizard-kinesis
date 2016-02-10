@@ -7,6 +7,8 @@ import org.junit.Before;
 import org.junit.Test;
 
 import java.io.IOException;
+import java.nio.ByteBuffer;
+import java.nio.charset.Charset;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 
@@ -56,11 +58,12 @@ public class KinesisSendServiceTest {
 
         Thread.sleep(1500); //sleep for longer than a second
         assertEquals(1, testSendService.flushcalled);
+        assertTrue(testSendService.flushed.contains("created_dtm"));
     }
 
     @Test
     public void bufferFilledDefinitelyFlushed() throws Exception {
-        final TestSendService testSendService = new TestSendService(256, 1);
+        final TestSendService testSendService = new TestSendService(150, 1);
         for (int i = 0; i < 2; i++) {
             testSendService.send(TEST_EVENT);
         }
@@ -73,15 +76,27 @@ public class KinesisSendServiceTest {
 
     public class TestSendService extends KinesisSendService {
 
+
+        private String flushed = "";
+
         private int flushcalled = 0;
 
         public TestSendService(int bufferSize, int flushPeriodSeconds) {
             super(null, "kinesis-send-service-test", bufferSize, flushPeriodSeconds, null, flushExecutor);
         }
 
+        @Override
         synchronized final void flush() {
             flushcalled++;
-            newBuffer();
+           super.flush();
+        }
+
+        @Override
+        void flush(ByteBuffer buffer) {
+            byte[] contents = new byte[buffer.remaining()];
+            buffer.get(contents);
+
+            flushed += new String(contents, Charset.forName("UTF-8"));
         }
     }
 
@@ -137,6 +152,7 @@ public class KinesisSendServiceTest {
         public void setDevice_type(String device_type) {
             this.device_type = device_type;
         }
+
     }
 
 }

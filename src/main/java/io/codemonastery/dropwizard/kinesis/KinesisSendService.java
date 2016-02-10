@@ -18,11 +18,11 @@ public class KinesisSendService implements SendService {
     private static final Logger LOG = LoggerFactory.getLogger(KinesisSendService.class);
 
     private final AmazonKinesis kinesisClient;
-    private final int bufferSize;
     private final ExecutorService deliveryExecutor;
 
+    private int bufferSize;
     private ByteBuffer buffer;
-    private String streamName;
+    private final String streamName;
 
 
     public KinesisSendService(AmazonKinesis kinesisClient,
@@ -48,24 +48,30 @@ public class KinesisSendService implements SendService {
             final String recordAsString = event.toString();
             LOG.debug("Putting event: " + recordAsString);
 
-            final byte[] recordAsBytes = recordAsString.getBytes(StandardCharsets.UTF_8);
-            if (recordAsBytes.length > buffer.remaining()) {
-                flush();
-            }
-            if (recordAsBytes.length > buffer.remaining()) {
-                final String message = String.format("record was larger than buffer size, %d > %d",
-                        recordAsBytes.length, bufferSize);
-                throw new IllegalStateException(message);
-            }
-            buffer.put(recordAsBytes);
+            sendRecordAsString(recordAsString);
         }
+    }
+
+    public void sendRecordAsString(String recordAsString) {
+        final byte[] recordAsBytes = recordAsString.getBytes(StandardCharsets.UTF_8);
+        if (recordAsBytes.length > buffer.remaining()) {
+            flush();
+        }
+        if (recordAsBytes.length > buffer.remaining()) {
+            final String message = String.format("record was larger than buffer size, %d > %d",
+                    recordAsBytes.length, buffer.limit());
+            throw new IllegalStateException(message);
+        }
+        buffer.put(recordAsBytes);
     }
 
     synchronized void flush() {
         if (!isEmpty()) {
-            final ByteBuffer toSend = buffer;
-            newBuffer();
-            deliveryExecutor.submit(() -> flush(toSend));
+            ByteBuffer toSend = buffer;
+            buffer = ByteBuffer.allocate(bufferSize);
+
+            toSend.flip();
+            flush(toSend);
         }
     }
 
@@ -73,15 +79,20 @@ public class KinesisSendService implements SendService {
         return buffer.remaining() == buffer.capacity();
     }
 
-    void newBuffer() {
-        buffer = ByteBuffer.allocate(bufferSize);
-    }
-
-
     void flush(ByteBuffer buffer) {
-        final PutRecordsRequestEntry entry = new PutRecordsRequestEntry().withData(buffer).withPartitionKey("");
+        final PutRecordsRequestEntry entry = new PutRecordsRequestEntry()
+                .withData(buffer)
+                .withPartitionKey(
+                        String.format("partitionKey-%d",
+                                System.currentTimeMillis()));
         final PutRecordsRequest request = new PutRecordsRequest().withRecords(entry);
         request.setStreamName(streamName);
-        kinesisClient.putRecords(request);
+        deliveryExecutor.submit(()->{
+            try {
+                kinesisClient.putRecords(request);
+            } catch (Exception e) {
+                LOG.error("Error sending records", e);
+            }
+        });
     }
 }
