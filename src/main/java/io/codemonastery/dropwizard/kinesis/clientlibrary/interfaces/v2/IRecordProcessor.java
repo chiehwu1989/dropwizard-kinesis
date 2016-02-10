@@ -35,7 +35,7 @@ public interface IRecordProcessor {
     /**
      * Process data records. The Amazon Kinesis Client Library will invoke this method to deliver data records to the
      * application.
-     * Upon fail over, the new instance will get records with sequence number > checkpoint position
+     * Upon fail over, the new instance will get records with sequence number greater than checkpoint position
      * for each partition key.
      *
      * @param processRecordsInput Provides the records to be processed as well as information and capabilities related
