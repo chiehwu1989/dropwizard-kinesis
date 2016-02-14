@@ -6,5 +6,7 @@ cache:
   directories:
     - $HOME/.m2
 install: mvn -DskipTests=true -Dbasepom.check.skip-all=true -B install
+script:
+  - bash .travis_script.sh
 after_success:
   - bash .travis_after_success.sh

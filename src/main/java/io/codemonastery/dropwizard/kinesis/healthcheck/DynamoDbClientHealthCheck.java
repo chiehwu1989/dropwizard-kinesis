@@ -1,14 +1,14 @@
 package io.codemonastery.dropwizard.kinesis.healthcheck;
 
-import com.amazonaws.services.kinesis.AmazonKinesis;
+import com.amazonaws.services.dynamodbv2.AmazonDynamoDB;
 import com.codahale.metrics.health.HealthCheck;
 import com.google.common.base.Preconditions;
 
-public class KinesisClientHealthCheck extends HealthCheck {
+public class DynamoDbClientHealthCheck extends HealthCheck {
 
-    private final AmazonKinesis client;
+    private final AmazonDynamoDB client;
 
-    public KinesisClientHealthCheck(AmazonKinesis client) {
+    public DynamoDbClientHealthCheck(AmazonDynamoDB client) {
         Preconditions.checkNotNull(client, "client cannot be null");
         this.client = client;
     }
@@ -16,11 +16,11 @@ public class KinesisClientHealthCheck extends HealthCheck {
     @Override
     protected Result check() throws Exception {
         Result result;
-        try {
-            client.listStreams();
+        try{
+            client.listTables();
             result = Result.healthy();
-        } catch (Exception e) {
-            result =  HealthCheck.Result.unhealthy(e);
+        }catch (Exception e){
+            result = Result.unhealthy(e);
         }
         return result;
     }

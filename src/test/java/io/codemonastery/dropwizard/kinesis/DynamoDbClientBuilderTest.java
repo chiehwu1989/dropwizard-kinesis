@@ -1,22 +1,21 @@
 package io.codemonastery.dropwizard.kinesis;
 
 import com.amazonaws.AmazonServiceException;
-import com.amazonaws.services.kinesis.AmazonKinesis;
+import com.amazonaws.services.dynamodbv2.AmazonDynamoDB;
 import com.codahale.metrics.MetricRegistry;
-import io.codemonastery.dropwizard.kinesis.metric.KinesisMetricsProxy;
 import org.junit.After;
 import org.junit.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.fail;
+import static org.junit.Assert.fail;
 
-public class KinesisClientBuilderTest {
+public class DynamoDbClientBuilderTest {
 
-    private AmazonKinesis client;
+    private AmazonDynamoDB client;
 
     @After
     public void tearDown() throws Exception {
-        if(client != null){
+        if (client != null) {
             client.shutdown();
             client = null;
         }
@@ -24,22 +23,21 @@ public class KinesisClientBuilderTest {
 
     @Test
     public void nullEnvironment() throws Exception {
-        KinesisClientBuilder builder = new KinesisClientBuilder();
+        DynamoDbClientBuilder builder = new DynamoDbClientBuilder();
         client = builder.build(null, new NoCredentialsProvider(), "test-client");
     }
 
     @Test
     public void someMetrics() throws Exception {
+        DynamoDbClientBuilder builder = new DynamoDbClientBuilder();
         MetricRegistry metrics = new MetricRegistry();
-        KinesisClientBuilder builder = new KinesisClientBuilder();
         client = builder.build(metrics, null, null, new NoCredentialsProvider(), "test-client");
-        assertThat(client).isInstanceOf(KinesisMetricsProxy.class);
-        try{
-            client.listStreams();
-            fail("was expecting credentials problem");
-        }catch (AmazonServiceException e){
+        try {
+            client.listTables();
+            fail("was supposed to throw exception because credentials");
+        } catch (AmazonServiceException e) {
             //ignore
         }
-        assertThat(metrics.timer("test-client-list-streams").getCount()).isEqualTo(1L);
+        assertThat(metrics.timer("test-client-list-tables").getCount()).isEqualTo(1);
     }
 }

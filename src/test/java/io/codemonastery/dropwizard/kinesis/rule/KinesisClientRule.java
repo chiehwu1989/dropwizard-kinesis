@@ -1,11 +1,14 @@
-package io.codemonastery.dropwizard.kinesis;
+package io.codemonastery.dropwizard.kinesis.rule;
 
 import com.amazonaws.auth.DefaultAWSCredentialsProviderChain;
 import com.amazonaws.services.kinesis.AmazonKinesis;
 import com.amazonaws.services.kinesis.AmazonKinesisClient;
 import org.junit.rules.ExternalResource;
 
-public class AmazonKinesisClientRule extends ExternalResource {
+import java.util.UUID;
+import java.util.function.Supplier;
+
+public class KinesisClientRule extends ExternalResource implements Supplier<AmazonKinesis> {
 
     private AmazonKinesis client;
 
@@ -25,5 +28,10 @@ public class AmazonKinesisClientRule extends ExternalResource {
             throw new IllegalStateException("CLIENT_RULE is not initialized, did you use the @ClassRule or @Rule annotations?");
         }
         return client;
+    }
+
+    @Override
+    public AmazonKinesis get() {
+        return getClient();
     }
 }

@@ -1,24 +1,25 @@
 package io.codemonastery.dropwizard.kinesis.healthcheck;
 
 import com.codahale.metrics.health.HealthCheck;
-import io.codemonastery.dropwizard.kinesis.rule.KinesisClientRule;
+import io.codemonastery.dropwizard.kinesis.rule.DynamoDbClientRule;
 import org.junit.ClassRule;
 import org.junit.Test;
 
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
-public class KinesisClientHealthCheckIT {
+public class DynamoDbClientHealthCheckIT {
 
     @ClassRule
-    public static final KinesisClientRule CLIENT_RULE = new KinesisClientRule();
+    public static final DynamoDbClientRule CLIENT_RULE = new DynamoDbClientRule();
 
     @Test
     public void healthy() throws Exception {
-        KinesisClientHealthCheck healthCheck = new KinesisClientHealthCheck(CLIENT_RULE.getClient());
+        DynamoDbClientHealthCheck healthCheck = new DynamoDbClientHealthCheck(CLIENT_RULE.getClient());
 
         HealthCheck.Result result = healthCheck.check();
         assertNotNull(result);
         assertTrue(result.isHealthy());
     }
+
 }
