@@ -14,7 +14,7 @@
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEndcoding>UTF-8</project.reporting.outputEndcoding>
-        <aws-java-sdk.version>1.10.50</aws-java-sdk.version>
+        <aws-java-sdk.version>1.10.52</aws-java-sdk.version>
     </properties>
 
     <dependencies>
