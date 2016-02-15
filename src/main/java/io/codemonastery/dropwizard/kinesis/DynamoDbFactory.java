@@ -16,16 +16,19 @@ import io.codemonastery.dropwizard.kinesis.metric.DynamoDbMetricsProxy;
 import io.dropwizard.lifecycle.setup.LifecycleEnvironment;
 import io.dropwizard.setup.Environment;
 
+import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
-public class DynamoDbClientBuilder {
+public class DynamoDbFactory {
 
     @NotNull
     private Regions region = Regions.DEFAULT_REGION;
 
     private ClientMetricsProxyFactory<AmazonDynamoDB> metricsProxyFactory = (metrics, dynamoDB, name) -> new DynamoDbMetricsProxy(dynamoDB, metrics, name);
 
-    private ClientConfiguration clientConfiguration = new ClientConfiguration();
+    @Valid
+    @NotNull
+    private JacksonClientConfiguration client = new JacksonClientConfiguration();
 
     @JsonProperty
     public Regions getRegion() {
@@ -38,14 +41,35 @@ public class DynamoDbClientBuilder {
     }
 
     @JsonIgnore
-    public DynamoDbClientBuilder metricsProxy(ClientMetricsProxyFactory<AmazonDynamoDB> metricsProxyFactory) {
+    public DynamoDbFactory metricsProxy(ClientMetricsProxyFactory<AmazonDynamoDB> metricsProxyFactory) {
         this.metricsProxyFactory = metricsProxyFactory;
         return this;
     }
 
+    @JsonProperty
+    public JacksonClientConfiguration getClient() {
+        return client;
+    }
+
+    @JsonProperty
+    public void setClient(JacksonClientConfiguration client) {
+        this.client = client;
+    }
+
     @JsonIgnore
-    public DynamoDbClientBuilder clientConfiguration(ClientConfiguration clientConfiguration) {
-        this.clientConfiguration = clientConfiguration;
+    public void setClient(ClientConfiguration client) {
+        this.client = new JacksonClientConfiguration(client);
+    }
+
+    @JsonIgnore
+    public DynamoDbFactory client(ClientConfiguration clientConfiguration) {
+        this.client = new JacksonClientConfiguration(clientConfiguration);
+        return this;
+    }
+
+    @JsonIgnore
+    public DynamoDbFactory client(JacksonClientConfiguration clientConfiguration) {
+        this.client = clientConfiguration;
         return this;
     }
 
@@ -79,7 +103,7 @@ public class DynamoDbClientBuilder {
     }
 
     private AmazonDynamoDBClient makeClient(AWSCredentialsProvider credentialsProvider) {
-        final AmazonDynamoDBClient client = new AmazonDynamoDBClient(credentialsProvider, clientConfiguration);
+        final AmazonDynamoDBClient client = new AmazonDynamoDBClient(credentialsProvider, this.client);
         if(region != null){
             client.withRegion(region);
         }

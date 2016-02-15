@@ -2,15 +2,29 @@ package io.codemonastery.dropwizard.kinesis;
 
 import com.amazonaws.AmazonServiceException;
 import com.amazonaws.services.kinesis.AmazonKinesis;
+import com.amazonaws.util.StringInputStream;
 import com.codahale.metrics.MetricRegistry;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import io.codemonastery.dropwizard.kinesis.metric.KinesisMetricsProxy;
+import io.dropwizard.Configuration;
 import org.junit.After;
 import org.junit.Test;
+
+import javax.validation.Valid;
+import javax.validation.constraints.NotNull;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.fail;
 
-public class KinesisClientBuilderTest {
+public class KinesisFactoryTest {
+
+    public static final class FakeConfiguration extends Configuration {
+
+        @JsonProperty
+        @Valid
+        public KinesisFactory kinesis;
+
+    }
 
     private AmazonKinesis client;
 
@@ -24,14 +38,14 @@ public class KinesisClientBuilderTest {
 
     @Test
     public void nullEnvironment() throws Exception {
-        KinesisClientBuilder builder = new KinesisClientBuilder();
+        KinesisFactory builder = new KinesisFactory();
         client = builder.build(null, new NoCredentialsProvider(), "test-client");
     }
 
     @Test
     public void someMetrics() throws Exception {
         MetricRegistry metrics = new MetricRegistry();
-        KinesisClientBuilder builder = new KinesisClientBuilder();
+        KinesisFactory builder = new KinesisFactory();
         client = builder.build(metrics, null, null, new NoCredentialsProvider(), "test-client");
         assertThat(client).isInstanceOf(KinesisMetricsProxy.class);
         try{
@@ -41,5 +55,13 @@ public class KinesisClientBuilderTest {
             //ignore
         }
         assertThat(metrics.timer("test-client-list-streams").getCount()).isEqualTo(1L);
+    }
+
+    @Test
+    public void emptyConfigurationIsOk() throws Exception {
+        FakeConfiguration configuration = ConfigurationFactories.make(FakeConfiguration.class)
+                .build((s)->new StringInputStream("kinesis: {}"), "");
+        assertThat(configuration).isNotNull();
+        assertThat(configuration.kinesis).isNotNull();
     }
 }
