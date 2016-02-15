@@ -3,6 +3,7 @@ package io.codemonastery.dropwizard.kinesis;
 import com.amazonaws.services.kinesis.AmazonKinesis;
 import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.health.HealthCheckRegistry;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Preconditions;
@@ -50,27 +51,22 @@ public class KinesisProducerFactory<E> extends KinesisStreamConfiguration {
         this.flushPeriod = flushPeriod;
     }
 
-    public KinesisProducerFactory setEncoder(EventEncoder<E> encoder) {
+    @JsonIgnore
+    public KinesisProducerFactory encoder(EventEncoder<E> encoder) {
         this.encoder = encoder;
         return this;
     }
 
-    public KinesisProducerFactory setPartitionKeyFn(Function<E, String> partitionKeyFn) {
+    @JsonIgnore
+    public KinesisProducerFactory partitionKeyFn(Function<E, String> partitionKeyFn) {
         this.partitionKeyFn = partitionKeyFn;
         return this;
     }
 
+    @JsonIgnore
     public KinesisProducer<E> build(Environment environment, AmazonKinesis client, String name){
         if(encoder == null && environment != null){
-            encoder = new EventEncoder<E>() {
-
-                private final ObjectMapper objectMapper = environment.getObjectMapper();
-
-                @Override
-                public byte[] encode(E event) throws Exception {
-                    return objectMapper.writeValueAsBytes(event);
-                }
-            };
+            encoder = new EventObjectMapper<>(environment.getObjectMapper());
         }
         return build(environment == null ? null : environment.metrics(),
                 environment == null ? null : environment.healthChecks(),
@@ -78,6 +74,7 @@ public class KinesisProducerFactory<E> extends KinesisStreamConfiguration {
                 client, name);
     }
 
+    @JsonIgnore
     private KinesisProducer<E> build(MetricRegistry metrics,
                                      HealthCheckRegistry healthChecks,
                                      LifecycleEnvironment lifecycle,
@@ -92,7 +89,8 @@ public class KinesisProducerFactory<E> extends KinesisStreamConfiguration {
 
         ScheduledExecutorService deliveryExecutor = lifecycle
                 .scheduledExecutorService(name + "-delivery-executor")
-                .threads(111).build();
+                .threads(2).build();
+
         KinesisProducer<E> producer = new KinesisProducer<>(client, getStreamName(), maxBufferSize, deliveryExecutor, encoder, partitionKeyFn);
 
         deliveryExecutor.scheduleAtFixedRate(producer::flush,

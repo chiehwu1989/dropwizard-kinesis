@@ -1,6 +1,7 @@
 package io.codemonastery.dropwizard.kinesis.circle;
 
 import com.amazonaws.auth.DefaultAWSCredentialsProviderChain;
+import com.amazonaws.services.dynamodbv2.AmazonDynamoDB;
 import com.amazonaws.services.kinesis.AmazonKinesis;
 import io.codemonastery.dropwizard.kinesis.KinesisProducer;
 import io.dropwizard.Application;
@@ -13,12 +14,31 @@ public class CircleApplication extends Application<CircleConfiguration> {
     }
 
     @Override
-    public void run(CircleConfiguration circleConfiguration, Environment environment) throws Exception {
-        AmazonKinesis kinesis = circleConfiguration.getKinesis()
-                .build(environment, new DefaultAWSCredentialsProviderChain(), "kinesis");
-        KinesisProducer<String> producer = circleConfiguration.getProducer()
-                .build(environment, kinesis, "circle-producer");
+    public void run(CircleConfiguration configuration, Environment environment) throws Exception {
+       try{
+           DefaultAWSCredentialsProviderChain credentialsProvider = new DefaultAWSCredentialsProviderChain();
 
-        environment.jersey().register(new CircleResource(producer));
+           final AmazonKinesis kinesis = configuration.getKinesis()
+                   .build(environment, credentialsProvider, "kinesis");
+
+           final AmazonDynamoDB dynamoDb = configuration.getDynamoDb()
+                   .build(environment, credentialsProvider, "dynamoDb");
+
+           final KinesisProducer<String> producer = configuration.getProducer()
+                   .build(environment, kinesis, "circle-producer");
+
+           final CircleResource circleResource = new CircleResource(producer);
+           environment.jersey().register(circleResource);
+
+        configuration.getConsumer()
+                .processor(() -> event -> {
+                    circleResource.seen(event);
+                    return true;
+                })
+                .build(environment, kinesis, dynamoDb, "circle-consumer");
+       }catch (Exception e){
+           e.printStackTrace();
+           System.exit(0); // see https://github.com/dropwizard/dropwizard/issues/1460
+       }
     }
 }

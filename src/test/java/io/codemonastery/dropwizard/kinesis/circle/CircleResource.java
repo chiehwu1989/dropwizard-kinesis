@@ -26,7 +26,7 @@ public class CircleResource {
     }
 
     @POST
-    public synchronized void send(String[] sendMe){
+    public void send(String[] sendMe){
         producer.sendAll(Arrays.asList(sendMe));
     }
 
@@ -35,4 +35,7 @@ public class CircleResource {
         seen.clear();
     }
 
+    public synchronized void seen(String event) {
+        seen.add(event);
+    }
 }

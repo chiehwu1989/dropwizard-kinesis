@@ -4,6 +4,7 @@ import com.amazonaws.services.kinesis.AmazonKinesis;
 import com.amazonaws.services.kinesis.model.DescribeStreamResult;
 import com.amazonaws.services.kinesis.model.ResourceInUseException;
 import com.amazonaws.services.kinesis.model.ResourceNotFoundException;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
@@ -60,6 +61,7 @@ class KinesisStreamConfiguration {
         this.createStreamRetryPeriod = createStreamRetryPeriod;
     }
 
+    @JsonIgnore
     void setupStream(AmazonKinesis kinesis){
         Preconditions.checkState(!Strings.isNullOrEmpty(streamName), "streamName was not specified");
         try{
@@ -69,7 +71,7 @@ class KinesisStreamConfiguration {
                     try{
                         result = kinesis.describeStream(streamName);
                         if("active".equalsIgnoreCase(result.getStreamDescription().getStreamStatus())){
-                            LOG.info("stream %s is active", streamName);
+                            LOG.info("stream {} is active", streamName);
                             break;
                         }
                     }catch (NullPointerException|ResourceNotFoundException e){
@@ -79,7 +81,7 @@ class KinesisStreamConfiguration {
                 }
             }
         }catch (InterruptedException e){
-            LOG.error("Needed to create stream %s but was interrupted, nothing is guaranteed now", streamName);
+            LOG.error("Needed to create stream {} but was interrupted, nothing is guaranteed now", streamName);
         }
     }
 

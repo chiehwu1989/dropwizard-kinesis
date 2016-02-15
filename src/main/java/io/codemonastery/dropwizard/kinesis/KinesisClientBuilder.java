@@ -8,6 +8,7 @@ import com.amazonaws.services.kinesis.AmazonKinesis;
 import com.amazonaws.services.kinesis.AmazonKinesisClient;
 import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.health.HealthCheckRegistry;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.Preconditions;
 import io.codemonastery.dropwizard.kinesis.healthcheck.KinesisClientHealthCheck;
@@ -18,29 +19,34 @@ import io.dropwizard.lifecycle.setup.LifecycleEnvironment;
 import io.dropwizard.setup.Environment;
 
 import javax.annotation.Nullable;
+import javax.validation.constraints.NotNull;
 
 public class KinesisClientBuilder {
 
-    @JsonProperty
-    private Regions region;
+    @NotNull
+    private Regions region = Regions.DEFAULT_REGION;
 
     private ClientMetricsProxyFactory<AmazonKinesis> metricsProxy = (metrics, kinesis, name) -> new KinesisMetricsProxy(kinesis, metrics, name);
 
     private ClientConfiguration clientConfiguration = new ClientConfiguration();
 
+    @JsonProperty
     public Regions getRegion() {
         return region;
     }
 
+    @JsonProperty
     public void setRegion(Regions region) {
         this.region = region;
     }
 
+    @JsonIgnore
     public KinesisClientBuilder metricsProxy(ClientMetricsProxyFactory metricsProxy) {
         this.metricsProxy = metricsProxy;
         return this;
     }
 
+    @JsonIgnore
     public KinesisClientBuilder clientConfiguration(ClientConfiguration clientConfiguration) {
         this.clientConfiguration = clientConfiguration;
         return this;

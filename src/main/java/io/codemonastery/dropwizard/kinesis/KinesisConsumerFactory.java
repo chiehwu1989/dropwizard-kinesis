@@ -1,61 +1,112 @@
 package io.codemonastery.dropwizard.kinesis;
 
+import com.amazonaws.services.dynamodbv2.AmazonDynamoDB;
 import com.amazonaws.services.kinesis.AmazonKinesis;
-import com.amazonaws.services.kinesis.clientlibrary.exceptions.InvalidStateException;
-import com.amazonaws.services.kinesis.clientlibrary.exceptions.ShutdownException;
-import com.amazonaws.services.kinesis.clientlibrary.interfaces.IRecordProcessor;
-import com.amazonaws.services.kinesis.clientlibrary.interfaces.IRecordProcessorCheckpointer;
 import com.amazonaws.services.kinesis.clientlibrary.lib.worker.KinesisClientLibConfiguration;
-import com.amazonaws.services.kinesis.clientlibrary.lib.worker.Worker;
-import com.amazonaws.services.kinesis.clientlibrary.types.ShutdownReason;
-import com.amazonaws.services.kinesis.model.Record;
+import com.amazonaws.services.kinesis.clientlibrary.lib.worker.SimpleWorker;
+import com.codahale.metrics.MetricRegistry;
+import com.codahale.metrics.health.HealthCheckRegistry;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import io.dropwizard.lifecycle.setup.LifecycleEnvironment;
+import io.dropwizard.setup.Environment;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import java.nio.charset.Charset;
-import java.util.List;
+import java.util.UUID;
+import java.util.concurrent.ExecutorService;
+import java.util.function.Supplier;
 
-public class KinesisConsumerFactory extends KinesisStreamConfiguration {
+public class KinesisConsumerFactory<E> extends KinesisStreamConfiguration {
 
-    public void build(AmazonKinesis kinesisClient, String name){
+    private static final Logger LOG = LoggerFactory.getLogger(KinesisConsumerFactory.class);
+
+    private EventDecoder<E> decoder;
+
+    private Supplier<EventConsumer<E>> processorFactory;
+
+    @JsonIgnore
+    public KinesisConsumerFactory decoder(EventDecoder<E> decoder) {
+        this.decoder = decoder;
+        return this;
+    }
+
+    @JsonIgnore
+    public KinesisConsumerFactory processor(Supplier<EventConsumer<E>> processorFactory) {
+        this.processorFactory = processorFactory;
+        return this;
+    }
+
+    @JsonIgnore
+    public SimpleWorker build(Environment environment,
+                              AmazonKinesis kinesisClient,
+                              AmazonDynamoDB dynamoDBClient,
+                              String name) {
+        if (environment != null && decoder == null) {
+            decoder = new EventObjectMapper<>(environment.getObjectMapper());
+        }
+        if (processorFactory == null) {
+            processorFactory = () -> event -> {
+                if (event != null) {
+                    LOG.info("Consumed event on " + name + ": " + event.toString());
+                }
+                return true;
+            };
+        }
+
+        return build(
+                environment == null ? null : environment.metrics(),
+                environment == null ? null : environment.healthChecks(),
+                environment == null ? null : environment.lifecycle(),
+                kinesisClient,
+                dynamoDBClient,
+                name
+        );
+    }
+
+    @JsonIgnore
+    public SimpleWorker build(MetricRegistry metrics,
+                              HealthCheckRegistry healthChecks,
+                              LifecycleEnvironment lifeCycle,
+                              AmazonKinesis kinesisClient,
+                              AmazonDynamoDB dynamoDBClient,
+                              String name) {
+        super.setupStream(kinesisClient);
+
         final KinesisClientLibConfiguration config = new KinesisClientLibConfiguration(
-                null,
+                name,
                 getStreamName(),
                 null,
-                null
+                name
         );
 
-        final Worker worker = new Worker.Builder()
-                .recordProcessorFactory(() -> {
-                    return new IRecordProcessor() {
-                        @Override
-                        public void initialize(String s) {
 
-                        }
-
-                        @Override
-                        public void processRecords(List<Record> list, IRecordProcessorCheckpointer iRecordProcessorCheckpointer) {
-                            for (Record record : list) {
-                                System.out.println(new String(record.getData().array(), Charset.defaultCharset()));
-                                try {
-                                    iRecordProcessorCheckpointer.checkpoint();
-                                } catch (InvalidStateException e) {
-                                    e.printStackTrace();
-                                } catch (ShutdownException e) {
-                                    e.printStackTrace();
-                                }
-                            }
-                        }
-
-                        @Override
-                        public void shutdown(IRecordProcessorCheckpointer iRecordProcessorCheckpointer, ShutdownReason shutdownReason) {
-
-                        }
-                    };
-                })
+        SimpleWorker.Builder builder = new SimpleWorker.Builder()
+                .recordProcessorFactory(() -> new RecordProcessor<>(decoder, processorFactory.get()))
+                .config(config)
                 .kinesisClient(kinesisClient)
-//                .dynamoDBClient()
-                .cloudWatchClient(null)
-                .build();
+                .dynamoDBClient(dynamoDBClient);
 
-        worker.shutdown();
+        //use unbounded queue
+        if (lifeCycle != null) {
+            ExecutorService processorService = lifeCycle.executorService(name + "-processor-%d")
+                    .build();
+            builder.execService(processorService).build();
+        }
+
+        SimpleWorker worker = builder.build();
+
+        if (lifeCycle == null) {
+            new Thread(worker::run) {
+                {
+                    setDaemon(true);
+                }
+            }.start();
+        } else {
+            lifeCycle.executorService(name + "-consumer-worker")
+                    .minThreads(1).maxThreads(1)
+                    .build().submit(worker::run);
+        }
+
+        return worker;
     }
 }

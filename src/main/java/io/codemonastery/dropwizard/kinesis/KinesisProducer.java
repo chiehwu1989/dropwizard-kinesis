@@ -90,11 +90,11 @@ public class KinesisProducer<E> {
                     buffer.clear();
                 }
             }
-            if(submitMe != null) {
+            if(submitMe != null && !submitMe.isEmpty()) {
                 final List<PutRecordsRequestEntry> temp = submitMe;
                 deliveryExecutor.submit(() -> putRecords(temp));
             }
-        } catch (Exception e) {
+        }catch (Exception e) {
             LOG.error("unexpected error while flushing", e);
         }
     }
@@ -103,7 +103,7 @@ public class KinesisProducer<E> {
         return record;
     }
 
-    private void send(@Nullable PutRecordsRequestEntry record) {
+    private void send(PutRecordsRequestEntry record) {
         List<PutRecordsRequestEntry> submitMe = null;
         synchronized (buffer){
             if(buffer.size() >= maxBufferSize){
