@@ -36,6 +36,6 @@ public class CircleResource {
     }
 
     public synchronized void seen(String event) {
-        seen.add(event);
+            seen.add(event);
     }
 }
