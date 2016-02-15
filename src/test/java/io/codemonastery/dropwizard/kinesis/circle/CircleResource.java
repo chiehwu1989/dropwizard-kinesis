@@ -1,6 +1,6 @@
 package io.codemonastery.dropwizard.kinesis.circle;
 
-import io.codemonastery.dropwizard.kinesis.KinesisProducer;
+import io.codemonastery.dropwizard.kinesis.producer.Producer;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
@@ -14,9 +14,9 @@ import java.util.List;
 public class CircleResource {
 
     private final List<String> seen = new ArrayList<>();
-    public final KinesisProducer<String> producer;
+    public final Producer<String> producer;
 
-    public CircleResource(KinesisProducer<String> producer) {
+    public CircleResource(Producer<String> producer) {
         this.producer = producer;
     }
 
@@ -26,7 +26,7 @@ public class CircleResource {
     }
 
     @POST
-    public void send(String[] sendMe){
+    public void send(String[] sendMe) throws Exception {
         producer.sendAll(Arrays.asList(sendMe));
     }
 

@@ -1,4 +1,4 @@
-package io.codemonastery.dropwizard.kinesis;
+package io.codemonastery.dropwizard.kinesis.consumer;
 
 public interface EventConsumer<E> {
 

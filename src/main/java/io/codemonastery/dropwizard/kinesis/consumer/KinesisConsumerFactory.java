@@ -1,4 +1,4 @@
-package io.codemonastery.dropwizard.kinesis;
+package io.codemonastery.dropwizard.kinesis.consumer;
 
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDB;
 import com.amazonaws.services.kinesis.AmazonKinesis;
@@ -7,16 +7,16 @@ import com.amazonaws.services.kinesis.clientlibrary.lib.worker.SimpleWorker;
 import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.health.HealthCheckRegistry;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import io.codemonastery.dropwizard.kinesis.*;
 import io.dropwizard.lifecycle.setup.LifecycleEnvironment;
 import io.dropwizard.setup.Environment;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.UUID;
 import java.util.concurrent.ExecutorService;
 import java.util.function.Supplier;
 
-public class KinesisConsumerFactory<E> extends KinesisStreamConfiguration {
+public class KinesisConsumerFactory<E> extends StreamConfiguration {
 
     private static final Logger LOG = LoggerFactory.getLogger(KinesisConsumerFactory.class);
 

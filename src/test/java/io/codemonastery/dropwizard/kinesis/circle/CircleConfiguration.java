@@ -3,8 +3,8 @@ package io.codemonastery.dropwizard.kinesis.circle;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.codemonastery.dropwizard.kinesis.DynamoDbClientBuilder;
 import io.codemonastery.dropwizard.kinesis.KinesisClientBuilder;
-import io.codemonastery.dropwizard.kinesis.KinesisConsumerFactory;
-import io.codemonastery.dropwizard.kinesis.KinesisProducerFactory;
+import io.codemonastery.dropwizard.kinesis.consumer.KinesisConsumerFactory;
+import io.codemonastery.dropwizard.kinesis.producer.BufferedProducerFactory;
 import io.codemonastery.dropwizard.kinesis.rule.KinesisClientRule;
 import io.dropwizard.Configuration;
 import io.dropwizard.util.Duration;
@@ -24,7 +24,7 @@ public class CircleConfiguration extends Configuration {
 
     @Valid
     @NotNull
-    private KinesisProducerFactory<String> producer = new KinesisProducerFactory<>();
+    private BufferedProducerFactory<String> producer = new BufferedProducerFactory<>();
 
     @Valid
     @NotNull
@@ -34,11 +34,9 @@ public class CircleConfiguration extends Configuration {
         kinesis.setRegion(KinesisClientRule.TEST_REGIONS);
         dynamoDb.setRegion(KinesisClientRule.TEST_REGIONS);
         producer.setStreamName("test-circle");
-        producer.setDefaultShardCount(1);
         producer.setFlushPeriod(Duration.seconds(1));
 
         consumer.setStreamName("test-circle");
-        consumer.setDefaultShardCount(1);
     }
 
     @JsonProperty
@@ -62,12 +60,12 @@ public class CircleConfiguration extends Configuration {
     }
 
     @JsonProperty
-    public KinesisProducerFactory<String> getProducer() {
+    public BufferedProducerFactory<String> getProducer() {
         return producer;
     }
 
     @JsonProperty
-    public void setProducer(KinesisProducerFactory<String> producer) {
+    public void setProducer(BufferedProducerFactory<String> producer) {
         this.producer = producer;
     }
 

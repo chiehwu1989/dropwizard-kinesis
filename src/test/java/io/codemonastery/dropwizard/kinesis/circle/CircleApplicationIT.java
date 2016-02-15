@@ -3,10 +3,7 @@ package io.codemonastery.dropwizard.kinesis.circle;
 import com.google.common.collect.ImmutableList;
 import io.codemonastery.dropwizard.kinesis.rule.KinesisClientRule;
 import io.dropwizard.testing.junit.DropwizardAppRule;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.ClassRule;
-import org.junit.Test;
+import org.junit.*;
 import org.junit.rules.RuleChain;
 import org.junit.rules.TestRule;
 
@@ -20,6 +17,7 @@ import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+@Ignore
 public class CircleApplicationIT {
 
     @ClassRule

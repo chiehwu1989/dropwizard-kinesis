@@ -3,11 +3,14 @@ package io.codemonastery.dropwizard.kinesis.healthcheck;
 import com.codahale.metrics.health.HealthCheck;
 import io.codemonastery.dropwizard.kinesis.rule.KinesisClientRule;
 import org.junit.ClassRule;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
+
+@Ignore
 public class KinesisClientHealthCheckIT {
 
     @ClassRule

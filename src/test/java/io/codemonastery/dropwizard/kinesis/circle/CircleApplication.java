@@ -3,7 +3,8 @@ package io.codemonastery.dropwizard.kinesis.circle;
 import com.amazonaws.auth.DefaultAWSCredentialsProviderChain;
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDB;
 import com.amazonaws.services.kinesis.AmazonKinesis;
-import io.codemonastery.dropwizard.kinesis.KinesisProducer;
+import io.codemonastery.dropwizard.kinesis.producer.BufferedProducer;
+import io.codemonastery.dropwizard.kinesis.producer.Producer;
 import io.dropwizard.Application;
 import io.dropwizard.setup.Environment;
 
@@ -24,7 +25,7 @@ public class CircleApplication extends Application<CircleConfiguration> {
            final AmazonDynamoDB dynamoDb = configuration.getDynamoDb()
                    .build(environment, credentialsProvider, "dynamoDb");
 
-           final KinesisProducer<String> producer = configuration.getProducer()
+           final Producer<String> producer = configuration.getProducer()
                    .build(environment, kinesis, "circle-producer");
 
            final CircleResource circleResource = new CircleResource(producer);
