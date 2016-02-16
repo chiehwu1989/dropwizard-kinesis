@@ -1,6 +1,9 @@
-package io.codemonastery.dropwizard.kinesis;
+package io.codemonastery.dropwizard.kinesis.example;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import io.codemonastery.dropwizard.kinesis.DynamoDbFactory;
+import io.codemonastery.dropwizard.kinesis.Event;
+import io.codemonastery.dropwizard.kinesis.KinesisFactory;
 import io.codemonastery.dropwizard.kinesis.consumer.ConsumerFactory;
 import io.codemonastery.dropwizard.kinesis.producer.ProducerFactory;
 import io.dropwizard.Configuration;
@@ -8,7 +11,7 @@ import io.dropwizard.Configuration;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
-public class ReadmeConfiguration extends Configuration {
+public class ExampleConfiguration extends Configuration {
 
     @Valid
     @NotNull
