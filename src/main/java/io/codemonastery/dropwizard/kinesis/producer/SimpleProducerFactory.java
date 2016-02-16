@@ -18,7 +18,7 @@ public class SimpleProducerFactory<E> extends AbstractProducerFactory<E> {
         Preconditions.checkNotNull(partitionKeyFn, "partitionKeyFn cannot be null, is allowed to return null");
         Preconditions.checkState(super.setupStream(kinesis), String.format("stream %s was not setup successfully", getStreamName()));
 
-        SimpleProducerMetrics producerMetrics = new SimpleProducerMetrics(metrics, name);
+        ProducerMetrics producerMetrics = new ProducerMetrics(metrics, name);
         return new SimpleProducer<>(kinesis, getStreamName(), partitionKeyFn, encoder, producerMetrics);
     }
 }

@@ -18,7 +18,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.function.Function;
 
-public class BufferedProducer<E> extends Producer<E, BufferedProducerMetrics> {
+public class BufferedProducer<E> extends Producer<E> {
 
     private static final Logger LOG = LoggerFactory.getLogger(BufferedProducer.class);
 
@@ -29,6 +29,7 @@ public class BufferedProducer<E> extends Producer<E, BufferedProducerMetrics> {
 
     private final ExecutorService deliveryExecutor;
     private final List<PutRecordsRequestEntry> buffer;
+    private final BufferedProducerMetrics bufferedMetrics;
 
     public BufferedProducer(AmazonKinesis kinesis,
                             String streamName,
@@ -44,12 +45,11 @@ public class BufferedProducer<E> extends Producer<E, BufferedProducerMetrics> {
         Preconditions.checkArgument(maxBufferSize > 0, "maxBufferSize must be positive");
         Preconditions.checkNotNull(deliveryExecutor, "must have a delivery executor");
 
-
-
         this.kinesis = kinesis;
         this.streamName = streamName;
         this.maxBufferSize = maxBufferSize;
         this.deliveryExecutor = deliveryExecutor;
+        this.bufferedMetrics = metrics;
 
         this.buffer = new ArrayList<>(maxBufferSize);
     }
@@ -61,7 +61,7 @@ public class BufferedProducer<E> extends Producer<E, BufferedProducerMetrics> {
                 if (buffer.size() > 0) {
                     submitMe = new ArrayList<>(buffer);
                     buffer.clear();
-                    metrics.bufferRemove(submitMe.size());
+                    bufferedMetrics.bufferRemove(submitMe.size());
                 }
             }
             if (submitMe != null && !submitMe.isEmpty()) {
@@ -80,11 +80,11 @@ public class BufferedProducer<E> extends Producer<E, BufferedProducerMetrics> {
             if (buffer.size() >= maxBufferSize) {
                 submitMe = new ArrayList<>(buffer);
                 buffer.clear();
-                metrics.bufferRemove(submitMe.size());
+                bufferedMetrics.bufferRemove(submitMe.size());
             }
             buffer.add(record);
         }
-        metrics.bufferPut(1);
+        bufferedMetrics.bufferPut(1);
         if (submitMe != null) {
             final List<PutRecordsRequestEntry> temp = submitMe;
             deliveryExecutor.submit(() -> putRecords(temp));

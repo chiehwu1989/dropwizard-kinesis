@@ -14,7 +14,7 @@ import java.util.Optional;
 import java.util.function.Function;
 
 
-public class SimpleProducer<E> extends Producer<E, SimpleProducerMetrics> {
+public class SimpleProducer<E> extends Producer<E> {
 
     private static final Logger LOG = LoggerFactory.getLogger(SimpleProducer.class);
 
@@ -25,7 +25,7 @@ public class SimpleProducer<E> extends Producer<E, SimpleProducerMetrics> {
                           String streamName,
                           Function<E, String> partitionKeyFn,
                           EventEncoder<E> encoder,
-                          SimpleProducerMetrics metrics) {
+                          ProducerMetrics metrics) {
         super(partitionKeyFn, encoder, metrics);
         Preconditions.checkNotNull(kinesis, "client cannot be null");
         Preconditions.checkNotNull(streamName, "streamName cannot be null");

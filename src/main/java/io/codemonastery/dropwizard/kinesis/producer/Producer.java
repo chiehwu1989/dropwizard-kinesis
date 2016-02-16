@@ -10,15 +10,15 @@ import java.nio.ByteBuffer;
 import java.util.List;
 import java.util.function.Function;
 
-public abstract class Producer<E, METRICS extends SimpleProducerMetrics> {
+public abstract class Producer<E> {
 
     private static final Logger LOG = LoggerFactory.getLogger(Producer.class);
 
     private final EventEncoder<E> encoder;
     private final Function<E, String> partitionKeyFn;
-    protected final METRICS metrics;
+    protected final ProducerMetrics metrics;
 
-    public Producer(Function<E, String> partitionKeyFn, EventEncoder<E> encoder, METRICS metrics) {
+    public Producer(Function<E, String> partitionKeyFn, EventEncoder<E> encoder, ProducerMetrics metrics) {
         Preconditions.checkNotNull(encoder, "encoder cannot be null");
         Preconditions.checkNotNull(partitionKeyFn, "partitionKeyFn cannot be null");
         Preconditions.checkNotNull(metrics, "metrics cannot be null");

@@ -8,7 +8,7 @@ import com.google.common.base.Preconditions;
 
 import java.io.Closeable;
 
-public class SimpleProducerMetrics {
+public class ProducerMetrics {
 
     private Meter partitionKeyFailedMeter;
     private Meter encodeFailedMeter;
@@ -17,7 +17,7 @@ public class SimpleProducerMetrics {
     private Meter failedMeter;
     private Timer putRecordsTimer;
 
-    public SimpleProducerMetrics(MetricRegistry metrics, String name) {
+    public ProducerMetrics(MetricRegistry metrics, String name) {
         Preconditions.checkNotNull(name, "name cannot be null");
 
         if(metrics != null){

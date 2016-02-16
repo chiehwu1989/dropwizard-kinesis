@@ -5,7 +5,7 @@ import com.codahale.metrics.Meter;
 import com.codahale.metrics.MetricRegistry;
 import com.google.common.base.Preconditions;
 
-public class BufferedProducerMetrics extends SimpleProducerMetrics {
+public class BufferedProducerMetrics extends ProducerMetrics {
 
 
     private Meter bufferPutMeter;
