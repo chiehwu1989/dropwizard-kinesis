@@ -10,18 +10,21 @@ import java.nio.ByteBuffer;
 import java.util.List;
 import java.util.function.Function;
 
-public abstract class Producer<E> {
+public abstract class Producer<E, METRICS extends SimpleProducerMetrics> {
 
     private static final Logger LOG = LoggerFactory.getLogger(Producer.class);
 
     private final EventEncoder<E> encoder;
     private final Function<E, String> partitionKeyFn;
+    protected final METRICS metrics;
 
-    public Producer(Function<E, String> partitionKeyFn, EventEncoder<E> encoder) {
+    public Producer(Function<E, String> partitionKeyFn, EventEncoder<E> encoder, METRICS metrics) {
         Preconditions.checkNotNull(encoder, "encoder cannot be null");
         Preconditions.checkNotNull(partitionKeyFn, "partitionKeyFn cannot be null");
+        Preconditions.checkNotNull(metrics, "metrics cannot be null");
         this.encoder = encoder;
         this.partitionKeyFn = partitionKeyFn;
+        this.metrics = metrics;
     }
 
     public void sendAll(List<E> events) throws Exception {
@@ -35,6 +38,7 @@ public abstract class Producer<E> {
         try {
             bytes = encoder.encode(event);
         } catch (Exception e) {
+            metrics.encodeFailed();
             LOG.error("could not encode event " + event.toString());
         }
 
@@ -42,6 +46,7 @@ public abstract class Producer<E> {
         try{
             partitionKey = partitionKeyFn.apply(event);
         }catch (Exception e){
+            metrics.partitionkeyFailed();
             LOG.error("Unexpected exception while calculating partition key for event " + event.toString(), e);
         }
         if(partitionKey == null){

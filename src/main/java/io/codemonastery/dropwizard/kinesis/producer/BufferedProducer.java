@@ -18,7 +18,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.function.Function;
 
-public class BufferedProducer<E> extends Producer<E> {
+public class BufferedProducer<E> extends Producer<E, BufferedProducerMetrics> {
 
     private static final Logger LOG = LoggerFactory.getLogger(BufferedProducer.class);
 
@@ -29,8 +29,6 @@ public class BufferedProducer<E> extends Producer<E> {
 
     private final ExecutorService deliveryExecutor;
     private final List<PutRecordsRequestEntry> buffer;
-    private final BufferedProducerMetrics metrics;
-
 
     public BufferedProducer(AmazonKinesis kinesis,
                             String streamName,
@@ -39,13 +37,12 @@ public class BufferedProducer<E> extends Producer<E> {
                             int maxBufferSize,
                             ScheduledExecutorService deliveryExecutor,
                             BufferedProducerMetrics metrics) {
-        super(partitionKeyFn, encoder);
+        super(partitionKeyFn, encoder, metrics);
 
         Preconditions.checkNotNull(kinesis, "kinesis cannot be null");
         Preconditions.checkArgument(!Strings.isNullOrEmpty(streamName), "must have a stream name");
         Preconditions.checkArgument(maxBufferSize > 0, "maxBufferSize must be positive");
         Preconditions.checkNotNull(deliveryExecutor, "must have a delivery executor");
-        Preconditions.checkNotNull(metrics, "metrics cannot be null");
 
 
 
@@ -53,7 +50,6 @@ public class BufferedProducer<E> extends Producer<E> {
         this.streamName = streamName;
         this.maxBufferSize = maxBufferSize;
         this.deliveryExecutor = deliveryExecutor;
-        this.metrics = metrics;
 
         this.buffer = new ArrayList<>(maxBufferSize);
     }
