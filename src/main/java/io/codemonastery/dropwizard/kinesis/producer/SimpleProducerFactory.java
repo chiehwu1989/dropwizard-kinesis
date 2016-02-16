@@ -19,6 +19,9 @@ public class SimpleProducerFactory<E> extends AbstractProducerFactory<E> {
         Preconditions.checkState(super.setupStream(kinesis), String.format("stream %s was not setup successfully", getStreamName()));
 
         ProducerMetrics producerMetrics = new ProducerMetrics(metrics, name);
+        if(healthChecks != null){
+            healthChecks.register(name, new ProducerHealthCheck(producerMetrics));
+        }
         return new SimpleProducer<>(kinesis, getStreamName(), partitionKeyFn, encoder, producerMetrics);
     }
 }

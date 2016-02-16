@@ -64,6 +64,9 @@ public class BufferedProducerFactory<E> extends AbstractProducerFactory<E> {
                 .threads(2).build();
 
         BufferedProducerMetrics producerMetrics = new BufferedProducerMetrics(metrics, name);
+        if(healthChecks != null){
+            healthChecks.register(name, new ProducerHealthCheck(producerMetrics));
+        }
         BufferedProducer<E> producer = new BufferedProducer<>(kinesis, getStreamName(), partitionKeyFn, encoder, maxBufferSize, deliveryExecutor, producerMetrics);
 
         deliveryExecutor.scheduleAtFixedRate(producer::flush,
