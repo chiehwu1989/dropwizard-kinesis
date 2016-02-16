@@ -1,6 +1,5 @@
 package io.codemonastery.dropwizard.kinesis;
 
-import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Preconditions;
 
@@ -10,18 +9,21 @@ import java.nio.ByteBuffer;
 public final class EventObjectMapper<E> implements EventEncoder<E>, EventDecoder<E> {
 
     private final ObjectMapper objectMapper;
-    private final TypeReference<E> typeReference;
+    private final Class<E> klass;
 
-    public EventObjectMapper(ObjectMapper objectMapper) {
+    public EventObjectMapper(ObjectMapper objectMapper, @Nullable Class<E> klass) {
         Preconditions.checkNotNull(objectMapper);
         this.objectMapper = objectMapper;
-        this.typeReference = new TypeReference<E>(){};
+        this.klass = klass;
     }
 
     @Nullable
     @Override
     public E decode(ByteBuffer bytes) throws Exception {
-        return objectMapper.readValue(bytes.array(), typeReference);
+        if(klass == null){
+            throw new UnsupportedOperationException("cannot decode if event class was not specified");
+        }
+        return objectMapper.readValue(bytes.array(), klass);
     }
 
     @Nullable

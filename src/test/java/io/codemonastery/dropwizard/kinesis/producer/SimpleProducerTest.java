@@ -23,7 +23,7 @@ import static org.mockito.MockitoAnnotations.initMocks;
 
 public class SimpleProducerTest {
 
-    private static final EventObjectMapper<String> ENCODER = new EventObjectMapper<>(Jackson.newObjectMapper());
+    private static final EventObjectMapper<String> ENCODER = new EventObjectMapper<>(Jackson.newObjectMapper(), String.class);
 
     private static final String STREAM_NAME = "test-stream";
 

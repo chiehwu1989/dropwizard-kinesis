@@ -28,7 +28,7 @@ import static org.mockito.MockitoAnnotations.initMocks;
 
 public class BufferedProducerTest {
 
-    private static final EventObjectMapper<String> ENCODER = new EventObjectMapper<>(Jackson.newObjectMapper());
+    private static final EventObjectMapper<String> ENCODER = new EventObjectMapper<>(Jackson.newObjectMapper(), String.class);
 
     private static final String STREAM_NAME = "test-stream";
     public static final int MAX_BUFFER_SIZE = 10;

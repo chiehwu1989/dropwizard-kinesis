@@ -40,7 +40,7 @@ public abstract class AbstractProducerFactory<E> extends StreamConfiguration imp
     @Override
     public Producer<E> build(Environment environment, AmazonKinesis kinesis, String name){
         if(encoder == null && environment != null){
-            encoder = new EventObjectMapper<>(environment.getObjectMapper());
+            encoder = new EventObjectMapper<>(environment.getObjectMapper(), null);
         }
         return build(environment == null ? null : environment.metrics(),
                 environment == null ? null : environment.healthChecks(),

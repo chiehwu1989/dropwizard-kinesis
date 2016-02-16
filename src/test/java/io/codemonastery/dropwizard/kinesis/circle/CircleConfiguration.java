@@ -28,7 +28,7 @@ public class CircleConfiguration extends Configuration {
 
     @Valid
     @NotNull
-    private ConsumerFactory<String> consumer = new ConsumerFactory<>();
+    private ConsumerFactory<String> consumer = new ConsumerFactory<String>(){};
 
     public CircleConfiguration() {
         kinesis.setRegion(KinesisClientRule.TEST_REGIONS);

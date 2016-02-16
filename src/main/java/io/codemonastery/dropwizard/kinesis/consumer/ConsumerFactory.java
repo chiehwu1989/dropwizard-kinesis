@@ -6,6 +6,7 @@ import com.amazonaws.services.kinesis.clientlibrary.lib.worker.SimpleWorker;
 import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.health.HealthCheckRegistry;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.core.type.TypeReference;
 import io.codemonastery.dropwizard.kinesis.EventDecoder;
 import io.codemonastery.dropwizard.kinesis.EventObjectMapper;
 import io.dropwizard.lifecycle.setup.LifecycleEnvironment;
@@ -13,6 +14,7 @@ import io.dropwizard.setup.Environment;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.lang.reflect.ParameterizedType;
 import java.util.concurrent.ExecutorService;
 import java.util.function.Supplier;
 
@@ -42,7 +44,13 @@ public class ConsumerFactory<E> extends KinesisClientLibConfig {
                               AmazonDynamoDB dynamoDb,
                               String name) {
         if (environment != null && decoder == null) {
-            decoder = new EventObjectMapper<>(environment.getObjectMapper());
+            try {
+                //noinspection unchecked
+                Class<E> eventClass = inferEventClass();
+                decoder = new EventObjectMapper<>(environment.getObjectMapper(), eventClass);
+            } catch (Exception e) {
+                LOG.error("Tried to infer event class to make default decoder, but failed", e);
+            }
         }
         if (eventConsumerFactory == null) {
             eventConsumerFactory = () -> event -> {
@@ -100,5 +108,10 @@ public class ConsumerFactory<E> extends KinesisClientLibConfig {
         }
 
         return worker;
+    }
+
+    Class inferEventClass() {
+        return (Class) ((ParameterizedType)getClass().getGenericSuperclass())
+                .getActualTypeArguments()[0];
     }
 }

@@ -8,13 +8,12 @@ import com.amazonaws.services.kinesis.AmazonKinesisClient;
 import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.health.HealthCheckRegistry;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.Preconditions;
 import io.codemonastery.dropwizard.kinesis.healthcheck.KinesisClientHealthCheck;
 import io.codemonastery.dropwizard.kinesis.lifecycle.ManagedKinesisClient;
-import io.codemonastery.dropwizard.kinesis.metric.KinesisMetricsProxy;
 import io.codemonastery.dropwizard.kinesis.metric.ClientMetricsProxyFactory;
+import io.codemonastery.dropwizard.kinesis.metric.KinesisMetricsProxy;
 import io.dropwizard.lifecycle.setup.LifecycleEnvironment;
 import io.dropwizard.setup.Environment;
 
@@ -28,7 +27,6 @@ public class KinesisFactory {
 
     private ClientMetricsProxyFactory<AmazonKinesis> metricsProxy = (metrics, kinesis, name) -> new KinesisMetricsProxy(kinesis, metrics, name);
 
-    @JsonIgnoreProperties(value = {"seed"})
     @NotNull
     private JacksonClientConfiguration client = new JacksonClientConfiguration();
 
@@ -107,9 +105,9 @@ public class KinesisFactory {
     }
 
     private AmazonKinesis makeClient(AWSCredentialsProvider credentialsProvider) {
-        AmazonKinesisClient client = new AmazonKinesisClient(credentialsProvider, this.client);
-        if(region != null){
-            client.withRegion(region);
+        AmazonKinesisClient client = new AmazonKinesisClient(credentialsProvider, this.getClient());
+        if(getRegion() != null){
+            client.withRegion(getRegion());
         }
         return client;
     }

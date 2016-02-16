@@ -85,8 +85,8 @@ public class StreamCreateConfiguration {
         Preconditions.checkState(!Strings.isNullOrEmpty(streamName), "streamName was not specified");
         try{
             DescribeStreamResult result;
-            if(retryPeriod != null){
-                Integer retryAttempts = maxAttempts;
+            if(getRetryPeriod() != null){
+                Integer retryAttempts = getMaxAttempts();
                 while(retryAttempts == null || retryAttempts > 0){
                     try{
                         result = kinesis.describeStream(streamName);
@@ -111,9 +111,9 @@ public class StreamCreateConfiguration {
     }
 
     private void createStream(AmazonKinesis kinesis, String streamName) {
-        LOG.info(String.format("stream %s was not found, creating with %d shards", streamName, shardCount));
+        LOG.info(String.format("stream %s was not found, creating with %d shards", streamName, getShardCount()));
         try{
-            kinesis.createStream(streamName, shardCount);
+            kinesis.createStream(streamName, getShardCount());
         } catch (ResourceInUseException ue){
             LOG.info(String.format("failed to create stream %s because it already existed", streamName));
         } catch (Exception e){

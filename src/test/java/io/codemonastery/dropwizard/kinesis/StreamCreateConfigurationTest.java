@@ -16,6 +16,7 @@ import org.mockito.Mock;
 
 import javax.validation.Valid;
 
+import java.io.IOException;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -123,6 +124,50 @@ public class StreamCreateConfigurationTest {
 
         verify(kinesis, times(5)).describeStream(STREAM_NAME);
         verify(kinesis, times(1)).createStream(anyString(), anyInt());
+    }
+
+    @Test
+    public void unexpectedErrorForCreate() throws Exception {
+        when(kinesis.describeStream(STREAM_NAME))
+                .thenThrow(new ResourceNotFoundException("does not exist yet"))
+                .thenReturn(NOT_ACTIVE)
+                .thenReturn(NOT_ACTIVE)
+                .thenReturn(NOT_ACTIVE)
+                .thenReturn(ACTIVE);
+
+        doThrow(new RuntimeException("exists"))
+                .when(kinesis)
+                .createStream(eq(STREAM_NAME), anyInt());
+
+        StreamCreateConfiguration create = new StreamCreateConfiguration()
+                .retryPeriod(Duration.milliseconds(100));
+        assertThat(callCreateAssertTerminated(create)).isTrue();
+
+        verify(kinesis, times(5)).describeStream(STREAM_NAME);
+        verify(kinesis, times(1)).createStream(anyString(), anyInt());
+    }
+
+    @Test
+    public void threadInterruptedExitsLook() throws Exception {
+        when(kinesis.describeStream(STREAM_NAME))
+                .thenReturn(NOT_ACTIVE);
+
+        StreamCreateConfiguration create = new StreamCreateConfiguration()
+                .retryPeriod(Duration.milliseconds(100));
+
+        AtomicBoolean setup = new AtomicBoolean(false);
+        Thread thread = new Thread(() -> setup.set(create.setupStream(kinesis, STREAM_NAME))){
+            {
+                setDaemon(true);
+            }
+        };
+        thread.start();
+        thread.join(200);
+        thread.interrupt();
+
+        assertThat(setup.get()).isFalse();
+
+        verify(kinesis, never()).createStream(anyString(), anyInt());
     }
 
     @Test
