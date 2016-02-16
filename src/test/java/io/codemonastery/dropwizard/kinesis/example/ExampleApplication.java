@@ -38,6 +38,7 @@ public class ExampleApplication extends Application<ExampleConfiguration> {
                 })
                 .build(environment, kinesis, dynamodb, "example-consumer");
 
+        //this is just trash code to generate fake events and send them via the producer
         ScheduledExecutorService eventGeneratorService = environment.lifecycle()
                 .scheduledExecutorService("generate-fake-events")
                 .threads(1)
