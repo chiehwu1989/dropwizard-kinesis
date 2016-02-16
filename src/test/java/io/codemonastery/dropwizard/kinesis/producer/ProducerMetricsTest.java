@@ -3,8 +3,6 @@ package io.codemonastery.dropwizard.kinesis.producer;
 import com.codahale.metrics.MetricRegistry;
 import org.junit.Test;
 
-import java.util.Collections;
-
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class ProducerMetricsTest {
@@ -37,8 +35,8 @@ public class ProducerMetricsTest {
             }
             Thread.sleep(50);
         }
-        assertThat(metrics.highFailureMetrics())
-                .isEqualTo(Collections.singletonList("50.00% encode failure"));
+        assertThat(metrics.highFailureMetrics().size()).isEqualTo(1);
+        assertThat(metrics.highFailureMetrics().get(0)).contains("% encode failure");
     }
 
     @Test
@@ -53,8 +51,8 @@ public class ProducerMetricsTest {
             }
             Thread.sleep(50);
         }
-        assertThat(metrics.highFailureMetrics())
-                .isEqualTo(Collections.singletonList("50.00% partition key failure"));
+        assertThat(metrics.highFailureMetrics().size()).isEqualTo(1);
+        assertThat(metrics.highFailureMetrics().get(0)).contains("% partition key failure");
     }
 
     @Test
@@ -65,7 +63,7 @@ public class ProducerMetricsTest {
             metrics.sent(10-5, 5);
             Thread.sleep(50);
         }
-        assertThat(metrics.highFailureMetrics())
-                .isEqualTo(Collections.singletonList("50.00% send failure"));
+        assertThat(metrics.highFailureMetrics().size()).isEqualTo(1);
+        assertThat(metrics.highFailureMetrics().get(0)).contains("% send failure");
     }
 }
