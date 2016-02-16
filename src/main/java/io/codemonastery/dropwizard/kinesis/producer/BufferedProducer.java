@@ -75,8 +75,8 @@ public final class BufferedProducer<E> extends Producer<E> {
 
     @Override
     public void stop() throws Exception {
-        super.stop();
         synchronized (buffer){
+            super.stop();
             putRecords(buffer);
             buffer.clear();
         }
