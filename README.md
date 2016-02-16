@@ -74,3 +74,9 @@ consumer:
     streamName: test-stream
     initialPositionInStream: "TRIM_HORIZON"
 ```
+
+Works in Progress
+-----
+* Consumer failure rate healthchecks
+* Consumer/Producer failure rate threshold configuration
+* Present Async startup via futures
