@@ -9,7 +9,7 @@ Kinesis (+DynamoDB) configuration, metrics, health-checks and lifecycle manageme
 
 Configuration
 -----
-Configuration follows the dropwizard pattern that configuration classes are also factories for the classes they configure.
+Configuration follows the dropwizard pattern - configuration classes are also factories for the classes they configure.
 
 There are a few classes to configure, and some you'll need to implement, but before you do that you need to determine how you provide aws credentials to the aws clients!
 The client classes require an [AWSCredentialsProvider](https://github.com/aws/aws-sdk-java/blob/master/aws-java-sdk-core/src/main/java/com/amazonaws/auth/AWSCredentialsProvider.java), such as [DefaultAWSCredentialsProviderChain](https://github.com/aws/aws-sdk-java/blob/master/aws-java-sdk-core/src/main/java/com/amazonaws/auth/DefaultAWSCredentialsProviderChain.java).
