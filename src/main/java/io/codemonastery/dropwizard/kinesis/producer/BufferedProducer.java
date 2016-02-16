@@ -10,6 +10,7 @@ import io.codemonastery.dropwizard.kinesis.EventEncoder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.Closeable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -28,6 +29,7 @@ public class BufferedProducer<E> extends Producer<E> {
 
     private final ExecutorService deliveryExecutor;
     private final List<PutRecordsRequestEntry> buffer;
+    private final BufferedProducerMetrics metrics;
 
 
     public BufferedProducer(AmazonKinesis kinesis,
@@ -35,19 +37,23 @@ public class BufferedProducer<E> extends Producer<E> {
                             Function<E, String> partitionKeyFn,
                             EventEncoder<E> encoder,
                             int maxBufferSize,
-                            ScheduledExecutorService deliveryExecutor) {
+                            ScheduledExecutorService deliveryExecutor,
+                            BufferedProducerMetrics metrics) {
         super(partitionKeyFn, encoder);
 
         Preconditions.checkNotNull(kinesis, "kinesis cannot be null");
         Preconditions.checkArgument(!Strings.isNullOrEmpty(streamName), "must have a stream name");
         Preconditions.checkArgument(maxBufferSize > 0, "maxBufferSize must be positive");
         Preconditions.checkNotNull(deliveryExecutor, "must have a delivery executor");
+        Preconditions.checkNotNull(metrics, "metrics cannot be null");
+
 
 
         this.kinesis = kinesis;
         this.streamName = streamName;
         this.maxBufferSize = maxBufferSize;
         this.deliveryExecutor = deliveryExecutor;
+        this.metrics = metrics;
 
         this.buffer = new ArrayList<>(maxBufferSize);
     }
@@ -59,6 +65,7 @@ public class BufferedProducer<E> extends Producer<E> {
                 if (buffer.size() > 0) {
                     submitMe = new ArrayList<>(buffer);
                     buffer.clear();
+                    metrics.bufferRemove(submitMe.size());
                 }
             }
             if (submitMe != null && !submitMe.isEmpty()) {
@@ -77,10 +84,11 @@ public class BufferedProducer<E> extends Producer<E> {
             if (buffer.size() >= maxBufferSize) {
                 submitMe = new ArrayList<>(buffer);
                 buffer.clear();
-
+                metrics.bufferRemove(submitMe.size());
             }
             buffer.add(record);
         }
+        metrics.bufferPut(1);
         if (submitMe != null) {
             final List<PutRecordsRequestEntry> temp = submitMe;
             deliveryExecutor.submit(() -> putRecords(temp));
@@ -88,19 +96,23 @@ public class BufferedProducer<E> extends Producer<E> {
     }
 
     private void putRecords(List<PutRecordsRequestEntry> records) {
-        try {
+        int failedCount = records.size();
+        try(Closeable ignored = metrics.time()) {
             PutRecordsResult result = kinesis.putRecords(new PutRecordsRequest()
                     .withRecords(records)
                     .withStreamName(streamName));
+            failedCount = result.getFailedRecordCount();
             if (LOG.isDebugEnabled()) {
                 String message = String.format("Put %d records to stream %s, %d failed",
                         result.getRecords().size(),
                         streamName,
-                        Optional.ofNullable(result.getFailedRecordCount()).orElse(0));
+                        failedCount);
                 LOG.debug(message);
             }
         } catch (Exception e) {
             LOG.error("Unexpected error while putting records", e);
+        }finally {
+            metrics.sent(records.size(), failedCount);
         }
     }
 }

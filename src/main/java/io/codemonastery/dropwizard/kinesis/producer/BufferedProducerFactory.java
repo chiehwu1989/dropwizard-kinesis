@@ -63,7 +63,8 @@ public class BufferedProducerFactory<E> extends AbstractProducerFactory<E> {
                 .scheduledExecutorService(name + "-delivery-executor")
                 .threads(2).build();
 
-        BufferedProducer<E> producer = new BufferedProducer<>(kinesis, getStreamName(), partitionKeyFn, encoder, maxBufferSize, deliveryExecutor);
+        BufferedProducerMetrics producerMetrics = new BufferedProducerMetrics(metrics, name);
+        BufferedProducer<E> producer = new BufferedProducer<>(kinesis, getStreamName(), partitionKeyFn, encoder, maxBufferSize, deliveryExecutor, producerMetrics);
 
         deliveryExecutor.scheduleAtFixedRate(producer::flush,
                 flushPeriod.toMilliseconds(),
