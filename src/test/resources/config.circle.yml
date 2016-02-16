@@ -1,0 +1,11 @@
+kinesis:
+  region: US_WEST_2
+
+dynamoDb:
+  region: US_WEST_2
+
+producer:
+  streamName: test-circle
+
+consumer:
+  streamName: test-circle

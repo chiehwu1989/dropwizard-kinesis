@@ -4,7 +4,9 @@ import com.amazonaws.ClientConfiguration;
 import com.amazonaws.DnsResolver;
 import com.amazonaws.retry.RetryPolicy;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
+import javax.ws.rs.DefaultValue;
 import java.security.SecureRandom;
 
 public class JacksonClientConfiguration extends ClientConfiguration {
@@ -14,6 +16,22 @@ public class JacksonClientConfiguration extends ClientConfiguration {
 
     public JacksonClientConfiguration(ClientConfiguration other) {
         super(other);
+    }
+
+    @JsonProperty
+    @Override
+    public int getMaxErrorRetry() {
+        return super.getMaxErrorRetry();
+    }
+
+
+    @JsonProperty
+    @Override
+    public void setMaxErrorRetry(int maxErrorRetry) {
+        if(maxErrorRetry < 0){
+            maxErrorRetry = 0;
+        }
+        super.setMaxErrorRetry(maxErrorRetry);
     }
 
     @JsonIgnore

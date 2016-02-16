@@ -6,6 +6,7 @@ import com.amazonaws.services.kinesis.clientlibrary.lib.worker.SimpleWorker;
 import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.health.HealthCheckRegistry;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Preconditions;
 import io.codemonastery.dropwizard.kinesis.EventDecoder;
 import io.codemonastery.dropwizard.kinesis.EventObjectMapper;
@@ -22,8 +23,9 @@ public class ConsumerFactory<E> extends KinesisClientLibConfig {
 
     private static final Logger LOG = LoggerFactory.getLogger(ConsumerFactory.class);
 
-    private EventDecoder<E> decoder;
+    private ConsumerFactory<E> decoderInheritParent = null;
 
+    private EventDecoder<E> decoder;
     private Supplier<EventConsumer<E>> eventConsumerFactory;
 
     @JsonIgnore
@@ -44,13 +46,8 @@ public class ConsumerFactory<E> extends KinesisClientLibConfig {
                               AmazonDynamoDB dynamoDb,
                               String name) {
         if (environment != null && decoder == null) {
-            try {
-                //noinspection unchecked
-                Class<E> eventClass = inferEventClass();
-                decoder = new EventObjectMapper<>(environment.getObjectMapper(), eventClass);
-            } catch (Exception e) {
-                LOG.error("Tried to infer event class to make default decoder, but failed", e);
-            }
+            //noinspection unchecked
+            this.decoder = inferDecoder(environment.getObjectMapper());
         }
         if (eventConsumerFactory == null) {
             eventConsumerFactory = () -> event -> {
@@ -69,6 +66,11 @@ public class ConsumerFactory<E> extends KinesisClientLibConfig {
                 dynamoDb,
                 name
         );
+    }
+
+    public ConsumerFactory<E> inheritDecoder(ConsumerFactory<E> other) {
+        decoderInheritParent = other;
+        return this;
     }
 
     @JsonIgnore
@@ -118,8 +120,22 @@ public class ConsumerFactory<E> extends KinesisClientLibConfig {
         return worker;
     }
 
-    Class inferEventClass() {
-        return (Class) ((ParameterizedType)getClass().getGenericSuperclass())
-                .getActualTypeArguments()[0];
+    EventObjectMapper<E> inferDecoder(ObjectMapper objectMapper) {
+        EventObjectMapper<E> decoder = null;
+        Class eventClass = null;
+        try {
+            eventClass =  (Class) ((ParameterizedType) getClass().getGenericSuperclass())
+                    .getActualTypeArguments()[0];
+        } catch (Exception e) {
+            LOG.error("Tried to infer event class to make default decoder, but failed", e);
+        }
+        if (eventClass != null) {
+            //noinspection unchecked
+            decoder = new EventObjectMapper<>(objectMapper, eventClass);
+        }else if(decoderInheritParent != null){
+            decoder = decoderInheritParent.inferDecoder(objectMapper);
+        }
+        return decoder;
     }
+
 }

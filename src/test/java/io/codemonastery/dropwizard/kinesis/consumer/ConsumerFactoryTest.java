@@ -2,9 +2,11 @@ package io.codemonastery.dropwizard.kinesis.consumer;
 
 import com.amazonaws.services.kinesis.clientlibrary.lib.worker.InitialPositionInStream;
 import com.amazonaws.util.StringInputStream;
+import com.amazonaws.util.json.Jackson;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.codemonastery.dropwizard.kinesis.ConfigurationFactories;
 import io.codemonastery.dropwizard.kinesis.Event;
+import io.codemonastery.dropwizard.kinesis.EventObjectMapper;
 import io.dropwizard.Configuration;
 import io.dropwizard.configuration.ConfigurationFactory;
 import org.junit.Test;
@@ -27,8 +29,8 @@ public class ConsumerFactoryTest {
 
     @Test
     public void inferClassUsingAnonymousClass() throws Exception {
-        assertThat(new ConsumerFactory<Event>(){}.inferEventClass())
-        .isSameAs(Event.class);
+        EventObjectMapper<Event> eventObjectMapper = new ConsumerFactory<Event>(){}.inferDecoder(Jackson.getObjectMapper());
+        assertThat(eventObjectMapper).isNotNull();
     }
 
     @Test

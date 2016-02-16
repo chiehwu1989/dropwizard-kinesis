@@ -43,9 +43,9 @@ Event Encoder/Decoder
 -----
 By default the producer/consumer will try to encode/decode events to/from json using Jackson [ObjectMapper](https://github.com/FasterXML/jackson-databind/blob/master/src/main/java/com/fasterxml/jackson/databind/ObjectMapper.java), but only because that is a dependency of dropwizard-core. Naturally you'll want to use some other technique. For an example take a look at [EventObjectMapper](src/main/java/io/codemonastery/dropwizard/kinesis/EventObjectMapper.java).
 
-There is one serious gotcha with the default EventDecoder: the EventDecoder cannot infer how to decode objects unless the ConsumerFactory field was a anonymous subclass with the correct type information. Example:
+There is one serious gotcha with the default EventDecoder: the EventDecoder cannot infer how to decode objects unless the ConsumerFactory field was a anonymous subclass with the correct type information. Moreover, you should make sure any new consumer factories inherit default decoding from the previous consumer factory. Example:
 ``` java
-    //the anonymous subclass here allows us to infer json parsing for the Event class
+    // the anonymous subclass here allows us to infer json parsing for the Event class
     @Valid
     @NotNull
     private ConsumerFactory<Event> consumer = new ConsumerFactory<Event>(){}; // <= note the {}
@@ -57,6 +57,11 @@ There is one serious gotcha with the default EventDecoder: the EventDecoder cann
 
     @JsonProperty
     public void setConsumer(ConsumerFactory<Event> consumer) {
+        // because dropwizard configuration will possibly replace our anonmymous consumer
+        // we need to inform new consumer to inheritc decoder if necessary
+        if(consumer != null){
+            consumer.inheritDecoder(this.consumer);
+        }
         this.consumer = consumer;
     }
 ```

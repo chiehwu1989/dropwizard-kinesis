@@ -5,9 +5,7 @@ import io.codemonastery.dropwizard.kinesis.DynamoDbFactory;
 import io.codemonastery.dropwizard.kinesis.KinesisFactory;
 import io.codemonastery.dropwizard.kinesis.consumer.ConsumerFactory;
 import io.codemonastery.dropwizard.kinesis.producer.BufferedProducerFactory;
-import io.codemonastery.dropwizard.kinesis.rule.KinesisClientRule;
 import io.dropwizard.Configuration;
-import io.dropwizard.util.Duration;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
@@ -29,15 +27,6 @@ public class CircleConfiguration extends Configuration {
     @Valid
     @NotNull
     private ConsumerFactory<String> consumer = new ConsumerFactory<String>(){};
-
-    public CircleConfiguration() {
-        kinesis.setRegion(KinesisClientRule.TEST_REGIONS);
-        dynamoDb.setRegion(KinesisClientRule.TEST_REGIONS);
-        producer.setStreamName("test-circle");
-        producer.setFlushPeriod(Duration.seconds(1));
-
-        consumer.setStreamName("test-circle");
-    }
 
     @JsonProperty
     public KinesisFactory getKinesis() {
@@ -76,6 +65,9 @@ public class CircleConfiguration extends Configuration {
 
     @JsonProperty
     public void setConsumer(ConsumerFactory<String> consumer) {
+        if(consumer != null){
+            consumer.inheritDecoder(this.consumer);
+        }
         this.consumer = consumer;
     }
 }

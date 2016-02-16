@@ -68,6 +68,9 @@ public class ExampleConfiguration extends Configuration {
 
     @JsonProperty
     public void setConsumer(ConsumerFactory<Event> consumer) {
+        if(consumer != null){
+            consumer.inheritDecoder(this.consumer);
+        }
         this.consumer = consumer;
     }
 }
