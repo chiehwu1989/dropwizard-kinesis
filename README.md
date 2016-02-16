@@ -22,7 +22,7 @@ After configuring you credentials you can then configure aws kinesis/dynamodb cl
 * Producers are easy to configure via the [ProducerFactory](src/main/java/io/codemonastery/dropwizard/kinesis/producer/ProducerFactory.java). There are two types of producers: simple and buffered. By default you'll get buffered. You'll also need to determine how to encode your events... see below.
 * Consumers are more difficult to configure, as you'll need both kinesis and dynamodb clients and will need to implement event decoding and event processing. By default [ConsumerFactory](src/main/java/io/codemonastery/dropwizard/kinesis/consumer/ConsumerFactory.java) will just print out records. Moreover, if you do special anonymous subclass trick, it will use [ObjectMapper](https://github.com/FasterXML/jackson-databind/blob/master/src/main/java/com/fasterxml/jackson/databind/ObjectMapper.java).
  
-An example of minimal configuration for both producer and consumer:
+An example minimal configuration for an application with both a producer and consumer:
 ``` yaml
 producer:
     streamName: test-stream
@@ -32,7 +32,7 @@ consumer:
 
 ```
 
-Corresponding application configuration class:
+For complete configuration see [wiki/Complete-Configuration]Corresponding application configuration class:
 ``` java
 public class ReadmeConfiguration extends Configuration {
 
@@ -94,86 +94,4 @@ public class ReadmeConfiguration extends Configuration {
         this.consumer = consumer;
     }
 }
-```
-
-Complete Configuration example:
-``` yaml
-kinesis:
-  region: "US_WEST_2"
-  client:
-    userAgent: "aws-sdk-java/1.10.52 Mac_OS_X/10.10.5 Java_HotSpot(TM)_64-Bit_Server_VM/25.45-b02/1.8.0_45"
-    maxErrorRetry: -1
-    localAddress: null
-    protocol: "HTTPS"
-    proxyHost: null
-    proxyPort: -1
-    proxyUsername: null
-    proxyPassword: null
-    proxyDomain: null
-    proxyWorkstation: null
-    preemptiveBasicProxyAuth: false
-    maxConnections: 50
-    socketTimeout: 50000
-    connectionTimeout: 50000
-    requestTimeout: 0
-    clientExecutionTimeout: 0
-    signerOverride: null
-    connectionTTL: -1
-    connectionMaxIdleMillis: 60000
-    responseMetadataCacheSize: 50
-    useExpectContinue: true
-    apacheHttpClientConfig:
-      sslSocketFactory: null
-    socketBufferSizeHints:
-    - 0
-    
-dynamoDb:
-  region: "US_WEST_2"
-  client:
-    userAgent: "aws-sdk-java/1.10.52 Mac_OS_X/10.10.5 Java_HotSpot(TM)_64-Bit_Server_VM/25.45-b02/1.8.0_45"
-    maxErrorRetry: -1
-    localAddress: null
-    protocol: "HTTPS"
-    proxyHost: null
-    proxyPort: -1
-    proxyUsername: null
-    proxyPassword: null
-    proxyDomain: null
-    proxyWorkstation: null
-    preemptiveBasicProxyAuth: false
-    maxConnections: 50
-    socketTimeout: 50000
-    connectionTimeout: 50000
-    requestTimeout: 0
-    clientExecutionTimeout: 0
-    signerOverride: null
-    connectionTTL: -1
-    connectionMaxIdleMillis: 60000
-    responseMetadataCacheSize: 50
-    useExpectContinue: true
-    apacheHttpClientConfig:
-      sslSocketFactory: null
-    
-producer:
-  type: buffered
-  streamName: "test-stream"
-  create: null
-  maxBufferSize: 1000
-  flushPeriod: "10 seconds"
-  
-consumer:
-  streamName: "test-stream"
-  create: null
-  applicationName: null
-  workerId: null
-  initialPositionInStream: "LATEST"
-  failOverTime: "10000 milliseconds"
-  maxRecords: 10000
-  idleTimeBetweenReads: "1000 milliseconds"
-  callIfEmpty: false
-  parentShardPollInterval: "10000 milliseconds"
-  shardSyncInterval: "60000 milliseconds"
-  cleanupLeasesOnShardCompletion: true
-  taskBackoffTime: "500 milliseconds"
-  validateSequenceNumberBeforeCheckpoint: true
 ```
