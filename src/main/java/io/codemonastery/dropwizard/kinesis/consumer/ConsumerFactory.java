@@ -6,7 +6,7 @@ import com.amazonaws.services.kinesis.clientlibrary.lib.worker.SimpleWorker;
 import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.health.HealthCheckRegistry;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.core.type.TypeReference;
+import com.google.common.base.Preconditions;
 import io.codemonastery.dropwizard.kinesis.EventDecoder;
 import io.codemonastery.dropwizard.kinesis.EventObjectMapper;
 import io.dropwizard.lifecycle.setup.LifecycleEnvironment;
@@ -53,11 +53,16 @@ public class ConsumerFactory<E> extends KinesisClientLibConfig {
             }
         }
         if (eventConsumerFactory == null) {
-            eventConsumerFactory = () -> event -> {
-                if (event != null) {
-                    LOG.info("Consumed event on " + name + ": " + event.toString());
+            eventConsumerFactory = new Supplier<EventConsumer<E>>() {
+                @Override
+                public EventConsumer<E> get() {
+                    return event -> {
+                        if (event != null) {
+                            LOG.info("Consumed event on " + name + ": " + event.toString());
+                        }
+                        return true;
+                    };
                 }
-                return true;
             };
         }
 
@@ -78,10 +83,18 @@ public class ConsumerFactory<E> extends KinesisClientLibConfig {
                               AmazonKinesis kinesisClient,
                               AmazonDynamoDB dynamoDBClient,
                               String name) {
+        Preconditions.checkNotNull(decoder, "decoder cannot be null");
+        Preconditions.checkNotNull(eventConsumerFactory, "eventConsumerFactory cannot be null");
+
         super.setupStream(kinesisClient);
 
+        RecordProcessorMetrics processorMetrics = new RecordProcessorMetrics(metrics, name);
+        RecordProcessorFactory<E> recordProcessorFactory = new RecordProcessorFactory<>(
+                decoder,
+                eventConsumerFactory,
+                processorMetrics);
         SimpleWorker.Builder builder = new SimpleWorker.Builder()
-                .recordProcessorFactory(() -> new RecordProcessor<>(decoder, eventConsumerFactory.get()))
+                .recordProcessorFactory(recordProcessorFactory)
                 .config(makeKinesisClientLibConfiguration(name))
                 .kinesisClient(kinesisClient)
                 .dynamoDBClient(dynamoDBClient);

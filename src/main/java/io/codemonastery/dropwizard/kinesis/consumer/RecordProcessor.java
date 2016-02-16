@@ -11,23 +11,28 @@ import io.codemonastery.dropwizard.kinesis.EventDecoder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.Closeable;
+
 public final class RecordProcessor<E> implements IRecordProcessor {
 
     private static final Logger LOG = LoggerFactory.getLogger(RecordProcessor.class);
 
     private final EventDecoder<E> decoder;
     private final EventConsumer<E> processor;
+    private final RecordProcessorMetrics metrics;
 
-    public RecordProcessor(EventDecoder<E> decoder, EventConsumer<E> processor) {
+    public RecordProcessor(EventDecoder<E> decoder, EventConsumer<E> processor, RecordProcessorMetrics metrics) {
         Preconditions.checkNotNull(decoder, "decoder cannot be null");
         Preconditions.checkNotNull(processor, "processor cannot be null");
+        Preconditions.checkNotNull(metrics, "metrics cannot be null");
         this.decoder = decoder;
         this.processor = processor;
+        this.metrics = metrics;
     }
 
     @Override
     public void initialize(InitializationInput initializationInput) {
-
+        metrics.processorStarted();
     }
 
     @Override
@@ -40,6 +45,7 @@ public final class RecordProcessor<E> implements IRecordProcessor {
                 event = decoder.decode(record.getData());
             }catch (Exception e){
                 //unhandled exception, this record does not count as processed
+                metrics.decodeFailure();
                 LOG.error("Unexpected exception decoding event", e);
                 break;
             }
@@ -49,15 +55,18 @@ public final class RecordProcessor<E> implements IRecordProcessor {
                 lastRecordProcessed = record;
             }else {
                 boolean processed = false;
-                try {
+                try(AutoCloseable ignored = metrics.processTime()) {
                     processed = processor.consume(event);
                 } catch (Exception e) {
+                    metrics.unhandledException();
                     //processor did not catch exception, we have to stop here
                     LOG.error("Unhandled exception processing event" + event, e);
                 }
                 if(processed){
+                    metrics.success();
                     lastRecordProcessed = record;
                 }else{
+                    metrics.failure();
                     break;
                 }
             }
@@ -78,6 +87,6 @@ public final class RecordProcessor<E> implements IRecordProcessor {
 
     @Override
     public void shutdown(ShutdownInput shutdownInput) {
-
+        metrics.processorShutdown();
     }
 }
