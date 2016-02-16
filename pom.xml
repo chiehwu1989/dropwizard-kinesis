@@ -7,7 +7,7 @@
 
     <groupId>io.codemonastery</groupId>
     <artifactId>dropwizard-kinesis</artifactId>
-    <version>0.0.5-SNAPSHOT</version>
+    <version>0.0.4-SNAPSHOT</version>
     <packaging>jar</packaging>
     <name>dropwizard-kinesis</name>
 
