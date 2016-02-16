@@ -37,18 +37,18 @@ For all configurations see [Complete-Configuration](/../../wiki/Complete-Configu
 Event Consumer
 -----
 To meaningfully consume events you'll need to implement [EventConsumer](src/main/java/io/codemonastery/dropwizard/kinesis/consumer/EventConsumer.java) and a [Supplier](https://docs.oracle.com/javase/8/docs/api/java/util/function/Supplier.html) for that consumer.
-Whenever a even is successfully consumed the EventConsumer should return null. In the event that an event was not successfully consumed, return false. The event will be consumed later, and hopefully next time it will be successful.
+Whenever a event is successfully consumed the EventConsumer should return true. In the event that an event was not successfully consumed, return false. The event will be consumed later, and hopefully next time it will be successful.
 
 Event Encoder/Decoder
 -----
-By default the producer/consumer will try to encode/decode events into/from json using Jackson [ObjectMapper](https://github.com/FasterXML/jackson-databind/blob/master/src/main/java/com/fasterxml/jackson/databind/ObjectMapper.java), but only because that is a dependency of dropwizard-core. Naturally you'll want to use some other encoder/decoder. For an example take a look at [EventObjectMapper](src/main/java/io/codemonastery/dropwizard/kinesis/EventObjectMapper.java).
+By default the producer/consumer will try to encode/decode events to/from json using Jackson [ObjectMapper](https://github.com/FasterXML/jackson-databind/blob/master/src/main/java/com/fasterxml/jackson/databind/ObjectMapper.java), but only because that is a dependency of dropwizard-core. Naturally you'll want to use some other technique. For an example take a look at [EventObjectMapper](src/main/java/io/codemonastery/dropwizard/kinesis/EventObjectMapper.java).
 
-There is one serious gotcha: the EventDecoder cannot infer how to decode objects unless the ConsumerFactory field was a anonymous subclass with the correct type information. Example:
+There is one serious gotcha with the default EventDecoder: the EventDecoder cannot infer how to decode objects unless the ConsumerFactory field was a anonymous subclass with the correct type information. Example:
 ``` java
     //the anonymous subclass here allows us to infer json parsing for the Event class
     @Valid
     @NotNull
-    private ConsumerFactory<Event> consumer = new ConsumerFactory<Event>(){}; // <= node the {} to make an anonymous subclass
+    private ConsumerFactory<Event> consumer = new ConsumerFactory<Event>(){}; // <= note the {}
     
     @JsonProperty
     public ConsumerFactory<Event> getConsumer() {
@@ -61,3 +61,11 @@ There is one serious gotcha: the EventDecoder cannot infer how to decode objects
     }
 ```
 
+Latest vs Trim Horizon
+-----
+There are many configurations to pay attention to, but perhaps the most important consumer configuration is initialPositionInStream, which needs to either be "TRIM_HORIZON" or "LATEST". When a consumer is created for the very first time, identified by the applicationName configuration, the consumer will decide where in the stream to start reading from based on initialPositionInStream. LATEST will cause a consumer to start immediately after the latest published record, while TRIM_HORIZON will cause a consumer to start reading from the oldest record still in kinesis. Example configuration. 
+``` yaml
+consumer:
+    streamName: test-stream
+    initialPositionInStream: "TRIM_HORIZON"
+```
