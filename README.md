@@ -34,7 +34,7 @@ consumer:
 
 For all configurations see [Complete-Configuration](/../../wiki/Complete-Configuration) or see class [ExampleConfiguration](src/test/java/io/codemonastery/dropwizard/kinesis/example/ExampleConfiguration.java). To see how the configuration could be used to create producers and consumers, look at [ExampleApplication](src/test/java/io/codemonastery/dropwizard/kinesis/example/ExampleApplication.java).
 
-Event Consumer (Factory)
+Event Consumer
 -----
 To meaningfully consume events you'll need to implement [EventConsumer](src/main/java/io/codemonastery/dropwizard/kinesis/consumer/EventConsumer.java) and a [Supplier](https://docs.oracle.com/javase/8/docs/api/java/util/function/Supplier.html) for that consumer.
 Whenever a even is successfully consumed the EventConsumer should return null. In the event that an event was not successfully consumed, return false. The event will be consumed later, and hopefully next time it will be successful.
