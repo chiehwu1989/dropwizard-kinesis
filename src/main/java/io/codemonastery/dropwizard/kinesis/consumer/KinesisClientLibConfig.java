@@ -1,19 +1,19 @@
 package io.codemonastery.dropwizard.kinesis.consumer;
 
+import com.amazonaws.ClientConfiguration;
 import com.amazonaws.services.kinesis.clientlibrary.lib.worker.InitialPositionInStream;
 import com.amazonaws.services.kinesis.clientlibrary.lib.worker.KinesisClientLibConfiguration;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.Optional;
 import io.codemonastery.dropwizard.kinesis.StreamConfiguration;
 import io.dropwizard.util.Duration;
-import org.hibernate.validator.constraints.NotEmpty;
 
 import javax.validation.Valid;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 
 import static com.amazonaws.services.kinesis.clientlibrary.lib.worker.KinesisClientLibConfiguration.*;
-import static com.amazonaws.services.kinesis.clientlibrary.lib.worker.KinesisClientLibConfiguration.DEFAULT_VALIDATE_SEQUENCE_NUMBER_BEFORE_CHECKPOINTING;
+
 
 public class KinesisClientLibConfig extends StreamConfiguration {
 
@@ -175,6 +175,7 @@ public class KinesisClientLibConfig extends StreamConfiguration {
     }
 
     KinesisClientLibConfiguration makeKinesisClientLibConfiguration(String name) {
+        ClientConfiguration unusedConfig = new ClientConfiguration();
         //noinspection ConstantConditions
         return new KinesisClientLibConfiguration(
                 Optional.fromNullable(applicationName).or(name),
@@ -192,9 +193,9 @@ public class KinesisClientLibConfig extends StreamConfiguration {
                 parentShardPollInterval.toMilliseconds(),
                 shardSyncInterval.toMilliseconds(),
                 cleanupLeasesOnShardCompletion,
-                null,
-                null,
-                null,
+                unusedConfig,
+                unusedConfig,
+                unusedConfig,
                 taskBackoffTime.toMilliseconds(),
                 DEFAULT_METRICS_BUFFER_TIME_MILLIS,
                 DEFAULT_METRICS_MAX_QUEUE_SIZE,
