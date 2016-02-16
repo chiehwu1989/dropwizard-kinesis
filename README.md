@@ -126,7 +126,7 @@ kinesis:
       sslSocketFactory: null
     socketBufferSizeHints:
     - 0
-    - 0
+    
 dynamoDb:
   region: "US_WEST_2"
   client:
@@ -153,9 +153,6 @@ dynamoDb:
     useExpectContinue: true
     apacheHttpClientConfig:
       sslSocketFactory: null
-    socketBufferSizeHints:
-    - 0
-    - 0
     
 producer:
   type: buffered

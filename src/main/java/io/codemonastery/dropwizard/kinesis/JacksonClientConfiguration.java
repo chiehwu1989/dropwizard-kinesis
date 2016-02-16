@@ -63,4 +63,22 @@ public class JacksonClientConfiguration extends ClientConfiguration {
     public ClientConfiguration withDnsResolver(DnsResolver resolver) {
         return super.withDnsResolver(resolver);
     }
+
+    @JsonIgnore
+    @Override
+    public int[] getSocketBufferSizeHints() {
+        return super.getSocketBufferSizeHints();
+    }
+
+    @JsonIgnore
+    @Override
+    public void setSocketBufferSizeHints(int socketSendBufferSizeHint, int socketReceiveBufferSizeHint) {
+        super.setSocketBufferSizeHints(socketSendBufferSizeHint, socketReceiveBufferSizeHint);
+    }
+
+    @JsonIgnore
+    @Override
+    public ClientConfiguration withSocketBufferSizeHints(int socketSendBufferSizeHint, int socketReceiveBufferSizeHint) {
+        return super.withSocketBufferSizeHints(socketSendBufferSizeHint, socketReceiveBufferSizeHint);
+    }
 }
