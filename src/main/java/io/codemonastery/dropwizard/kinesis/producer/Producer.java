@@ -37,6 +37,7 @@ public abstract class Producer<E> {
         byte[] bytes = null;
         try {
             bytes = encoder.encode(event);
+            metrics.encoded();
         } catch (Exception e) {
             metrics.encodeFailed();
             LOG.error("could not encode event " + event.toString());
@@ -46,7 +47,7 @@ public abstract class Producer<E> {
         try{
             partitionKey = partitionKeyFn.apply(event);
         }catch (Exception e){
-            metrics.partitionkeyFailed();
+            metrics.partitionKeyFailed();
             LOG.error("Unexpected exception while calculating partition key for event " + event.toString(), e);
         }
         if(partitionKey == null){

@@ -108,7 +108,7 @@ public final class BufferedProducer<E> extends Producer<E> {
         } catch (Exception e) {
             LOG.error("Unexpected error while putting records", e);
         }finally {
-            metrics.sent(records.size(), failedCount);
+            metrics.sent(records.size()-failedCount, failedCount);
         }
     }
 }

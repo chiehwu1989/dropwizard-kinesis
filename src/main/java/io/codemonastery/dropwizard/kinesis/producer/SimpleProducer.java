@@ -49,7 +49,7 @@ public final class SimpleProducer<E> extends Producer<E> {
                 LOG.debug(message);
             }
         }finally {
-            metrics.sent(1, failedCount);
+            metrics.sent(1-failedCount, failedCount);
         }
     }
 }
