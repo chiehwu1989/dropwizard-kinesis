@@ -24,15 +24,6 @@ public class SimpleProducerFactoryTest {
     }
 
     @Test
-    public void usesSimpleByDefault() throws Exception {
-        ConfigurationFactory<FakeConfiguration> configurationFactory = ConfigurationFactories.make(FakeConfiguration.class);
-        FakeConfiguration configuration = configurationFactory.build((s) -> new StringInputStream("producer:\n  streamName: xyz"), "");
-        assertThat(configuration).isNotNull();
-        assertThat(configuration.producer).isInstanceOf(SimpleProducerFactory.class);
-        assertThat(configuration.producer.getStreamName()).isEqualTo("xyz");
-    }
-
-    @Test
     public void usesSimpleWhenSpecified() throws Exception {
         ConfigurationFactory<FakeConfiguration> configurationFactory = ConfigurationFactories.make(FakeConfiguration.class);
         FakeConfiguration configuration = configurationFactory.build((s) -> new StringInputStream("producer:\n  type: simple\n  streamName: xyz"), "");

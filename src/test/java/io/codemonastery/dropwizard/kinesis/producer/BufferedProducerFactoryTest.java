@@ -24,6 +24,15 @@ public class BufferedProducerFactoryTest {
     }
 
     @Test
+    public void usesBufferedByDefault() throws Exception {
+        ConfigurationFactory<FakeConfiguration> configurationFactory = ConfigurationFactories.make(FakeConfiguration.class);
+        FakeConfiguration configuration = configurationFactory.build((s) -> new StringInputStream("producer:\n  streamName: xyz"), "");
+        assertThat(configuration).isNotNull();
+        assertThat(configuration.producer).isInstanceOf(BufferedProducerFactory.class);
+        assertThat(configuration.producer.getStreamName()).isEqualTo("xyz");
+    }
+
+    @Test
     public void canConfigure() throws Exception {
         ConfigurationFactory<FakeConfiguration> configurationFactory = ConfigurationFactories.make(FakeConfiguration.class);
         FakeConfiguration configuration = configurationFactory.build((s) -> new StringInputStream("producer:\n  type: buffered\n  streamName: xyz"), "");
