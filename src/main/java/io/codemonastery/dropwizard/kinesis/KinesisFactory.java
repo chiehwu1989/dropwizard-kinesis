@@ -43,7 +43,7 @@ public class KinesisFactory {
     }
 
     @JsonIgnore
-    public KinesisFactory metricsProxy(ClientMetricsProxyFactory metricsProxy) {
+    public KinesisFactory metricsProxy(ClientMetricsProxyFactory<AmazonKinesis> metricsProxy) {
         this.metricsProxy = metricsProxy;
         return this;
     }
