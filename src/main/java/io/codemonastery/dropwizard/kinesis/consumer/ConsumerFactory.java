@@ -53,16 +53,11 @@ public class ConsumerFactory<E> extends KinesisClientLibConfig {
             }
         }
         if (eventConsumerFactory == null) {
-            eventConsumerFactory = new Supplier<EventConsumer<E>>() {
-                @Override
-                public EventConsumer<E> get() {
-                    return event -> {
-                        if (event != null) {
-                            LOG.info("Consumed event on " + name + ": " + event.toString());
-                        }
-                        return true;
-                    };
+            eventConsumerFactory = () -> event -> {
+                if (event != null) {
+                    LOG.info("Consumed event on " + name + ": " + event.toString());
                 }
+                return true;
             };
         }
 
