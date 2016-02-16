@@ -10,6 +10,7 @@ import io.dropwizard.lifecycle.setup.LifecycleEnvironment;
 import io.dropwizard.util.Duration;
 
 import javax.validation.Valid;
+import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 import java.util.concurrent.Executors;
@@ -22,7 +23,8 @@ public class BufferedProducerFactory<E> extends AbstractProducerFactory<E> {
     private int deliveryThreadCount = 10;
 
     @Min(1)
-    private int maxBufferSize = 1000;
+    @Max(500)
+    private int maxBufferSize = 100;
 
     @Valid
     @NotNull
