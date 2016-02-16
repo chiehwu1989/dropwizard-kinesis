@@ -5,7 +5,7 @@ Dropwizard Kinesis
 [![Build Status](https://travis-ci.org/code-monastery/dropwizard-kinesis.svg?branch=master)](https://travis-ci.org/code-monastery/dropwizard-kinesis)
 [![Maven Central](https://maven-badges.herokuapp.com/maven-central/io.codemonastery/dropwizard-kinesis/badge.svg)](https://maven-badges.herokuapp.com/maven-central/io.codemonastery/dropwizard-kinesis)
 
-Kinesis (+DynamoDB) configuration, metrics, health-checks and lifecycle management integrated with dropwizard, focused on common use cases. Inspired by dropwizard-core and [dropwizard-extra](//github.com/datasift/dropwizard-extra), depends on [Amazon Kinesis Client Library](https://github.com/awslabs/amazon-kinesis-client).
+Kinesis (+DynamoDB) configuration, metrics, health-checks and lifecycle management integrated with dropwizard, focused on common use cases. Inspired by [dropwizard-core](https://github.com/dropwizard/dropwizard/tree/master/dropwizard-core) and [dropwizard-extra](//github.com/datasift/dropwizard-extra), depends on [Amazon Kinesis Client Library](https://github.com/awslabs/amazon-kinesis-client).
 
 Configuration
 -----
@@ -94,4 +94,89 @@ public class ReadmeConfiguration extends Configuration {
         this.consumer = consumer;
     }
 }
+```
+
+Complete Configuration example:
+``` yaml
+kinesis:
+  region: "US_WEST_2"
+  client:
+    userAgent: "aws-sdk-java/1.10.52 Mac_OS_X/10.10.5 Java_HotSpot(TM)_64-Bit_Server_VM/25.45-b02/1.8.0_45"
+    maxErrorRetry: -1
+    localAddress: null
+    protocol: "HTTPS"
+    proxyHost: null
+    proxyPort: -1
+    proxyUsername: null
+    proxyPassword: null
+    proxyDomain: null
+    proxyWorkstation: null
+    preemptiveBasicProxyAuth: false
+    maxConnections: 50
+    socketTimeout: 50000
+    connectionTimeout: 50000
+    requestTimeout: 0
+    clientExecutionTimeout: 0
+    signerOverride: null
+    connectionTTL: -1
+    connectionMaxIdleMillis: 60000
+    responseMetadataCacheSize: 50
+    useExpectContinue: true
+    apacheHttpClientConfig:
+      sslSocketFactory: null
+    socketBufferSizeHints:
+    - 0
+    - 0
+dynamoDb:
+  region: "US_WEST_2"
+  client:
+    userAgent: "aws-sdk-java/1.10.52 Mac_OS_X/10.10.5 Java_HotSpot(TM)_64-Bit_Server_VM/25.45-b02/1.8.0_45"
+    maxErrorRetry: -1
+    localAddress: null
+    protocol: "HTTPS"
+    proxyHost: null
+    proxyPort: -1
+    proxyUsername: null
+    proxyPassword: null
+    proxyDomain: null
+    proxyWorkstation: null
+    preemptiveBasicProxyAuth: false
+    maxConnections: 50
+    socketTimeout: 50000
+    connectionTimeout: 50000
+    requestTimeout: 0
+    clientExecutionTimeout: 0
+    signerOverride: null
+    connectionTTL: -1
+    connectionMaxIdleMillis: 60000
+    responseMetadataCacheSize: 50
+    useExpectContinue: true
+    apacheHttpClientConfig:
+      sslSocketFactory: null
+    socketBufferSizeHints:
+    - 0
+    - 0
+    
+producer:
+  type: buffered
+  streamName: "test-stream"
+  create: null
+  maxBufferSize: 1000
+  flushPeriod: "10 seconds"
+  
+consumer:
+  streamName: "test-stream"
+  create: null
+  applicationName: null
+  workerId: null
+  initialPositionInStream: "LATEST"
+  failOverTime: "10000 milliseconds"
+  maxRecords: 10000
+  idleTimeBetweenReads: "1000 milliseconds"
+  callIfEmpty: false
+  parentShardPollInterval: "10000 milliseconds"
+  shardSyncInterval: "60000 milliseconds"
+  cleanupLeasesOnShardCompletion: true
+  taskBackoffTime: "500 milliseconds"
+  validateSequenceNumberBeforeCheckpoint: true
 ```
