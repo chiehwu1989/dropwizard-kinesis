@@ -11,12 +11,12 @@ public class EventObjectMapperTest {
 
     @Test
     public void decodeEncode() throws Exception {
-        EventObjectMapper<FakeEvent> objectMapper = new EventObjectMapper<>(Jackson.newObjectMapper(), FakeEvent.class);
-        FakeEvent expected = new FakeEvent("a", "b", "c");
+        EventObjectMapper<Event> objectMapper = new EventObjectMapper<>(Jackson.newObjectMapper(), Event.class);
+        Event expected = new Event("a", "b", "c");
         byte[] bytes = objectMapper.encode(expected);
         assertThat(bytes).isNotNull();
         //noinspection ConstantConditions
-        FakeEvent actual = objectMapper.decode(ByteBuffer.wrap(bytes));
+        Event actual = objectMapper.decode(ByteBuffer.wrap(bytes));
         assertThat(actual).isEqualTo(expected);
     }
 

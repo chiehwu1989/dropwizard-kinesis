@@ -4,7 +4,7 @@ import com.amazonaws.services.kinesis.clientlibrary.lib.worker.InitialPositionIn
 import com.amazonaws.util.StringInputStream;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.codemonastery.dropwizard.kinesis.ConfigurationFactories;
-import io.codemonastery.dropwizard.kinesis.FakeEvent;
+import io.codemonastery.dropwizard.kinesis.Event;
 import io.dropwizard.Configuration;
 import io.dropwizard.configuration.ConfigurationFactory;
 import org.junit.Test;
@@ -27,8 +27,8 @@ public class ConsumerFactoryTest {
 
     @Test
     public void inferClassUsingAnonymousClass() throws Exception {
-        assertThat(new ConsumerFactory<FakeEvent>(){}.inferEventClass())
-        .isSameAs(FakeEvent.class);
+        assertThat(new ConsumerFactory<Event>(){}.inferEventClass())
+        .isSameAs(Event.class);
     }
 
     @Test

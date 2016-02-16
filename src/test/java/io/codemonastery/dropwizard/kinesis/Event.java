@@ -2,15 +2,15 @@ package io.codemonastery.dropwizard.kinesis;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-public class FakeEvent {
+public class Event {
 
     private final String id;
     private final String name;
     private final String info;
 
-    public FakeEvent(@JsonProperty("id") String id,
-                     @JsonProperty("name") String name,
-                     @JsonProperty("info") String info) {
+    public Event(@JsonProperty("id") String id,
+                 @JsonProperty("name") String name,
+                 @JsonProperty("info") String info) {
         this.id = id;
         this.name = name;
         this.info = info;
@@ -33,7 +33,7 @@ public class FakeEvent {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
 
-        FakeEvent event = (FakeEvent) o;
+        Event event = (Event) o;
 
         if (id != null ? !id.equals(event.id) : event.id != null) return false;
         if (name != null ? !name.equals(event.name) : event.name != null) return false;
