@@ -50,7 +50,7 @@ public final class RecordProcessor<E> implements IRecordProcessor {
             }else {
                 boolean processed = false;
                 try {
-                    processed = processor.process(event);
+                    processed = processor.consume(event);
                 } catch (Exception e) {
                     //processor did not catch exception, we have to stop here
                     LOG.error("Unhandled exception processing event" + event, e);

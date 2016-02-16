@@ -34,3 +34,30 @@ consumer:
 
 For all configurations see [Complete-Configuration](/../../wiki/Complete-Configuration) or see class [ExampleConfiguration](src/test/java/io/codemonastery/dropwizard/kinesis/example/ExampleConfiguration.java). To see how the configuration could be used to create producers and consumers, look at [ExampleApplication](src/test/java/io/codemonastery/dropwizard/kinesis/example/ExampleApplication.java).
 
+Event Consumer (Factory)
+-----
+To meaningfully consume events you'll need to implement [EventConsumer](src/main/java/io/codemonastery/dropwizard/kinesis/consumer/EventConsumer.java) and a [Supplier](https://docs.oracle.com/javase/8/docs/api/java/util/function/Supplier.html) for that consumer.
+Whenever a even is successfully consumed the EventConsumer should return null. In the event that an event was not successfully consumed, return false. The event will be consumed later, and hopefully next time it will be successful.
+
+Event Encoder/Decoder
+-----
+By default the producer/consumer will try to encode/decode events into/from json using Jackson [ObjectMapper](https://github.com/FasterXML/jackson-databind/blob/master/src/main/java/com/fasterxml/jackson/databind/ObjectMapper.java), but only because that is a dependency of dropwizard-core. Naturally you'll want to use some other encoder/decoder. For an example take a look at [EventObjectMapper](src/main/java/io/codemonastery/dropwizard/kinesis/EventObjectMapper.java).
+
+There is one serious gotcha: the EventDecoder cannot infer how to decode objects unless the ConsumerFactory field was a anonymous subclass with the correct type information. Example:
+``` java
+    //the anonymous subclass here allows us to infer json parsing for the Event class
+    @Valid
+    @NotNull
+    private ConsumerFactory<Event> consumer = new ConsumerFactory<Event>(){}; // <= node the {} to make an anonymous subclass
+    
+    @JsonProperty
+    public ConsumerFactory<Event> getConsumer() {
+        return consumer;
+    }
+
+    @JsonProperty
+    public void setConsumer(ConsumerFactory<Event> consumer) {
+        this.consumer = consumer;
+    }
+```
+

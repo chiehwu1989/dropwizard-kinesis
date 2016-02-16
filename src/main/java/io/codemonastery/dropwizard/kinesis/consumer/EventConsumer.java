@@ -9,5 +9,5 @@ public interface EventConsumer<E> {
      * @throws Exception you should handle your own exceptions and true/false appropriately,
      *  but we will assume false if you throw an exception
      */
-    boolean process(E event) throws Exception;
+    boolean consume(E event) throws Exception;
 }
