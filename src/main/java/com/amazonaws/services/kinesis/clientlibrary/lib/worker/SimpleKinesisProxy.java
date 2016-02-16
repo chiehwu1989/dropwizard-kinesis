@@ -13,8 +13,9 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
 
-/*
-Cleaner implementation of KinesisProxy which was throwing exceptions
+/**
+ * Simpler version of com.amazonaws.services.kinesis.clientlibrary.lib.worker.KinesisProxy
+ * Which does not try to decorate request with credentials
  */
 public final class SimpleKinesisProxy implements IKinesisProxyExtended {
 
@@ -45,9 +46,6 @@ public final class SimpleKinesisProxy implements IKinesisProxyExtended {
         this.maxDescribeStreamRetryAttempts = maxDescribeStreamRetryAttempts;
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     public GetRecordsResult get(String shardIterator, int maxRecords)
             throws ResourceNotFoundException, InvalidArgumentException, ExpiredIteratorException {
@@ -59,9 +57,6 @@ public final class SimpleKinesisProxy implements IKinesisProxyExtended {
 
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     public DescribeStreamResult getStreamInfo(String startShardId)
             throws ResourceNotFoundException, LimitExceededException {
@@ -98,9 +93,6 @@ public final class SimpleKinesisProxy implements IKinesisProxyExtended {
         return null;
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     public Shard getShard(String shardId) {
         if (this.listOfShardsSinceLastGet.get() == null) {
@@ -118,9 +110,6 @@ public final class SimpleKinesisProxy implements IKinesisProxyExtended {
         return null;
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     public List<Shard> getShardList() {
         List<Shard> result = new ArrayList<>();
@@ -147,9 +136,6 @@ public final class SimpleKinesisProxy implements IKinesisProxyExtended {
         return result;
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     public Set<String> getAllShardIds() throws ResourceNotFoundException {
         List<Shard> shards = getShardList();
@@ -166,9 +152,6 @@ public final class SimpleKinesisProxy implements IKinesisProxyExtended {
         }
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     public String getIterator(String shardId, String iteratorType, String sequenceNumber) {
         final GetShardIteratorRequest getShardIteratorRequest = new GetShardIteratorRequest();
@@ -180,9 +163,6 @@ public final class SimpleKinesisProxy implements IKinesisProxyExtended {
         return response.getShardIterator();
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     public PutRecordResult put(String exclusiveMinimumSequenceNumber,
                                String explicitHashKey,

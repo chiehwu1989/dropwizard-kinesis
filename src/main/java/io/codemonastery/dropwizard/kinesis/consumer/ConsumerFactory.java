@@ -137,5 +137,4 @@ public class ConsumerFactory<E> extends KinesisClientLibConfig {
         }
         return decoder;
     }
-
 }

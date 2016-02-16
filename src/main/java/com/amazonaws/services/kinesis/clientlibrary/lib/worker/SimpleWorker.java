@@ -25,6 +25,10 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.*;
 
+/**
+ * Simpler implementation of com.amazonaws.services.kinesis.clientlibrary.lib.worker.Worker
+ * that does not try to log to cloudwatch (yet).
+ */
 public final class SimpleWorker implements Runnable {
 
     private static final int MAX_INITIALIZATION_ATTEMPTS = 20;
