@@ -12,10 +12,14 @@ import io.dropwizard.util.Duration;
 import javax.validation.Valid;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
+import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 public class BufferedProducerFactory<E> extends AbstractProducerFactory<E> {
+
+    @Min(1)
+    private int deliveryThreadCount = 10;
 
     @Min(1)
     private int maxBufferSize = 1000;
@@ -23,6 +27,16 @@ public class BufferedProducerFactory<E> extends AbstractProducerFactory<E> {
     @Valid
     @NotNull
     private Duration flushPeriod = Duration.seconds(10);
+
+    @JsonProperty
+    public int getDeliveryThreadCount() {
+        return deliveryThreadCount;
+    }
+
+    @JsonProperty
+    public void setDeliveryThreadCount(int deliveryThreadCount) {
+        this.deliveryThreadCount = deliveryThreadCount;
+    }
 
     @JsonProperty
     public int getMaxBufferSize() {
@@ -51,7 +65,6 @@ public class BufferedProducerFactory<E> extends AbstractProducerFactory<E> {
                                      LifecycleEnvironment lifecycle,
                                      AmazonKinesis kinesis,
                                      String name) {
-        Preconditions.checkNotNull(lifecycle);
         Preconditions.checkNotNull(encoder, "encoder cannot be null, was not inferred");
         Preconditions.checkNotNull(partitionKeyFn, "partitionKeyFn cannot be null, is allowed to return null");
         Preconditions.checkNotNull(flushPeriod, "flushPeriod cannot be null");
@@ -59,15 +72,23 @@ public class BufferedProducerFactory<E> extends AbstractProducerFactory<E> {
 
         Preconditions.checkState(super.setupStream(kinesis), String.format("stream %s was not setup successfully", getStreamName()));
 
-        ScheduledExecutorService deliveryExecutor = lifecycle
-                .scheduledExecutorService(name + "-delivery-executor")
-                .threads(2).build();
+        ScheduledExecutorService deliveryExecutor;
+        if(lifecycle != null){
+            deliveryExecutor = lifecycle
+                    .scheduledExecutorService(name + "-delivery-executor")
+                    .threads(deliveryThreadCount).build();
+        }else{
+            deliveryExecutor = Executors.newScheduledThreadPool(deliveryThreadCount);
+        }
 
         BufferedProducerMetrics producerMetrics = new BufferedProducerMetrics(metrics, name);
         if(healthChecks != null){
             healthChecks.register(name, new ProducerHealthCheck(producerMetrics));
         }
         BufferedProducer<E> producer = new BufferedProducer<>(kinesis, getStreamName(), partitionKeyFn, encoder, maxBufferSize, deliveryExecutor, producerMetrics);
+        if(lifecycle != null){
+            lifecycle.manage(producer);
+        }
 
         deliveryExecutor.scheduleAtFixedRate(producer::flush,
                 flushPeriod.toMilliseconds(),

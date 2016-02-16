@@ -74,6 +74,15 @@ public final class BufferedProducer<E> extends Producer<E> {
     }
 
     @Override
+    public void stop() throws Exception {
+        super.stop();
+        synchronized (buffer){
+            putRecords(buffer);
+            buffer.clear();
+        }
+    }
+
+    @Override
     protected void send(PutRecordsRequestEntry record) {
         List<PutRecordsRequestEntry> submitMe = null;
         synchronized (buffer) {

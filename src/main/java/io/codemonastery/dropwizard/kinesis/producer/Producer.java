@@ -3,6 +3,7 @@ package io.codemonastery.dropwizard.kinesis.producer;
 import com.amazonaws.services.kinesis.model.PutRecordsRequestEntry;
 import com.google.common.base.Preconditions;
 import io.codemonastery.dropwizard.kinesis.EventEncoder;
+import io.dropwizard.lifecycle.Managed;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -10,9 +11,11 @@ import java.nio.ByteBuffer;
 import java.util.List;
 import java.util.function.Function;
 
-public abstract class Producer<E> {
+public abstract class Producer<E> implements Managed {
 
     private static final Logger LOG = LoggerFactory.getLogger(Producer.class);
+
+    private volatile boolean shutdown = false;
 
     private final EventEncoder<E> encoder;
     private final Function<E, String> partitionKeyFn;
@@ -34,6 +37,7 @@ public abstract class Producer<E> {
     }
 
     public final void send(E event) throws Exception {
+        assertNotShutdownForSend();
         byte[] bytes = null;
         try {
             bytes = encoder.encode(event);
@@ -63,10 +67,25 @@ public abstract class Producer<E> {
         }
     }
 
+    @Override
+    public void start() throws Exception {
+        //nothing to do yet
+    }
+
+    @Override
+    public void stop() throws Exception {
+        shutdown = true;
+    }
+
     protected PutRecordsRequestEntry extra(PutRecordsRequestEntry record, @SuppressWarnings("UnusedParameters") E event){
         return record;
     }
 
     protected abstract void send(PutRecordsRequestEntry record) throws Exception;
 
+    private void assertNotShutdownForSend() {
+        if(shutdown){
+            throw new IllegalStateException("cannot send more events because producer has been shutdown");
+        }
+    }
 }

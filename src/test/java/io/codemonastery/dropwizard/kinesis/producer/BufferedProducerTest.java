@@ -145,4 +145,23 @@ public class BufferedProducerTest {
             }
         });
     }
+
+    @Test
+    public void flushOnShutdown() throws Exception {
+        for (int i = 0; i < MAX_BUFFER_SIZE - 1; i++) {
+            producer.send(Integer.toString(i));
+        }
+        producer.stop(); // forces immediate flush
+
+        assertThat(putRecordRequests.size()).isEqualTo(1);
+        PutRecordsRequest request = putRecordRequests.get(0);
+        assertThat(request.getRecords().size()).isEqualTo(MAX_BUFFER_SIZE - 1);
+
+        for (int i = 0; i < MAX_BUFFER_SIZE - 1; i++) {
+            String recordId = Integer.toString(i);
+            PutRecordsRequestEntry record = request.getRecords().get(i);
+            assertThat(ENCODER.decode(record.getData())).isEqualTo(recordId);
+            assertThat(record.getPartitionKey()).isEqualTo(recordId);
+        }
+    }
 }

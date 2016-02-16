@@ -22,6 +22,10 @@ public class SimpleProducerFactory<E> extends AbstractProducerFactory<E> {
         if(healthChecks != null){
             healthChecks.register(name, new ProducerHealthCheck(producerMetrics));
         }
-        return new SimpleProducer<>(kinesis, getStreamName(), partitionKeyFn, encoder, producerMetrics);
+        SimpleProducer<E> producer = new SimpleProducer<>(kinesis, getStreamName(), partitionKeyFn, encoder, producerMetrics);
+        if(lifecycle != null){
+            lifecycle.manage(producer);
+        }
+        return producer;
     }
 }
