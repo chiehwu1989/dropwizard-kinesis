@@ -5,7 +5,6 @@ import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.health.HealthCheckRegistry;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonTypeName;
 import com.google.common.base.Preconditions;
 import io.dropwizard.lifecycle.setup.LifecycleEnvironment;
 import io.dropwizard.util.Duration;
@@ -52,6 +51,7 @@ public class BufferedProducerFactory<E> extends AbstractProducerFactory<E> {
                                      LifecycleEnvironment lifecycle,
                                      AmazonKinesis kinesis,
                                      String name) {
+        Preconditions.checkNotNull(lifecycle);
         Preconditions.checkNotNull(encoder, "encoder cannot be null, was not inferred");
         Preconditions.checkNotNull(partitionKeyFn, "partitionKeyFn cannot be null, is allowed to return null");
         Preconditions.checkNotNull(flushPeriod, "flushPeriod cannot be null");

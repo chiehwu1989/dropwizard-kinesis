@@ -28,11 +28,9 @@ public class StreamCreateConfigurationTest {
 
     private static final String STREAM_NAME = "test-stream";
 
-    private static final DescribeStreamResult ACTIVE = new DescribeStreamResult().withStreamDescription(
-            new StreamDescription().withStreamName(STREAM_NAME).withStreamStatus("ACTIVE"));
+    private static final DescribeStreamResult ACTIVE = KinesisResults.activeStream(STREAM_NAME);
 
-    private static final DescribeStreamResult NOT_ACTIVE = new DescribeStreamResult().withStreamDescription(
-            new StreamDescription().withStreamName(STREAM_NAME).withStreamStatus("NOT_ACTIVE"));
+    private static final DescribeStreamResult NOT_ACTIVE = KinesisResults.creatingStream(STREAM_NAME);
 
     @Mock
     private AmazonKinesis kinesis;

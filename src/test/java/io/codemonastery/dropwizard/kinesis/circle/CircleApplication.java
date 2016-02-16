@@ -3,7 +3,6 @@ package io.codemonastery.dropwizard.kinesis.circle;
 import com.amazonaws.auth.DefaultAWSCredentialsProviderChain;
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDB;
 import com.amazonaws.services.kinesis.AmazonKinesis;
-import io.codemonastery.dropwizard.kinesis.producer.BufferedProducer;
 import io.codemonastery.dropwizard.kinesis.producer.Producer;
 import io.dropwizard.Application;
 import io.dropwizard.setup.Environment;
@@ -32,7 +31,7 @@ public class CircleApplication extends Application<CircleConfiguration> {
            environment.jersey().register(circleResource);
 
         configuration.getConsumer()
-                .processor(() -> event -> {
+                .consumer(() -> event -> {
                     circleResource.seen(event);
                     return true;
                 })
