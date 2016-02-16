@@ -30,7 +30,7 @@ import java.util.concurrent.atomic.AtomicReference;
 /*
 Cleaner implementation of KinesisProxy which was throwing exceptions
  */
-public class SimpleKinesisProxy implements IKinesisProxyExtended {
+public final class SimpleKinesisProxy implements IKinesisProxyExtended {
 
     private static final Logger LOG = LoggerFactory.getLogger(SimpleKinesisProxy.class);
 

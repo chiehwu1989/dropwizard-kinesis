@@ -14,7 +14,7 @@ import java.util.Optional;
 import java.util.function.Function;
 
 
-public class SimpleProducer<E> extends Producer<E> {
+public final class SimpleProducer<E> extends Producer<E> {
 
     private static final Logger LOG = LoggerFactory.getLogger(SimpleProducer.class);
 

@@ -7,7 +7,7 @@ import com.google.common.base.Preconditions;
 import javax.annotation.Nullable;
 import java.nio.ByteBuffer;
 
-public class EventObjectMapper<E> implements EventEncoder<E>, EventDecoder<E> {
+public final class EventObjectMapper<E> implements EventEncoder<E>, EventDecoder<E> {
 
     private final ObjectMapper objectMapper;
     private final TypeReference<E> typeReference;

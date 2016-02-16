@@ -18,7 +18,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.function.Function;
 
-public class BufferedProducer<E> extends Producer<E> {
+public final class BufferedProducer<E> extends Producer<E> {
 
     private static final Logger LOG = LoggerFactory.getLogger(BufferedProducer.class);
 

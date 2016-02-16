@@ -11,7 +11,7 @@ import io.codemonastery.dropwizard.kinesis.EventDecoder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class RecordProcessor<E> implements IRecordProcessor {
+public final class RecordProcessor<E> implements IRecordProcessor {
 
     private static final Logger LOG = LoggerFactory.getLogger(RecordProcessor.class);
 

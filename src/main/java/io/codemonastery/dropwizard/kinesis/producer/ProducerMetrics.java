@@ -29,26 +29,26 @@ public class ProducerMetrics {
         }
     }
 
-    public void partitionkeyFailed(){
+    public final void partitionkeyFailed(){
         if(partitionKeyFailedMeter != null){
             partitionKeyFailedMeter.mark();
         }
     }
 
-    public void encodeFailed(){
+    public final void encodeFailed(){
         if(encodeFailedMeter != null){
             encodeFailedMeter.mark();
         }
     }
 
-    public void sent(long numRecords, long numFailedRecords) {
+    public final void sent(long numRecords, long numFailedRecords) {
         if(sentMeter != null){
             sentMeter.mark(numRecords);
             failedMeter.mark(numFailedRecords);
         }
     }
 
-    public Closeable time() {
+    public final Closeable time() {
         return putRecordsTimer == null ? NoOpClose.INSTANCE : putRecordsTimer.time();
     }
 }

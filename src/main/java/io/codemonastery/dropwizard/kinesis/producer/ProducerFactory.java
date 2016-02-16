@@ -14,7 +14,7 @@ import java.util.function.Function;
 @JsonTypeInfo(
         use = JsonTypeInfo.Id.NAME,
         property = "type",
-        defaultImpl = SimpleProducerFactory.class
+        defaultImpl = BufferedProducerFactory.class
 )
 @JsonSubTypes({ @JsonSubTypes.Type(value = SimpleProducerFactory.class, name = "simple"), @JsonSubTypes.Type(value = BufferedProducerFactory.class, name = "buffered") })
 public interface ProducerFactory<E> {

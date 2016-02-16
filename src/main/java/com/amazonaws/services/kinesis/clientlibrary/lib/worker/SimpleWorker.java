@@ -52,7 +52,7 @@ import com.amazonaws.services.kinesis.metrics.interfaces.MetricsLevel;
  * syncing shard and lease information, tracking shard assignments, and
  * processing data from the shards).
  */
-public class SimpleWorker implements Runnable {
+public final class SimpleWorker implements Runnable {
 
     private static final int MAX_INITIALIZATION_ATTEMPTS = 20;
     private static final Log LOG = LogFactory.getLog(SimpleWorker.class);

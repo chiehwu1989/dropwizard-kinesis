@@ -21,14 +21,14 @@ public class BufferedProducerMetrics extends ProducerMetrics {
        }
     }
 
-    public void bufferPut(int n){
+    public final void bufferPut(int n){
         if(bufferPutMeter != null){
             bufferPutMeter.mark(n);
             bufferSizeCounter.inc(n);
         }
     }
 
-    public void bufferRemove(int n){
+    public final void bufferRemove(int n){
         if(bufferSizeCounter != null){
             bufferSizeCounter.dec(n);
         }

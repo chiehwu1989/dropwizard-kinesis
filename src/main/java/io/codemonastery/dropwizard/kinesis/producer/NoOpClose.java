@@ -2,7 +2,7 @@ package io.codemonastery.dropwizard.kinesis.producer;
 
 import java.io.Closeable;
 
-public class NoOpClose implements Closeable {
+public final class NoOpClose implements Closeable {
 
     public static final NoOpClose INSTANCE = new NoOpClose();
 
