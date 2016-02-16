@@ -17,23 +17,23 @@ public class SimpleProducer<E> extends Producer<E> {
 
     private static final Logger LOG = LoggerFactory.getLogger(SimpleProducer.class);
 
-    private final AmazonKinesis client;
+    private final AmazonKinesis kinesis;
     private final String streamName;
 
-    public SimpleProducer(AmazonKinesis client,
+    public SimpleProducer(AmazonKinesis kinesis,
                           String streamName,
                           Function<E, String> partitionKeyFn,
                           EventEncoder<E> encoder) {
         super(partitionKeyFn, encoder);
-        Preconditions.checkNotNull(client, "client cannot be null");
+        Preconditions.checkNotNull(kinesis, "client cannot be null");
         Preconditions.checkNotNull(streamName, "streamName cannot be null");
-        this.client = client;
+        this.kinesis = kinesis;
         this.streamName = streamName;
     }
 
     @Override
     protected void send(PutRecordsRequestEntry record) {
-        PutRecordsResult result = client.putRecords(new PutRecordsRequest()
+        PutRecordsResult result = kinesis.putRecords(new PutRecordsRequest()
                 .withRecords(record)
                 .withStreamName(streamName));
         if (LOG.isDebugEnabled()) {

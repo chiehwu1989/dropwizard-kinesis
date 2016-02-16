@@ -50,20 +50,20 @@ public class BufferedProducerFactory<E> extends AbstractProducerFactory<E> {
     public BufferedProducer<E> build(MetricRegistry metrics,
                                      HealthCheckRegistry healthChecks,
                                      LifecycleEnvironment lifecycle,
-                                     AmazonKinesis client,
+                                     AmazonKinesis kinesis,
                                      String name) {
         Preconditions.checkNotNull(encoder, "encoder cannot be null, was not inferred");
         Preconditions.checkNotNull(partitionKeyFn, "partitionKeyFn cannot be null, is allowed to return null");
         Preconditions.checkNotNull(flushPeriod, "flushPeriod cannot be null");
         Preconditions.checkArgument(flushPeriod.getQuantity() > 0, "flush period must be positive");
 
-        Preconditions.checkState(super.setupStream(client), String.format("stream %s was not setup successfully", getStreamName()));
+        Preconditions.checkState(super.setupStream(kinesis), String.format("stream %s was not setup successfully", getStreamName()));
 
         ScheduledExecutorService deliveryExecutor = lifecycle
                 .scheduledExecutorService(name + "-delivery-executor")
                 .threads(2).build();
 
-        BufferedProducer<E> producer = new BufferedProducer<>(client, getStreamName(), partitionKeyFn, encoder, maxBufferSize, deliveryExecutor);
+        BufferedProducer<E> producer = new BufferedProducer<>(kinesis, getStreamName(), partitionKeyFn, encoder, maxBufferSize, deliveryExecutor);
 
         deliveryExecutor.scheduleAtFixedRate(producer::flush,
                 flushPeriod.toMilliseconds(),

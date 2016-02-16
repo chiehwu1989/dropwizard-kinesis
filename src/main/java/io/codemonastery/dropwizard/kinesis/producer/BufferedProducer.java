@@ -21,7 +21,7 @@ public class BufferedProducer<E> extends Producer<E> {
 
     private static final Logger LOG = LoggerFactory.getLogger(BufferedProducer.class);
 
-    private final AmazonKinesis client;
+    private final AmazonKinesis kinesis;
     private final String streamName;
 
     private final int maxBufferSize;
@@ -30,16 +30,21 @@ public class BufferedProducer<E> extends Producer<E> {
     private final List<PutRecordsRequestEntry> buffer;
 
 
-    public BufferedProducer(AmazonKinesis client, String streamName, Function<E, String> partitionKeyFn, EventEncoder<E> encoder, int maxBufferSize, ScheduledExecutorService deliveryExecutor) {
+    public BufferedProducer(AmazonKinesis kinesis,
+                            String streamName,
+                            Function<E, String> partitionKeyFn,
+                            EventEncoder<E> encoder,
+                            int maxBufferSize,
+                            ScheduledExecutorService deliveryExecutor) {
         super(partitionKeyFn, encoder);
 
-        Preconditions.checkNotNull(client, "client cannot be null");
+        Preconditions.checkNotNull(kinesis, "kinesis cannot be null");
         Preconditions.checkArgument(!Strings.isNullOrEmpty(streamName), "must have a stream name");
         Preconditions.checkArgument(maxBufferSize > 0, "maxBufferSize must be positive");
         Preconditions.checkNotNull(deliveryExecutor, "must have a delivery executor");
 
 
-        this.client = client;
+        this.kinesis = kinesis;
         this.streamName = streamName;
         this.maxBufferSize = maxBufferSize;
         this.deliveryExecutor = deliveryExecutor;
@@ -84,7 +89,7 @@ public class BufferedProducer<E> extends Producer<E> {
 
     private void putRecords(List<PutRecordsRequestEntry> records) {
         try {
-            PutRecordsResult result = client.putRecords(new PutRecordsRequest()
+            PutRecordsResult result = kinesis.putRecords(new PutRecordsRequest()
                     .withRecords(records)
                     .withStreamName(streamName));
             if (LOG.isDebugEnabled()) {

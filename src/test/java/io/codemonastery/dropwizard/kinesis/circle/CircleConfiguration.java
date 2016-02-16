@@ -3,7 +3,7 @@ package io.codemonastery.dropwizard.kinesis.circle;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.codemonastery.dropwizard.kinesis.DynamoDbFactory;
 import io.codemonastery.dropwizard.kinesis.KinesisFactory;
-import io.codemonastery.dropwizard.kinesis.consumer.KinesisConsumerFactory;
+import io.codemonastery.dropwizard.kinesis.consumer.ConsumerFactory;
 import io.codemonastery.dropwizard.kinesis.producer.BufferedProducerFactory;
 import io.codemonastery.dropwizard.kinesis.rule.KinesisClientRule;
 import io.dropwizard.Configuration;
@@ -28,7 +28,7 @@ public class CircleConfiguration extends Configuration {
 
     @Valid
     @NotNull
-    private KinesisConsumerFactory<String> consumer = new KinesisConsumerFactory<>();
+    private ConsumerFactory<String> consumer = new ConsumerFactory<>();
 
     public CircleConfiguration() {
         kinesis.setRegion(KinesisClientRule.TEST_REGIONS);
@@ -70,12 +70,12 @@ public class CircleConfiguration extends Configuration {
     }
 
     @JsonProperty
-    public KinesisConsumerFactory<String> getConsumer() {
+    public ConsumerFactory<String> getConsumer() {
         return consumer;
     }
 
     @JsonProperty
-    public void setConsumer(KinesisConsumerFactory<String> consumer) {
+    public void setConsumer(ConsumerFactory<String> consumer) {
         this.consumer = consumer;
     }
 }

@@ -27,12 +27,12 @@ public interface ProducerFactory<E> {
 
         ProducerFactory<E> partitionKeyFn(Function<E, String> partitionKeyFn);
 
-        Producer<E> build(Environment environment, AmazonKinesis client, String name);
+        Producer<E> build(Environment environment, AmazonKinesis kinesis, String name);
 
         Producer<E> build(MetricRegistry metrics,
                                          HealthCheckRegistry healthChecks,
                                          LifecycleEnvironment lifecycle,
-                                         AmazonKinesis client,
+                                         AmazonKinesis kinesis,
                                          String name);
 
 }

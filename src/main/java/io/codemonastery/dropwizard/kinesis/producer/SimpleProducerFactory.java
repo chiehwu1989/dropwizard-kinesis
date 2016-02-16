@@ -12,11 +12,11 @@ public class SimpleProducerFactory<E> extends AbstractProducerFactory<E> {
     public SimpleProducer<E> build(MetricRegistry metrics,
                                    HealthCheckRegistry healthChecks,
                                    LifecycleEnvironment lifecycle,
-                                   AmazonKinesis client,
+                                   AmazonKinesis kinesis,
                                    String name) {
         Preconditions.checkNotNull(encoder, "encoder cannot be null, was not inferred");
         Preconditions.checkNotNull(partitionKeyFn, "partitionKeyFn cannot be null, is allowed to return null");
-        Preconditions.checkState(super.setupStream(client), String.format("stream %s was not setup successfully", getStreamName()));
-        return new SimpleProducer<>(client, getStreamName(), partitionKeyFn, encoder);
+        Preconditions.checkState(super.setupStream(kinesis), String.format("stream %s was not setup successfully", getStreamName()));
+        return new SimpleProducer<>(kinesis, getStreamName(), partitionKeyFn, encoder);
     }
 }

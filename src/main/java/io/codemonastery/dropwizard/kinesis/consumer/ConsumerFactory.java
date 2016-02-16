@@ -16,30 +16,30 @@ import org.slf4j.LoggerFactory;
 import java.util.concurrent.ExecutorService;
 import java.util.function.Supplier;
 
-public class KinesisConsumerFactory<E> extends StreamConfiguration {
+public class ConsumerFactory<E> extends StreamConfiguration {
 
-    private static final Logger LOG = LoggerFactory.getLogger(KinesisConsumerFactory.class);
+    private static final Logger LOG = LoggerFactory.getLogger(ConsumerFactory.class);
 
     private EventDecoder<E> decoder;
 
     private Supplier<EventConsumer<E>> processorFactory;
 
     @JsonIgnore
-    public KinesisConsumerFactory decoder(EventDecoder<E> decoder) {
+    public ConsumerFactory decoder(EventDecoder<E> decoder) {
         this.decoder = decoder;
         return this;
     }
 
     @JsonIgnore
-    public KinesisConsumerFactory processor(Supplier<EventConsumer<E>> processorFactory) {
+    public ConsumerFactory processor(Supplier<EventConsumer<E>> processorFactory) {
         this.processorFactory = processorFactory;
         return this;
     }
 
     @JsonIgnore
     public SimpleWorker build(Environment environment,
-                              AmazonKinesis kinesisClient,
-                              AmazonDynamoDB dynamoDBClient,
+                              AmazonKinesis kinesis,
+                              AmazonDynamoDB dynamoDb,
                               String name) {
         if (environment != null && decoder == null) {
             decoder = new EventObjectMapper<>(environment.getObjectMapper());
@@ -57,8 +57,8 @@ public class KinesisConsumerFactory<E> extends StreamConfiguration {
                 environment == null ? null : environment.metrics(),
                 environment == null ? null : environment.healthChecks(),
                 environment == null ? null : environment.lifecycle(),
-                kinesisClient,
-                dynamoDBClient,
+                kinesis,
+                dynamoDb,
                 name
         );
     }

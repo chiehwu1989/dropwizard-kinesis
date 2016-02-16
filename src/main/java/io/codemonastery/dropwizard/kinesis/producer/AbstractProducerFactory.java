@@ -38,14 +38,14 @@ public abstract class AbstractProducerFactory<E> extends StreamConfiguration imp
 
     @JsonIgnore
     @Override
-    public Producer<E> build(Environment environment, AmazonKinesis client, String name){
+    public Producer<E> build(Environment environment, AmazonKinesis kinesis, String name){
         if(encoder == null && environment != null){
             encoder = new EventObjectMapper<>(environment.getObjectMapper());
         }
         return build(environment == null ? null : environment.metrics(),
                 environment == null ? null : environment.healthChecks(),
                 environment == null ? null : environment.lifecycle(),
-                client,
+                kinesis,
                 name);
     }
 
