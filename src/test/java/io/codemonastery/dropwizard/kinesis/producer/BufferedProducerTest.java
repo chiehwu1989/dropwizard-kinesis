@@ -18,7 +18,6 @@ import org.junit.Test;
 import org.mockito.Mock;
 
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -127,9 +126,11 @@ public class BufferedProducerTest {
         for (int i = 0; i < MAX_BUFFER_SIZE * 5; i++) {
             producer.send(Integer.toString(i));
         }
-        Assertions.retry(5, FLUSH_PERIOD, () -> {
+        Assertions.retry(10, FLUSH_PERIOD, () -> {
             assertThat(putRecordRequests.size()).isEqualTo(5);
-            putRecordRequests.sort((o1, o2) -> o1.getRecords().get(0).getPartitionKey().compareTo(o1.getRecords().get(0).getPartitionKey()));
+            putRecordRequests.sort((o1, o2) -> Integer.compare(
+                    Integer.parseInt(o1.getRecords().get(0).getPartitionKey()),
+                    Integer.parseInt(o2.getRecords().get(0).getPartitionKey())));
 
             for (int j = 0; j < 5; j++) {
                 PutRecordsRequest request = putRecordRequests.get(j);

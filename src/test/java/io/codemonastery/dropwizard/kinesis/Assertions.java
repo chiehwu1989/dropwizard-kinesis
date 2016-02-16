@@ -5,7 +5,7 @@ import io.dropwizard.util.Duration;
 public class Assertions {
 
     public static void retry(int retries, Duration period, AutoCloseable runnable) throws Exception {
-        for(int i = 5; i > 0; i--){
+        for(int i = retries; i > 0; i--){
             try{
                 runnable.close();
                 break;
@@ -14,7 +14,7 @@ public class Assertions {
                     throw e;
                 }
             }
-            Thread.sleep(100);
+            Thread.sleep(period.toMilliseconds());
         }
     }
 
