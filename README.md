@@ -63,7 +63,7 @@ There is one serious gotcha with the default EventDecoder: the EventDecoder cann
 
 Latest vs Trim Horizon
 -----
-There are many configurations to pay attention to, but perhaps the most important consumer configuration is initialPositionInStream, which needs to either be "TRIM_HORIZON" or "LATEST". When a consumer is created for the very first time, identified by the applicationName configuration, the consumer will decide where in the stream to start reading from based on initialPositionInStream. LATEST will cause a consumer to start immediately after the latest published record, while TRIM_HORIZON will cause a consumer to start reading from the oldest record still in kinesis. Example configuration. 
+There are many configurations to pay attention to, but perhaps the most important consumer configuration is initialPositionInStream, which needs to either be "TRIM_HORIZON" or "LATEST". When a consumer is created for the very first time, identified by the applicationName configuration, the consumer will decide where in the stream to start reading from based on initialPositionInStream. LATEST will cause a consumer to start immediately after the latest published record, while TRIM_HORIZON will cause a consumer to start reading from the oldest record still in kinesis. Example configuration: 
 ``` yaml
 consumer:
     streamName: test-stream
