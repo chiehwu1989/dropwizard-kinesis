@@ -24,8 +24,6 @@ public class ConsumerFactory<E> extends KinesisClientLibConfig {
 
     private Supplier<EventConsumer<E>> eventConsumerFactory;
 
-
-
     @JsonIgnore
     public ConsumerFactory decoder(EventDecoder<E> decoder) {
         this.decoder = decoder;
@@ -37,8 +35,6 @@ public class ConsumerFactory<E> extends KinesisClientLibConfig {
         this.eventConsumerFactory = eventConsumerFactory;
         return this;
     }
-
-
 
     @JsonIgnore
     public SimpleWorker build(Environment environment,
