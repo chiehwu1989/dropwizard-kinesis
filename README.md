@@ -32,7 +32,7 @@ consumer:
 
 ```
 
-For example complete configuration see [Complete-Configuration](/../../wiki/Complete-Configuration) Corresponding application configuration class:
+For example complete configuration see [Complete-Configuration](/../../wiki/Complete-Configuration). The Corresponding application configuration class looks like this:
 ``` java
 public class ReadmeConfiguration extends Configuration {
 
