@@ -32,5 +32,5 @@ consumer:
 
 ```
 
-For example complete configuration see [Complete-Configuration](/../../wiki/Complete-Configuration) or see class [ExampleConfiguration](src/test/java/io/codemonastery/dropwizard/kinesis/example/ExampleConfiguration.java). To see how the configuration could be used to create producers and consumers, look at [ExampleApplication](src/test/java/io/codemonastery/dropwizard/kinesis/example/ExampleApplication.java).
+For all configurations see [Complete-Configuration](/../../wiki/Complete-Configuration) or see class [ExampleConfiguration](src/test/java/io/codemonastery/dropwizard/kinesis/example/ExampleConfiguration.java). To see how the configuration could be used to create producers and consumers, look at [ExampleApplication](src/test/java/io/codemonastery/dropwizard/kinesis/example/ExampleApplication.java).
 
