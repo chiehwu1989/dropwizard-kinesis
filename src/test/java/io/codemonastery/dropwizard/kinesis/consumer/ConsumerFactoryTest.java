@@ -34,7 +34,7 @@ public class ConsumerFactoryTest {
     }
 
     @Test
-    public void canSetSomeKclCOnfigs() throws Exception {
+    public void canSetSomeKclConfigs() throws Exception {
         ConfigurationFactory<FakeConfiguration> configurationFactory = ConfigurationFactories.make(FakeConfiguration.class);
         FakeConfiguration configuration = configurationFactory.build((s) -> new StringInputStream("consumer:\n  streamName: xyz\n  initialPositionInStream: TRIM_HORIZON"), "");
         assertThat(configuration).isNotNull();
