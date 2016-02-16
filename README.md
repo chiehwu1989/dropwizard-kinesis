@@ -32,7 +32,7 @@ consumer:
 
 ```
 
-For complete configuration see [Complete-Configuration](/wiki/Complete-Configuration) Corresponding application configuration class:
+For complete configuration see [[Complete-Configuration]] Corresponding application configuration class:
 ``` java
 public class ReadmeConfiguration extends Configuration {
 
