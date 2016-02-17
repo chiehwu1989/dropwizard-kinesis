@@ -42,5 +42,16 @@ public class StreamConfigurationTest {
         assertThat(configuration).isNotNull();
         assertThat(configuration.stream).isNotNull();
         assertThat(configuration.stream.getStreamName()).isEqualTo("xyz");
+        assertThat(configuration.stream.getCreate()).isNull();
+    }
+
+    @Test
+    public void canConfigureStreamWithDefaultCreate() throws Exception {
+        ConfigurationFactory<FakeConfiguration> configurationFactory = ConfigurationFactories.make(FakeConfiguration.class);
+        FakeConfiguration configuration = configurationFactory.build((s) -> new StringInputStream("stream:\n  streamName: xyz\n  create: {}"), "");
+        assertThat(configuration).isNotNull();
+        assertThat(configuration.stream).isNotNull();
+        assertThat(configuration.stream.getStreamName()).isEqualTo("xyz");
+        assertThat(configuration.stream.getCreate()).isNotNull();
     }
 }
