@@ -41,13 +41,29 @@ public class KinesisFactory {
     }
 
     @JsonIgnore
-    public KinesisFactory metricsProxy(ClientMetricsProxyFactory<AmazonKinesis> metricsProxy) {
+    public KinesisFactory region(Regions region) {
+        this.setRegion(region);
+        return this;
+    }
+
+    @JsonIgnore
+    public ClientMetricsProxyFactory<AmazonKinesis> getMetricsProxy() {
+        return metricsProxy;
+    }
+
+    @JsonIgnore
+    public void setMetricsProxy(ClientMetricsProxyFactory<AmazonKinesis> metricsProxy) {
         this.metricsProxy = metricsProxy;
+    }
+
+    @JsonIgnore
+    public KinesisFactory metricsProxy(ClientMetricsProxyFactory<AmazonKinesis> metricsProxy) {
+        this.setMetricsProxy(metricsProxy);
         return this;
     }
 
     @JsonProperty
-    public ClientConfiguration getClient() {
+    public JacksonClientConfiguration getClient() {
         return client;
     }
 
@@ -63,13 +79,13 @@ public class KinesisFactory {
 
     @JsonIgnore
     public KinesisFactory client(JacksonClientConfiguration clientConfiguration) {
-        this.client = clientConfiguration;
+        this.setClient(clientConfiguration);
         return this;
     }
 
     @JsonIgnore
     public KinesisFactory client(ClientConfiguration clientConfiguration) {
-        this.client = new JacksonClientConfiguration(clientConfiguration);
+        this.setClient(new JacksonClientConfiguration(clientConfiguration));
         return this;
     }
 
