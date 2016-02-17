@@ -20,4 +20,10 @@ public class EventObjectMapperTest {
         assertThat(actual).isEqualTo(expected);
     }
 
+    @Test(expected = UnsupportedOperationException.class)
+    public void decodeFailsBecauseMissingClass() throws Exception {
+        EventObjectMapper<Event> objectMapper = new EventObjectMapper<>(Jackson.newObjectMapper(), null);
+        //noinspection ConstantConditions
+        objectMapper.decode(ByteBuffer.wrap(objectMapper.encode(new Event("a", "b", "c"))));
+    }
 }
