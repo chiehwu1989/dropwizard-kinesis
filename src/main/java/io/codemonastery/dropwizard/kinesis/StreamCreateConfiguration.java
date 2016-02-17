@@ -75,7 +75,7 @@ public class StreamCreateConfiguration {
 
     @JsonIgnore
     public StreamCreateConfiguration maxAttempts(Integer maxAttempts) {
-        this.maxAttempts = maxAttempts;
+        this.setMaxAttempts(maxAttempts);
         return this;
     }
 

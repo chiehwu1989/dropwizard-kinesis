@@ -169,7 +169,7 @@ public class StreamCreateConfigurationTest {
     }
 
     @Test
-    public void maxRetries() throws Exception {
+    public void maxAttempts() throws Exception {
         when(kinesis.describeStream(STREAM_NAME))
                 .thenThrow(new ResourceNotFoundException("does not exist yet"));
 
