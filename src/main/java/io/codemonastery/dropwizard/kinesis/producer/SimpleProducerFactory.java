@@ -20,7 +20,7 @@ public class SimpleProducerFactory<E> extends AbstractProducerFactory<E> {
 
         ProducerMetrics producerMetrics = new ProducerMetrics(metrics, name);
         if(healthChecks != null){
-            healthChecks.register(name, new ProducerHealthCheck(producerMetrics));
+            healthChecks.register(name, new ProducerHealthCheck(producerMetrics, kinesis, getStreamName()));
         }
         SimpleProducer<E> producer = new SimpleProducer<>(kinesis, getStreamName(), partitionKeyFn, encoder, producerMetrics);
         if(lifecycle != null){

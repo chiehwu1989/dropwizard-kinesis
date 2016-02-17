@@ -85,7 +85,7 @@ public class BufferedProducerFactory<E> extends AbstractProducerFactory<E> {
 
         BufferedProducerMetrics producerMetrics = new BufferedProducerMetrics(metrics, name);
         if(healthChecks != null){
-            healthChecks.register(name, new ProducerHealthCheck(producerMetrics));
+            healthChecks.register(name, new ProducerHealthCheck(producerMetrics, kinesis, getStreamName()));
         }
         BufferedProducer<E> producer = new BufferedProducer<>(kinesis, getStreamName(), partitionKeyFn, encoder, maxBufferSize, deliveryExecutor, producerMetrics);
         if(lifecycle != null){
