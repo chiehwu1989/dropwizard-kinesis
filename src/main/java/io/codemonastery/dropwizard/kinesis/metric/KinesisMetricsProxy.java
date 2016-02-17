@@ -40,14 +40,14 @@ public class KinesisMetricsProxy implements AmazonKinesis {
         decreaseStreamRetentionPeriodTimer = metrics.timer(name + "-decrease-stream-retention-period");
         deleteStreamTimer = metrics.timer(name + "-delete-stream");
         describeStreamTimer = metrics.timer(name + "-describe-stream");
-        getRecordsTimer = metrics.timer(name + "-put-record");
+        getRecordsTimer = metrics.timer(name + "-get-records");
         getShardIteratorTimer = metrics.timer(name + "-get-shard-iterator");
         increaseStreamRetentionPeriodTimer = metrics.timer(name + "-increase-stream-retention-period");
         listStreamsTimer = metrics.timer(name + "-list-streams");
         listTagsForStreamTimer = metrics.timer(name + "-list-tags-for-stream");
         mergeShardsTimer = metrics.timer(name + "-merge-shards");
-        putRecordTimer = metrics.timer(name + "-get-records");
-        putRecordsTimer = metrics.timer(name + "-put-record");
+        putRecordTimer = metrics.timer(name + "-put-record");
+        putRecordsTimer = metrics.timer(name + "-put-records");
         removeTagsFromStreamTimer = metrics.timer(name + "-remove-tags-from-stream");
         splitShardTimer = metrics.timer(name + "-split-shard");
     }
