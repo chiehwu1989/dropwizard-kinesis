@@ -11,9 +11,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.Closeable;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.function.Function;
@@ -25,11 +23,10 @@ public final class BufferedProducer<E> extends Producer<E> {
     private final AmazonKinesis kinesis;
     private final String streamName;
 
-    private final int maxBufferSize;
-
     private final ExecutorService deliveryExecutor;
-    private final List<PutRecordsRequestEntry> buffer;
     private final BufferedProducerMetrics bufferedMetrics;
+
+    private final PutRecordsBuffer buffer;
 
     public BufferedProducer(AmazonKinesis kinesis,
                             String streamName,
@@ -47,24 +44,17 @@ public final class BufferedProducer<E> extends Producer<E> {
 
         this.kinesis = kinesis;
         this.streamName = streamName;
-        this.maxBufferSize = maxBufferSize;
         this.deliveryExecutor = deliveryExecutor;
         this.bufferedMetrics = metrics;
 
-        this.buffer = new ArrayList<>(maxBufferSize);
+        this.buffer = new PutRecordsBuffer(maxBufferSize);
     }
 
     public void flush() {
         try {
-            List<PutRecordsRequestEntry> submitMe = null;
-            synchronized (buffer) {
-                if (buffer.size() > 0) {
-                    submitMe = new ArrayList<>(buffer);
-                    buffer.clear();
-                    bufferedMetrics.bufferRemove(submitMe.size());
-                }
-            }
-            if (submitMe != null && !submitMe.isEmpty()) {
+            List<PutRecordsRequestEntry> submitMe = buffer.drain();
+            bufferedMetrics.bufferRemove(submitMe.size());
+            if (!submitMe.isEmpty()) {
                 final List<PutRecordsRequestEntry> temp = submitMe;
                 deliveryExecutor.submit(() -> putRecords(temp));
             }
@@ -77,21 +67,15 @@ public final class BufferedProducer<E> extends Producer<E> {
     public void stop() throws Exception {
         synchronized (buffer){
             super.stop();
-            putRecords(buffer);
-            buffer.clear();
+            putRecords(buffer.drain());
         }
     }
 
     @Override
     protected void send(PutRecordsRequestEntry record) {
-        List<PutRecordsRequestEntry> submitMe = null;
-        synchronized (buffer) {
-            if (buffer.size() >= maxBufferSize) {
-                submitMe = new ArrayList<>(buffer);
-                buffer.clear();
-                bufferedMetrics.bufferRemove(submitMe.size());
-            }
-            buffer.add(record);
+        List<PutRecordsRequestEntry> submitMe = buffer.add(record);
+        if(submitMe != null){
+            bufferedMetrics.bufferRemove(submitMe.size());
         }
         bufferedMetrics.bufferPut(1);
         if (submitMe != null) {
