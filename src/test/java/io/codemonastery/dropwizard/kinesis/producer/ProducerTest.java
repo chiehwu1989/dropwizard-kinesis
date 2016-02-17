@@ -35,7 +35,7 @@ public class ProducerTest {
     }
 
     @Test
-    public void skipEventBecauseTooLarge() throws Exception {
+     public void skipEventBecauseTooLarge() throws Exception {
         AtomicBoolean innerSendCalled = new AtomicBoolean(false);
         Producer<byte[]> producer = new Producer<byte[]>(b -> "", ENCODER, ProducerMetrics.noOp()) {
 

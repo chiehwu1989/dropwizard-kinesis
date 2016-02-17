@@ -13,6 +13,7 @@ import org.junit.Test;
 import org.mockito.Mock;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -69,5 +70,29 @@ public class SimpleProducerTest {
         PutRecordsRequestEntry firstRecord = request.getRecords().get(0);
         assertThat(ENCODER.decode(firstRecord.getData())).isEqualTo("abc");
         assertThat(firstRecord.getPartitionKey()).isEqualTo("abc");
+    }
+
+    @Test
+    public void sendAll() throws Exception {
+        producer.sendAll(Arrays.asList("abc", "def"));
+
+        assertThat(putRecordRequests.size()).isEqualTo(2);
+
+        {
+            PutRecordsRequest request = putRecordRequests.get(0);
+            assertThat(request.getRecords().size()).isEqualTo(1);
+
+            PutRecordsRequestEntry firstRecord = request.getRecords().get(0);
+            assertThat(ENCODER.decode(firstRecord.getData())).isEqualTo("abc");
+            assertThat(firstRecord.getPartitionKey()).isEqualTo("abc");
+        }
+        {
+            PutRecordsRequest request = putRecordRequests.get(1);
+            assertThat(request.getRecords().size()).isEqualTo(1);
+
+            PutRecordsRequestEntry firstRecord = request.getRecords().get(0);
+            assertThat(ENCODER.decode(firstRecord.getData())).isEqualTo("def");
+            assertThat(firstRecord.getPartitionKey()).isEqualTo("def");
+        }
     }
 }
