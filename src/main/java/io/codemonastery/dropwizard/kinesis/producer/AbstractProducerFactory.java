@@ -12,10 +12,11 @@ import java.util.function.Function;
 
 public abstract class AbstractProducerFactory<E> extends StreamConfiguration implements ProducerFactory<E> {
 
-    protected EventEncoder<E> encoder;
-
     protected Function<E, String> partitionKeyFn = Objects::toString;
 
+    protected EventEncoder<E> encoder;
+
+    @JsonIgnore
     @Override
     public ProducerFactory<E> streamName(String streamName) {
         super.setStreamName(streamName);
@@ -24,15 +25,39 @@ public abstract class AbstractProducerFactory<E> extends StreamConfiguration imp
 
     @JsonIgnore
     @Override
-    public ProducerFactory<E> encoder(EventEncoder<E> encoder) {
-        this.encoder = encoder;
-        return this;
+    public Function<E, String> getPartitionKeyFn() {
+        return partitionKeyFn;
+    }
+
+    @JsonIgnore
+    @Override
+    public void setPartitionKeyFn(Function<E, String> partitionKeyFn) {
+        this.partitionKeyFn = partitionKeyFn;
     }
 
     @JsonIgnore
     @Override
     public ProducerFactory<E> partitionKeyFn(Function<E, String> partitionKeyFn) {
-        this.partitionKeyFn = partitionKeyFn;
+        this.setPartitionKeyFn(partitionKeyFn);
+        return this;
+    }
+
+    @JsonIgnore
+    @Override
+    public EventEncoder<E> getEncoder() {
+        return encoder;
+    }
+
+    @JsonIgnore
+    @Override
+    public void setEncoder(EventEncoder<E> encoder) {
+        this.encoder = encoder;
+    }
+
+    @JsonIgnore
+    @Override
+    public ProducerFactory<E> encoder(EventEncoder<E> encoder) {
+        this.setEncoder(encoder);
         return this;
     }
 
