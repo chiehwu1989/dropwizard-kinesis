@@ -58,245 +58,245 @@ public class DynamoDbMetricsProxy implements AmazonDynamoDB {
 
     @Override
     public BatchGetItemResult batchGetItem(BatchGetItemRequest batchGetItemRequest) {
-        try(Timer.Context time = batchGetItemTimer.time()){
+        try(Timer.Context ignored = batchGetItemTimer.time()){
             return delegate.batchGetItem(batchGetItemRequest);
         }
     }
 
     @Override
     public BatchGetItemResult batchGetItem(Map<String, KeysAndAttributes> map, String s) {
-        try(Timer.Context time = batchGetItemTimer.time()) {
+        try(Timer.Context ignored = batchGetItemTimer.time()) {
             return delegate.batchGetItem(map, s);
         }
     }
 
     @Override
     public BatchGetItemResult batchGetItem(Map<String, KeysAndAttributes> map) {
-        try(Timer.Context time = batchGetItemTimer.time()) {
+        try(Timer.Context ignored = batchGetItemTimer.time()) {
             return delegate.batchGetItem(map);
         }
     }
 
     @Override
     public BatchWriteItemResult batchWriteItem(BatchWriteItemRequest batchWriteItemRequest) {
-        try(Timer.Context time = batchWriteItemTimer.time()) {
+        try(Timer.Context ignored = batchWriteItemTimer.time()) {
             return delegate.batchWriteItem(batchWriteItemRequest);
         }
     }
 
     @Override
     public BatchWriteItemResult batchWriteItem(Map<String, List<WriteRequest>> map) {
-        try(Timer.Context time = batchWriteItemTimer.time()) {
+        try(Timer.Context ignored = batchWriteItemTimer.time()) {
             return delegate.batchWriteItem(map);
         }
     }
 
     @Override
     public CreateTableResult createTable(CreateTableRequest createTableRequest) {
-        try(Timer.Context time = createTableTimer.time()) {
+        try(Timer.Context ignored = createTableTimer.time()) {
             return delegate.createTable(createTableRequest);
         }
     }
 
     @Override
     public CreateTableResult createTable(List<AttributeDefinition> list, String s, List<KeySchemaElement> list1, ProvisionedThroughput provisionedThroughput) {
-        try(Timer.Context time = createTableTimer.time()) {
+        try(Timer.Context ignored = createTableTimer.time()) {
             return delegate.createTable(list, s, list1, provisionedThroughput);
         }
     }
 
     @Override
     public DeleteItemResult deleteItem(DeleteItemRequest deleteItemRequest) {
-        try(Timer.Context time = deleteItemTimer.time()) {
+        try(Timer.Context ignored = deleteItemTimer.time()) {
             return delegate.deleteItem(deleteItemRequest);
         }
     }
 
     @Override
     public DeleteItemResult deleteItem(String s, Map<String, AttributeValue> map) {
-        try(Timer.Context time = deleteItemTimer.time()) {
+        try(Timer.Context ignored = deleteItemTimer.time()) {
             return delegate.deleteItem(s, map);
         }
     }
 
     @Override
     public DeleteItemResult deleteItem(String s, Map<String, AttributeValue> map, String s1) {
-        try(Timer.Context time = deleteItemTimer.time()) {
+        try(Timer.Context ignored = deleteItemTimer.time()) {
             return delegate.deleteItem(s, map, s1);
         }
     }
 
     @Override
     public DeleteTableResult deleteTable(DeleteTableRequest deleteTableRequest) {
-        try(Timer.Context time = deleteTableTimer.time()) {
+        try(Timer.Context ignored = deleteTableTimer.time()) {
             return delegate.deleteTable(deleteTableRequest);
         }
     }
 
     @Override
     public DeleteTableResult deleteTable(String s) {
-        try(Timer.Context time = deleteTableTimer.time()) {
+        try(Timer.Context ignored = deleteTableTimer.time()) {
             return delegate.deleteTable(s);
         }
     }
 
     @Override
     public DescribeTableResult describeTable(DescribeTableRequest describeTableRequest) {
-        try(Timer.Context time = describeTableTimer.time()) {
+        try(Timer.Context ignored = describeTableTimer.time()) {
             return delegate.describeTable(describeTableRequest);
         }
     }
 
     @Override
     public DescribeTableResult describeTable(String s) {
-        try(Timer.Context time = describeTableTimer.time()) {
+        try(Timer.Context ignored = describeTableTimer.time()) {
             return delegate.describeTable(s);
         }
     }
 
     @Override
     public GetItemResult getItem(GetItemRequest getItemRequest) {
-        try(Timer.Context time = getItemTimer.time()) {
+        try(Timer.Context ignored = getItemTimer.time()) {
             return delegate.getItem(getItemRequest);
         }
     }
 
     @Override
     public GetItemResult getItem(String s, Map<String, AttributeValue> map) {
-        try(Timer.Context time = getItemTimer.time()) {
+        try(Timer.Context ignored = getItemTimer.time()) {
             return delegate.getItem(s, map);
         }
     }
 
     @Override
     public GetItemResult getItem(String s, Map<String, AttributeValue> map, Boolean aBoolean) {
-        try(Timer.Context time = getItemTimer.time()) {
+        try(Timer.Context ignored = getItemTimer.time()) {
             return delegate.getItem(s, map, aBoolean);
         }
     }
 
     @Override
     public ListTablesResult listTables(ListTablesRequest listTablesRequest) {
-        try(Timer.Context time = listTablesTimer.time()) {
+        try(Timer.Context ignored = listTablesTimer.time()) {
             return delegate.listTables(listTablesRequest);
         }
     }
 
     @Override
     public ListTablesResult listTables() {
-        try(Timer.Context time = listTablesTimer.time()) {
+        try(Timer.Context ignored = listTablesTimer.time()) {
             return delegate.listTables();
         }
     }
 
     @Override
     public ListTablesResult listTables(String s) {
-        try(Timer.Context time = listTablesTimer.time()) {
+        try(Timer.Context ignored = listTablesTimer.time()) {
             return delegate.listTables(s);
         }
     }
 
     @Override
     public ListTablesResult listTables(String s, Integer integer) {
-        try(Timer.Context time = listTablesTimer.time()) {
+        try(Timer.Context ignored = listTablesTimer.time()) {
             return delegate.listTables(s, integer);
         }
     }
 
     @Override
     public ListTablesResult listTables(Integer integer) {
-        try(Timer.Context time = listTablesTimer.time()) {
+        try(Timer.Context ignored = listTablesTimer.time()) {
             return delegate.listTables(integer);
         }
     }
 
     @Override
     public PutItemResult putItem(PutItemRequest putItemRequest) {
-        try(Timer.Context time = putItemTimer.time()) {
+        try(Timer.Context ignored = putItemTimer.time()) {
             return delegate.putItem(putItemRequest);
         }
     }
 
     @Override
     public PutItemResult putItem(String s, Map<String, AttributeValue> map) {
-        try(Timer.Context time = putItemTimer.time()) {
+        try(Timer.Context ignored = putItemTimer.time()) {
             return delegate.putItem(s, map);
         }
     }
 
     @Override
     public PutItemResult putItem(String s, Map<String, AttributeValue> map, String s1) {
-        try(Timer.Context time = putItemTimer.time()) {
+        try(Timer.Context ignored = putItemTimer.time()) {
             return delegate.putItem(s, map, s1);
         }
     }
 
     @Override
     public QueryResult query(QueryRequest queryRequest) {
-        try(Timer.Context time = queryTimer.time()) {
+        try(Timer.Context ignored = queryTimer.time()) {
             return delegate.query(queryRequest);
         }
     }
 
     @Override
     public ScanResult scan(ScanRequest scanRequest) {
-        try(Timer.Context time = scanTimer.time()) {
+        try(Timer.Context ignored = scanTimer.time()) {
             return delegate.scan(scanRequest);
         }
     }
 
     @Override
     public ScanResult scan(String s, List<String> list) {
-        try(Timer.Context time = scanTimer.time()) {
+        try(Timer.Context ignored = scanTimer.time()) {
             return delegate.scan(s, list);
         }
     }
 
     @Override
     public ScanResult scan(String s, Map<String, Condition> map) {
-        try(Timer.Context time = scanTimer.time()) {
+        try(Timer.Context ignored = scanTimer.time()) {
             return delegate.scan(s, map);
         }
     }
 
     @Override
     public ScanResult scan(String s, List<String> list, Map<String, Condition> map) {
-        try(Timer.Context time = scanTimer.time()) {
+        try(Timer.Context ignored = scanTimer.time()) {
             return delegate.scan(s, list, map);
         }
     }
 
     @Override
     public UpdateItemResult updateItem(UpdateItemRequest updateItemRequest) {
-        try(Timer.Context time = updateItemTimer.time()) {
+        try(Timer.Context ignored = updateItemTimer.time()) {
             return delegate.updateItem(updateItemRequest);
         }
     }
 
     @Override
     public UpdateItemResult updateItem(String s, Map<String, AttributeValue> map, Map<String, AttributeValueUpdate> map1) {
-        try(Timer.Context time = updateItemTimer.time()) {
+        try(Timer.Context ignored = updateItemTimer.time()) {
             return delegate.updateItem(s, map, map1);
         }
     }
 
     @Override
     public UpdateItemResult updateItem(String s, Map<String, AttributeValue> map, Map<String, AttributeValueUpdate> map1, String s1) {
-        try(Timer.Context time = updateItemTimer.time()) {
+        try(Timer.Context ignored = updateItemTimer.time()) {
             return delegate.updateItem(s, map, map1, s1);
         }
     }
 
     @Override
     public UpdateTableResult updateTable(UpdateTableRequest updateTableRequest) {
-        try(Timer.Context time = updateTableTimer.time()) {
+        try(Timer.Context ignored = updateTableTimer.time()) {
             return delegate.updateTable(updateTableRequest);
         }
     }
 
     @Override
     public UpdateTableResult updateTable(String s, ProvisionedThroughput provisionedThroughput) {
-        try(Timer.Context time = updateTableTimer.time()) {
+        try(Timer.Context ignored = updateTableTimer.time()) {
             return delegate.updateTable(s, provisionedThroughput);
         }
     }
