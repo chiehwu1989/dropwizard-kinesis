@@ -71,7 +71,6 @@ public class BufferedProducerFactory<E> extends AbstractProducerFactory<E> {
         Preconditions.checkNotNull(partitionKeyFn, "partitionKeyFn cannot be null, is allowed to return null");
         Preconditions.checkNotNull(flushPeriod, "flushPeriod cannot be null");
         Preconditions.checkArgument(flushPeriod.getQuantity() > 0, "flush period must be positive");
-
         Preconditions.checkState(super.setupStream(kinesis), String.format("stream %s was not setup successfully", getStreamName()));
 
         ScheduledExecutorService deliveryExecutor;
