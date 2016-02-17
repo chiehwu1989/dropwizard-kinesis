@@ -1,5 +1,6 @@
 package io.codemonastery.dropwizard.kinesis;
 
+import com.amazonaws.services.kinesis.AmazonKinesis;
 import com.amazonaws.util.StringInputStream;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.dropwizard.Configuration;
@@ -12,6 +13,8 @@ import javax.validation.constraints.NotNull;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.fail;
+import static org.mockito.Matchers.any;
+import static org.mockito.Mockito.*;
 
 public class StreamConfigurationTest {
 
@@ -53,5 +56,18 @@ public class StreamConfigurationTest {
         assertThat(configuration.stream).isNotNull();
         assertThat(configuration.stream.getStreamName()).isEqualTo("xyz");
         assertThat(configuration.stream.getCreate()).isNotNull();
+    }
+
+    @Test
+    public void callSetupOnCreate() throws Exception {
+        StreamCreateConfiguration create = mock(StreamCreateConfiguration.class);
+        when(create.setupStream(any(AmazonKinesis.class), any(String.class))).thenReturn(false);
+
+        StreamConfiguration configuration = new StreamConfiguration();
+        configuration.setCreate(create);
+        boolean result = configuration.setupStream(null);
+
+        verify(create, times(1)).setupStream(any(AmazonKinesis.class), any(String.class));
+        assertThat(result).isFalse();
     }
 }

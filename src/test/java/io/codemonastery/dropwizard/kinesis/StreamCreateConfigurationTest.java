@@ -98,11 +98,12 @@ public class StreamCreateConfigurationTest {
                 .createStream(eq(STREAM_NAME), anyInt());
 
         StreamCreateConfiguration create = new StreamCreateConfiguration()
-                .retryPeriod(Duration.milliseconds(100));
+                .retryPeriod(Duration.milliseconds(100))
+                .shardCount(10);
         assertThat(callCreateAssertTerminated(create)).isTrue();
 
         verify(kinesis, times(5)).describeStream(STREAM_NAME);
-        verify(kinesis, times(1)).createStream(anyString(), anyInt());
+        verify(kinesis, times(1)).createStream(STREAM_NAME, create.getShardCount());
     }
 
     @Test
