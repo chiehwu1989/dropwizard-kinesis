@@ -24,7 +24,7 @@ public class DynamoDbFactory {
     @NotNull
     private Regions region = Regions.DEFAULT_REGION;
 
-    private ClientMetricsProxyFactory<AmazonDynamoDB> metricsProxyFactory = (metrics, dynamoDB, name) -> new DynamoDbMetricsProxy(dynamoDB, metrics, name);
+    private ClientMetricsProxyFactory<AmazonDynamoDB> metricsProxyFactory = DynamoDbMetricsProxy::new;
 
     @Valid
     @NotNull
@@ -40,9 +40,23 @@ public class DynamoDbFactory {
         this.region = region;
     }
 
+    public DynamoDbFactory region(Regions region){
+        this.setRegion(region);
+        return this;
+    }
+
+    @JsonIgnore
+    public ClientMetricsProxyFactory<AmazonDynamoDB> getMetricsProxyFactory() {
+        return metricsProxyFactory;
+    }
+
+    @JsonIgnore
+    public void setMetricsProxyFactory(ClientMetricsProxyFactory<AmazonDynamoDB> metricsProxyFactory) {
+        this.metricsProxyFactory = metricsProxyFactory;
+    }
     @JsonIgnore
     public DynamoDbFactory metricsProxy(ClientMetricsProxyFactory<AmazonDynamoDB> metricsProxyFactory) {
-        this.metricsProxyFactory = metricsProxyFactory;
+        this.setMetricsProxyFactory(metricsProxyFactory);
         return this;
     }
 
@@ -63,13 +77,13 @@ public class DynamoDbFactory {
 
     @JsonIgnore
     public DynamoDbFactory client(ClientConfiguration clientConfiguration) {
-        this.client = new JacksonClientConfiguration(clientConfiguration);
+        this.setClient(clientConfiguration);
         return this;
     }
 
     @JsonIgnore
     public DynamoDbFactory client(JacksonClientConfiguration clientConfiguration) {
-        this.client = clientConfiguration;
+        this.setClient(clientConfiguration);
         return this;
     }
 
@@ -91,7 +105,7 @@ public class DynamoDbFactory {
         AmazonDynamoDB client = makeClient(credentialsProvider);
 
         if(metrics != null  && metricsProxyFactory != null){
-            client = metricsProxyFactory.proxy(metrics, client, name);
+            client = metricsProxyFactory.proxy(client, metrics, name);
         }
         if(healthChecks != null){
             healthChecks.register(name, new DynamoDbClientHealthCheck(client));

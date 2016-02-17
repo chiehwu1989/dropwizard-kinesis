@@ -25,7 +25,7 @@ public class KinesisFactory {
     @NotNull
     private Regions region = Regions.DEFAULT_REGION;
 
-    private ClientMetricsProxyFactory<AmazonKinesis> metricsProxy = (metrics, kinesis, name) -> new KinesisMetricsProxy(kinesis, metrics, name);
+    private ClientMetricsProxyFactory<AmazonKinesis> metricsProxy = KinesisMetricsProxy::new;
 
     @NotNull
     private JacksonClientConfiguration client = new JacksonClientConfiguration();
@@ -92,7 +92,7 @@ public class KinesisFactory {
         AmazonKinesis client = makeClient(credentialsProvider);
 
         if (metrics != null && metricsProxy != null) {
-            client = metricsProxy.proxy(metrics, client, name);
+            client = metricsProxy.proxy(client, metrics, name);
             Preconditions.checkNotNull(client, metricsProxy.getClass().getName() + " returned a null client");
         }
         if (lifecycle != null) {
