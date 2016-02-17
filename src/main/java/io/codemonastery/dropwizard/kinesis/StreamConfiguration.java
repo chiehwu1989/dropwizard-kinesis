@@ -48,6 +48,7 @@ public class StreamConfiguration {
 
     @JsonIgnore
     protected boolean setupStream(AmazonKinesis kinesis) {
+        Preconditions.checkNotNull(streamName, "stream name cannot be null");
         boolean setup = true;
         if (create != null) {
             setup = create.setupStream(kinesis, streamName);

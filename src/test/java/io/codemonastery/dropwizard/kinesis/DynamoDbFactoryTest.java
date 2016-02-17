@@ -4,12 +4,13 @@ import com.amazonaws.regions.Regions;
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDB;
 import com.amazonaws.util.StringInputStream;
 import com.codahale.metrics.MetricRegistry;
-import com.codahale.metrics.health.HealthCheckRegistry;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.codemonastery.dropwizard.kinesis.metric.ClientMetricsProxyFactory;
 import io.codemonastery.dropwizard.kinesis.metric.DynamoDbMetricsProxy;
 import io.dropwizard.Configuration;
-import io.dropwizard.lifecycle.setup.LifecycleEnvironment;
+import io.dropwizard.jackson.Jackson;
+import io.dropwizard.jersey.validation.Validators;
+import io.dropwizard.setup.Environment;
 import org.junit.After;
 import org.junit.Test;
 
@@ -66,13 +67,12 @@ public class DynamoDbFactoryTest {
         assertThat(factory.getRegion()).isSameAs(region);
         assertThat(factory.getMetricsProxyFactory()).isSameAs(metricsProxyFactory);
 
-        HealthCheckRegistry healthChecks = new HealthCheckRegistry();
-        MetricRegistry metrics = new MetricRegistry();
-        LifecycleEnvironment lifecycle = new LifecycleEnvironment();
-        AmazonDynamoDB dynamoDB = factory.build(metrics, healthChecks, lifecycle, new NoCredentialsProvider(), "foo");
+        Environment environment = new Environment("app", Jackson.newObjectMapper(), Validators.newValidator(), new MetricRegistry(), this.getClass().getClassLoader());
+        assertThat(environment.lifecycle().getManagedObjects().size()).isEqualTo(1);
+        AmazonDynamoDB dynamoDB = factory.build(environment, new NoCredentialsProvider(), "foo");
 
         assertThat(dynamoDB).isInstanceOf(DynamoDbMetricsProxy.class);
-        assertThat(healthChecks.getNames().contains("foo"));
-        assertThat(lifecycle.getManagedObjects().size()).isEqualTo(1);
+        assertThat(environment.healthChecks().getNames().contains("foo"));
+        assertThat(environment.lifecycle().getManagedObjects().size()).isEqualTo(2);
     }
 }
