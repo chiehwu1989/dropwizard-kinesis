@@ -11,6 +11,10 @@ import java.util.List;
 import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Matchers.any;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.mockito.MockitoAnnotations.initMocks;
 
 public class DynamoDbMetricsProxyTest {
@@ -150,5 +154,37 @@ public class DynamoDbMetricsProxyTest {
         dynamoDB.updateTable(null);
         dynamoDB.updateTable(null, null);
         assertThat(metricRegistry.timer("foo-update-table").getCount()).isEqualTo(2);
+    }
+
+    @Test
+    public void shutdown() throws Exception {
+        DynamoDbMetricsProxy dynamoDB = new DynamoDbMetricsProxy(delegate, metricRegistry, "foo");
+        verify(delegate, never()).shutdown();
+        dynamoDB.shutdown();
+        verify(delegate, times(1)).shutdown();
+    }
+
+    @Test
+    public void getCachedResponseMetadata() throws Exception {
+        DynamoDbMetricsProxy dynamoDB = new DynamoDbMetricsProxy(delegate, metricRegistry, "foo");
+        verify(delegate, never()).getCachedResponseMetadata(any());
+        dynamoDB.getCachedResponseMetadata(null);
+        verify(delegate, times(1)).getCachedResponseMetadata(any());
+    }
+
+    @Test
+    public void setRegion() throws Exception {
+        DynamoDbMetricsProxy dynamoDB = new DynamoDbMetricsProxy(delegate, metricRegistry, "foo");
+        verify(delegate, never()).setRegion(any());
+        dynamoDB.setRegion(null);
+        verify(delegate, times(1)).setRegion(any());
+    }
+
+    @Test
+    public void setEndpoint() throws Exception {
+        DynamoDbMetricsProxy dynamoDB = new DynamoDbMetricsProxy(delegate, metricRegistry, "foo");
+        verify(delegate, never()).setEndpoint(any());
+        dynamoDB.setEndpoint(null);
+        verify(delegate, times(1)).setEndpoint(any());
     }
 }

@@ -10,6 +10,10 @@ import org.junit.Test;
 import org.mockito.Mock;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Matchers.any;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.mockito.MockitoAnnotations.initMocks;
 
 public class KinesisMetricsProxyTest {
@@ -17,7 +21,7 @@ public class KinesisMetricsProxyTest {
     private MetricRegistry metricRegistry;
 
     @Mock
-    private AmazonKinesis kinesis;
+    private AmazonKinesis delegate;
 
     @Before
     public void setUp() throws Exception {
@@ -27,7 +31,7 @@ public class KinesisMetricsProxyTest {
 
     @Test
     public void addTagsToStream() throws Exception {
-        KinesisMetricsProxy metrics = new KinesisMetricsProxy(kinesis, metricRegistry, "foo");
+        KinesisMetricsProxy metrics = new KinesisMetricsProxy(delegate, metricRegistry, "foo");
 
         assertThat(metricRegistry.timer("foo-add-tags-to-stream").getCount()).isEqualTo(0);
         metrics.addTagsToStream(null);
@@ -36,7 +40,7 @@ public class KinesisMetricsProxyTest {
 
     @Test
     public void createStreamTimer() throws Exception {
-        KinesisMetricsProxy metrics = new KinesisMetricsProxy(kinesis, metricRegistry, "foo");
+        KinesisMetricsProxy metrics = new KinesisMetricsProxy(delegate, metricRegistry, "foo");
 
         assertThat(metricRegistry.timer("foo-create-stream").getCount()).isEqualTo(0);
         metrics.createStream(null);
@@ -46,7 +50,7 @@ public class KinesisMetricsProxyTest {
 
     @Test
     public void decreaseStreamRetentionPeriod() throws Exception {
-        KinesisMetricsProxy metrics = new KinesisMetricsProxy(kinesis, metricRegistry, "foo");
+        KinesisMetricsProxy metrics = new KinesisMetricsProxy(delegate, metricRegistry, "foo");
 
         assertThat(metricRegistry.timer("foo-decrease-stream-retention-period").getCount()).isEqualTo(0);
         metrics.decreaseStreamRetentionPeriod(null);
@@ -55,7 +59,7 @@ public class KinesisMetricsProxyTest {
 
     @Test
     public void deleteStream() throws Exception {
-        KinesisMetricsProxy metrics = new KinesisMetricsProxy(kinesis, metricRegistry, "foo");
+        KinesisMetricsProxy metrics = new KinesisMetricsProxy(delegate, metricRegistry, "foo");
 
         assertThat(metricRegistry.timer("foo-delete-stream").getCount()).isEqualTo(0);
         metrics.deleteStream((DeleteStreamRequest) null);
@@ -65,7 +69,7 @@ public class KinesisMetricsProxyTest {
 
     @Test
     public void describeStream() throws Exception {
-        KinesisMetricsProxy metrics = new KinesisMetricsProxy(kinesis, metricRegistry, "foo");
+        KinesisMetricsProxy metrics = new KinesisMetricsProxy(delegate, metricRegistry, "foo");
 
         assertThat(metricRegistry.timer("foo-describe-stream").getCount()).isEqualTo(0);
         metrics.describeStream((DescribeStreamRequest) null);
@@ -78,7 +82,7 @@ public class KinesisMetricsProxyTest {
 
     @Test
     public void getRecords() throws Exception {
-        KinesisMetricsProxy metrics = new KinesisMetricsProxy(kinesis, metricRegistry, "foo");
+        KinesisMetricsProxy metrics = new KinesisMetricsProxy(delegate, metricRegistry, "foo");
 
         assertThat(metricRegistry.timer("foo-get-records").getCount()).isEqualTo(0);
         metrics.getRecords(null);
@@ -87,7 +91,7 @@ public class KinesisMetricsProxyTest {
 
     @Test
     public void getShardIterator() throws Exception {
-        KinesisMetricsProxy metrics = new KinesisMetricsProxy(kinesis, metricRegistry, "foo");
+        KinesisMetricsProxy metrics = new KinesisMetricsProxy(delegate, metricRegistry, "foo");
 
         assertThat(metricRegistry.timer("foo-get-shard-iterator").getCount()).isEqualTo(0);
         metrics.getShardIterator(null);
@@ -98,7 +102,7 @@ public class KinesisMetricsProxyTest {
 
     @Test
     public void increaseStreamRetentionPeriod() throws Exception {
-        KinesisMetricsProxy metrics = new KinesisMetricsProxy(kinesis, metricRegistry, "foo");
+        KinesisMetricsProxy metrics = new KinesisMetricsProxy(delegate, metricRegistry, "foo");
 
         assertThat(metricRegistry.timer("foo-increase-stream-retention-period").getCount()).isEqualTo(0);
         metrics.increaseStreamRetentionPeriod(null);
@@ -107,7 +111,7 @@ public class KinesisMetricsProxyTest {
 
     @Test
     public void listStreams() throws Exception {
-        KinesisMetricsProxy metrics = new KinesisMetricsProxy(kinesis, metricRegistry, "foo");
+        KinesisMetricsProxy metrics = new KinesisMetricsProxy(delegate, metricRegistry, "foo");
 
         assertThat(metricRegistry.timer("foo-list-streams").getCount()).isEqualTo(0);
         metrics.listStreams();
@@ -119,7 +123,7 @@ public class KinesisMetricsProxyTest {
 
     @Test
     public void listTagsForStreams() throws Exception {
-        KinesisMetricsProxy metrics = new KinesisMetricsProxy(kinesis, metricRegistry, "foo");
+        KinesisMetricsProxy metrics = new KinesisMetricsProxy(delegate, metricRegistry, "foo");
 
         assertThat(metricRegistry.timer("foo-list-tags-for-stream").getCount()).isEqualTo(0);
         metrics.listTagsForStream(null);
@@ -128,7 +132,7 @@ public class KinesisMetricsProxyTest {
 
     @Test
     public void mergeShards() throws Exception {
-        KinesisMetricsProxy metrics = new KinesisMetricsProxy(kinesis, metricRegistry, "foo");
+        KinesisMetricsProxy metrics = new KinesisMetricsProxy(delegate, metricRegistry, "foo");
 
         assertThat(metricRegistry.timer("foo-merge-shards").getCount()).isEqualTo(0);
         metrics.mergeShards(null);
@@ -138,7 +142,7 @@ public class KinesisMetricsProxyTest {
 
     @Test
     public void putRecord() throws Exception {
-        KinesisMetricsProxy metrics = new KinesisMetricsProxy(kinesis, metricRegistry, "foo");
+        KinesisMetricsProxy metrics = new KinesisMetricsProxy(delegate, metricRegistry, "foo");
 
         assertThat(metricRegistry.timer("foo-put-record").getCount()).isEqualTo(0);
         metrics.putRecord(null);
@@ -149,7 +153,7 @@ public class KinesisMetricsProxyTest {
 
     @Test
     public void putRecords() throws Exception {
-        KinesisMetricsProxy metrics = new KinesisMetricsProxy(kinesis, metricRegistry, "foo");
+        KinesisMetricsProxy metrics = new KinesisMetricsProxy(delegate, metricRegistry, "foo");
 
         assertThat(metricRegistry.timer("foo-put-records").getCount()).isEqualTo(0);
         metrics.putRecords(null);
@@ -158,7 +162,7 @@ public class KinesisMetricsProxyTest {
 
     @Test
     public void removeTagsFromStreamTimer() throws Exception {
-        KinesisMetricsProxy metrics = new KinesisMetricsProxy(kinesis, metricRegistry, "foo");
+        KinesisMetricsProxy metrics = new KinesisMetricsProxy(delegate, metricRegistry, "foo");
 
         assertThat(metricRegistry.timer("foo-remove-tags-from-stream").getCount()).isEqualTo(0);
         metrics.removeTagsFromStream(null);
@@ -167,11 +171,43 @@ public class KinesisMetricsProxyTest {
 
     @Test
     public void splitShard() throws Exception {
-        KinesisMetricsProxy metrics = new KinesisMetricsProxy(kinesis, metricRegistry, "foo");
+        KinesisMetricsProxy metrics = new KinesisMetricsProxy(delegate, metricRegistry, "foo");
 
         assertThat(metricRegistry.timer("foo-split-shard").getCount()).isEqualTo(0);
         metrics.splitShard(null);
         metrics.splitShard(null, null, null);
         assertThat(metricRegistry.timer("foo-split-shard").getCount()).isEqualTo(2);
+    }
+
+    @Test
+    public void shutdown() throws Exception {
+        KinesisMetricsProxy metrics = new KinesisMetricsProxy(delegate, metricRegistry, "foo");
+        verify(delegate, never()).shutdown();
+        metrics.shutdown();
+        verify(delegate, times(1)).shutdown();
+    }
+
+    @Test
+    public void getCachedResponseMetadata() throws Exception {
+        KinesisMetricsProxy metrics = new KinesisMetricsProxy(delegate, metricRegistry, "foo");
+        verify(delegate, never()).getCachedResponseMetadata(any());
+        metrics.getCachedResponseMetadata(null);
+        verify(delegate, times(1)).getCachedResponseMetadata(any());
+    }
+
+    @Test
+    public void setEndpoint() throws Exception {
+        KinesisMetricsProxy metrics = new KinesisMetricsProxy(delegate, metricRegistry, "foo");
+        verify(delegate, never()).setEndpoint(any());
+        metrics.setEndpoint(null);
+        verify(delegate, times(1)).setEndpoint(any());
+    }
+
+    @Test
+    public void setRegion() throws Exception {
+        KinesisMetricsProxy metrics = new KinesisMetricsProxy(delegate, metricRegistry, "foo");
+        verify(delegate, never()).setRegion(any());
+        metrics.setRegion(null);
+        verify(delegate, times(1)).setRegion(any());
     }
 }
