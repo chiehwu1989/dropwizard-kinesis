@@ -11,8 +11,6 @@ import io.codemonastery.dropwizard.kinesis.EventDecoder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.Closeable;
-
 public final class RecordProcessor<E> implements IRecordProcessor {
 
     private static final Logger LOG = LoggerFactory.getLogger(RecordProcessor.class);
@@ -65,10 +63,10 @@ public final class RecordProcessor<E> implements IRecordProcessor {
                     LOG.error("Unhandled exception processing event" + event, e);
                 }
                 if(processed){
-                    metrics.success();
+                    metrics.processSuccess();
                     lastRecordProcessed = record;
                 }else{
-                    metrics.failure();
+                    metrics.processFailure();
                     break;
                 }
             }

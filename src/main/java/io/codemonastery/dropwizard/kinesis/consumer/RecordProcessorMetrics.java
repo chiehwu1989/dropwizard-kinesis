@@ -49,13 +49,13 @@ public class RecordProcessorMetrics {
         }
     }
 
-    public void success() {
+    public void processSuccess() {
         if(successMeter != null){
             successMeter.mark();
         }
     }
 
-    public void failure() {
+    public void processFailure() {
         if(failureMeter != null){
             failureMeter.mark();
         }
