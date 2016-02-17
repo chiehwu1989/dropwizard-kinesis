@@ -1,5 +1,6 @@
 package io.codemonastery.dropwizard.kinesis;
 
+import com.amazonaws.auth.AWSCredentials;
 import com.amazonaws.util.StringInputStream;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.dropwizard.Configuration;
@@ -31,5 +32,9 @@ public class AwsCredentialsFactoryTest {
         assertThat(configuration.aws).isNotNull();
         assertThat(configuration.aws.getAccessKey()).isEqualTo("aaa");
         assertThat(configuration.aws.getSecretAccessKey()).isEqualTo("bbb");
+
+        AWSCredentials credentials = configuration.aws.getCredentials();
+        assertThat(credentials.getAWSAccessKeyId()).isEqualTo("aaa");
+        assertThat(credentials.getAWSSecretKey()).isEqualTo("bbb");
     }
 }
