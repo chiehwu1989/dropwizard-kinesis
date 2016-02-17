@@ -7,7 +7,6 @@ import com.google.common.base.Preconditions;
 
 public class BufferedProducerMetrics extends ProducerMetrics {
 
-
     private Meter bufferPutMeter;
     private Counter bufferSizeCounter;
 
@@ -16,8 +15,8 @@ public class BufferedProducerMetrics extends ProducerMetrics {
         Preconditions.checkNotNull(name, "name cannot be null");
 
        if(metrics != null){
-           bufferPutMeter = metrics.meter("buffer-put");
-           bufferSizeCounter = metrics.counter("buffer-size");
+           bufferPutMeter = metrics.meter(name + "-buffer-put");
+           bufferSizeCounter = metrics.counter(name + "-buffer-size");
        }
     }
 

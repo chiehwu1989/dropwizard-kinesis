@@ -7,6 +7,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.Preconditions;
 import io.codemonastery.dropwizard.kinesis.EventEncoder;
+import io.codemonastery.dropwizard.kinesis.healthcheck.StreamHealthCheck;
 import io.dropwizard.lifecycle.setup.LifecycleEnvironment;
 import io.dropwizard.util.Duration;
 
@@ -121,7 +122,7 @@ public class BufferedProducerFactory<E> extends AbstractProducerFactory<E> {
 
         BufferedProducerMetrics producerMetrics = new BufferedProducerMetrics(metrics, name);
         if(healthChecks != null){
-            healthChecks.register(name, new ProducerHealthCheck(producerMetrics, kinesis, getStreamName()));
+            healthChecks.register(name, new StreamFailureCheck(producerMetrics, new StreamHealthCheck(kinesis, getStreamName())));
         }
         BufferedProducer<E> producer = new BufferedProducer<>(kinesis, getStreamName(), partitionKeyFn, encoder, maxBufferSize, deliveryExecutor, producerMetrics);
         if(lifecycle != null){

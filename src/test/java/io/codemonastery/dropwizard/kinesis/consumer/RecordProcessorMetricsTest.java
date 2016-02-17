@@ -32,6 +32,14 @@ public class RecordProcessorMetricsTest {
     }
 
     @Test
+    public void decoded() throws Exception {
+        RecordProcessorMetrics metrics = new RecordProcessorMetrics(metricsRegistry, "foo");
+        assertThat(metricsRegistry.meter("foo-decode-success").getCount()).isEqualTo(0);
+        metrics.decoded();
+        assertThat(metricsRegistry.meter("foo-decode-success").getCount()).isEqualTo(1);
+    }
+
+    @Test
     public void decodeFailure() throws Exception {
         RecordProcessorMetrics metrics = new RecordProcessorMetrics(metricsRegistry, "foo");
         assertThat(metricsRegistry.meter("foo-decode-failure").getCount()).isEqualTo(0);
@@ -71,5 +79,53 @@ public class RecordProcessorMetricsTest {
             Thread.sleep(10);
         }
         assertThat(metricsRegistry.timer("foo-process-time").getCount()).isEqualTo(1);
+    }
+
+    @Test
+    public void noEventsNoFailure() throws Exception {
+        RecordProcessorMetrics metrics = new RecordProcessorMetrics(new MetricRegistry(), "foo");
+        assertThat(metrics.highFailureMetrics()).isEmpty();
+    }
+
+    @Test
+    public void manySuccessFullEvents() throws Exception {
+        RecordProcessorMetrics metrics = new RecordProcessorMetrics(new MetricRegistry(), "foo");
+        for (int i = 0; i < 100; i++) {
+            metrics.decoded();
+            metrics.processSuccess();
+        }
+        assertThat(metrics.highFailureMetrics()).isEmpty();
+    }
+
+    @Test
+    public void highEncodeFailure() throws Exception {
+        MetricRegistry registry = new MetricRegistry();
+        RecordProcessorMetrics metrics = new RecordProcessorMetrics(registry, "foo");
+        for (int i = 0; i < 100; i++) {
+            if(i % 2 == 0){
+                metrics.decoded();
+            }else{
+                metrics.decodeFailure();
+            }
+            Thread.sleep(50);
+        }
+        assertThat(metrics.highFailureMetrics().size()).isEqualTo(1);
+        assertThat(metrics.highFailureMetrics().get(0)).contains("% decode failure");
+    }
+
+    @Test
+    public void highSendFailure() throws Exception {
+        MetricRegistry registry = new MetricRegistry();
+        RecordProcessorMetrics metrics = new RecordProcessorMetrics(registry, "foo");
+        for (int i = 0; i < 100; i++) {
+            if(i % 2 == 0){
+                metrics.processSuccess();
+            }else{
+                metrics.processFailure();
+            }
+            Thread.sleep(50);
+        }
+        assertThat(metrics.highFailureMetrics().size()).isEqualTo(1);
+        assertThat(metrics.highFailureMetrics().get(0)).contains("% process failure");
     }
 }

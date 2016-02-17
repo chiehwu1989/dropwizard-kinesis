@@ -97,6 +97,7 @@ public class ConsumerFactoryTest {
 
             assertThat(env.metrics().getNames()).contains("foo-success");
             assertThat(env.lifecycle().getManagedObjects().size()).isEqualTo(3);
+            assertThat(env.healthChecks().getNames()).contains("foo");
         });
     }
 

@@ -10,6 +10,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Preconditions;
 import io.codemonastery.dropwizard.kinesis.EventDecoder;
 import io.codemonastery.dropwizard.kinesis.EventObjectMapper;
+import io.codemonastery.dropwizard.kinesis.healthcheck.StreamHealthCheck;
+import io.codemonastery.dropwizard.kinesis.producer.StreamFailureCheck;
 import io.dropwizard.lifecycle.setup.LifecycleEnvironment;
 import io.dropwizard.setup.Environment;
 import org.slf4j.Logger;
@@ -114,8 +116,8 @@ public class ConsumerFactory<E> extends KinesisClientLibConfig {
      * @param metrics metrics
      * @param healthChecks healthChecks
      * @param lifeCycle lifeCycle
-     * @param kinesisClient kinesisClient
-     * @param dynamoDBClient dynamoDBClient
+     * @param kinesis kinesis
+     * @param dynamoDb dynamoDBClient
      * @param name name
      * @return simple worker. If lifcycle was null, you will need to start worker on your own.
      */
@@ -123,13 +125,13 @@ public class ConsumerFactory<E> extends KinesisClientLibConfig {
     public SimpleWorker build(MetricRegistry metrics,
                               HealthCheckRegistry healthChecks,
                               LifecycleEnvironment lifeCycle,
-                              AmazonKinesis kinesisClient,
-                              AmazonDynamoDB dynamoDBClient,
+                              AmazonKinesis kinesis,
+                              AmazonDynamoDB dynamoDb,
                               String name) {
         Preconditions.checkNotNull(decoder, "decoder cannot be null");
         Preconditions.checkNotNull(consumer, "consumer cannot be null");
 
-        super.setupStream(kinesisClient);
+        super.setupStream(kinesis);
 
         RecordProcessorMetrics processorMetrics = new RecordProcessorMetrics(metrics, name);
         RecordProcessorFactory<E> recordProcessorFactory = new RecordProcessorFactory<>(
@@ -139,8 +141,12 @@ public class ConsumerFactory<E> extends KinesisClientLibConfig {
         SimpleWorker.Builder builder = new SimpleWorker.Builder()
                 .recordProcessorFactory(recordProcessorFactory)
                 .config(makeKinesisClientLibConfiguration(name))
-                .kinesisClient(kinesisClient)
-                .dynamoDBClient(dynamoDBClient);
+                .kinesisClient(kinesis)
+                .dynamoDBClient(dynamoDb);
+
+        if(healthChecks != null){
+            healthChecks.register(name, new StreamFailureCheck(processorMetrics, new StreamHealthCheck(kinesis, getStreamName())));
+        }
 
         //use unbounded queue
         if (lifeCycle != null) {

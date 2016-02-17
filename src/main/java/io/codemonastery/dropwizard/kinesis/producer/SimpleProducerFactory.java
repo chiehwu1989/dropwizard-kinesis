@@ -5,6 +5,7 @@ import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.health.HealthCheckRegistry;
 import com.google.common.base.Preconditions;
 import io.codemonastery.dropwizard.kinesis.EventEncoder;
+import io.codemonastery.dropwizard.kinesis.healthcheck.StreamHealthCheck;
 import io.dropwizard.lifecycle.setup.LifecycleEnvironment;
 
 import java.util.function.Function;
@@ -41,7 +42,7 @@ public class SimpleProducerFactory<E> extends AbstractProducerFactory<E> {
 
         ProducerMetrics producerMetrics = new ProducerMetrics(metrics, name);
         if(healthChecks != null){
-            healthChecks.register(name, new ProducerHealthCheck(producerMetrics, kinesis, getStreamName()));
+            healthChecks.register(name, new StreamFailureCheck(producerMetrics, new StreamHealthCheck(kinesis, getStreamName())));
         }
         SimpleProducer<E> producer = new SimpleProducer<>(kinesis, getStreamName(), partitionKeyFn, encoder, producerMetrics);
         if(lifecycle != null){

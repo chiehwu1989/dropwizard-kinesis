@@ -24,7 +24,7 @@ public class KinesisClientHealthCheckTest {
     public void healthy() throws Exception {
         KinesisClientHealthCheck healthCheck = new KinesisClientHealthCheck(client);
 
-        HealthCheck.Result result = healthCheck.check();
+        HealthCheck.Result result = healthCheck.execute();
         assertNotNull(result);
         assertTrue(result.isHealthy());
     }
@@ -35,7 +35,7 @@ public class KinesisClientHealthCheckTest {
 
         KinesisClientHealthCheck healthCheck = new KinesisClientHealthCheck(client);
 
-        HealthCheck.Result result = healthCheck.check();
+        HealthCheck.Result result = healthCheck.execute();
         assertNotNull(result);
         assertFalse(result.isHealthy());
         assertNotNull(result.getMessage());

@@ -1,41 +1,22 @@
-package io.codemonastery.dropwizard.kinesis.producer;
+package io.codemonastery.dropwizard.kinesis.healthcheck;
 
 import com.amazonaws.services.kinesis.AmazonKinesis;
 import com.amazonaws.services.kinesis.model.DescribeStreamResult;
 import com.amazonaws.services.kinesis.model.ResourceNotFoundException;
 import com.codahale.metrics.health.HealthCheck;
-import com.google.common.base.Joiner;
 
-import java.util.List;
+public class StreamHealthCheck extends HealthCheck {
 
-public class ProducerHealthCheck extends HealthCheck {
-
-    private final ProducerMetrics metrics;
     private final AmazonKinesis kinesis;
     private final String streamName;
 
-    public ProducerHealthCheck(ProducerMetrics metrics, AmazonKinesis kinesis, String streamName) {
-        this.metrics = metrics;
+    public StreamHealthCheck(AmazonKinesis kinesis, String streamName) {
         this.kinesis = kinesis;
         this.streamName = streamName;
     }
 
     @Override
     protected Result check() throws Exception {
-        Result result = checkStreamExists();
-
-        //only if we can connect to stream should be check metrics
-        if(result.isHealthy()){
-            List<String> failed = metrics.highFailureMetrics();
-            if(failed != null && failed.size() > 0){
-                result = Result.unhealthy(Joiner.on(", ").join(failed));
-            }
-        }
-
-        return result;
-    }
-
-    private Result checkStreamExists() {
         Result result = Result.healthy();
         try{
             DescribeStreamResult describeResult = kinesis.describeStream(streamName);

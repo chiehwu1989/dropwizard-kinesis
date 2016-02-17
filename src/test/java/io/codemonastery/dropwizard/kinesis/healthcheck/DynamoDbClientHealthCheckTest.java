@@ -24,7 +24,7 @@ public class DynamoDbClientHealthCheckTest {
     public void healthy() throws Exception {
         DynamoDbClientHealthCheck healthCheck = new DynamoDbClientHealthCheck(client);
 
-        HealthCheck.Result result = healthCheck.check();
+        HealthCheck.Result result = healthCheck.execute();
         assertNotNull(result);
         assertTrue(result.isHealthy());
     }
@@ -35,7 +35,7 @@ public class DynamoDbClientHealthCheckTest {
 
         DynamoDbClientHealthCheck healthCheck = new DynamoDbClientHealthCheck(client);
 
-        HealthCheck.Result result = healthCheck.check();
+        HealthCheck.Result result = healthCheck.execute();
         assertNotNull(result);
         assertFalse(result.isHealthy());
         assertNotNull(result.getMessage());

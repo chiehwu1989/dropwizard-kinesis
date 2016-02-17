@@ -4,13 +4,14 @@ import com.codahale.metrics.Meter;
 import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.Timer;
 import com.google.common.base.Preconditions;
+import io.codemonastery.dropwizard.kinesis.metric.HasFailureThresholds;
 
 import java.io.Closeable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Function;
 
-public class ProducerMetrics {
+public class ProducerMetrics implements HasFailureThresholds {
 
     public static ProducerMetrics noOp() {
         return new ProducerMetrics(null, "");
@@ -35,7 +36,7 @@ public class ProducerMetrics {
             encodeSuccessMeter = metrics.meter(name + "-encode-success");
             sentMeter = metrics.meter(name + "-sent");
             failedMeter = metrics.meter(name + "-failed");
-            putRecordsTimer = metrics.timer(name + "-put-records");
+            putRecordsTimer = metrics.timer(name + "-put-records-time");
         }
     }
 
@@ -73,8 +74,10 @@ public class ProducerMetrics {
     public final Closeable time() {
         return putRecordsTimer == null ? NoOpClose.INSTANCE : putRecordsTimer.time();
     }
+
     private static final double failureFrequencyThreshold = 0.1;
 
+    @Override
     public List<String> highFailureMetrics(){
         List<String> failed = new ArrayList<>();
 
