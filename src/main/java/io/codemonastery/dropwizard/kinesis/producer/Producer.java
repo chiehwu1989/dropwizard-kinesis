@@ -13,6 +13,10 @@ import java.util.function.Function;
 
 public abstract class Producer<E> implements Managed {
 
+    public static final int MAX_RECORD_SIZE = 1024 * 1024;
+
+    public static final int MAX_REQUEST_SIZE = 5 * MAX_RECORD_SIZE;
+
     private static final Logger LOG = LoggerFactory.getLogger(Producer.class);
 
     private volatile boolean shutdown = false;
@@ -47,23 +51,28 @@ public abstract class Producer<E> implements Managed {
             LOG.error("could not encode event " + event.toString());
         }
 
-        String partitionKey = null;
-        try{
-            partitionKey = partitionKeyFn.apply(event);
-        }catch (Exception e){
-            metrics.partitionKeyFailed();
-            LOG.error("Unexpected exception while calculating partition key for event " + event.toString(), e);
-        }
-        if(partitionKey == null){
-            LOG.warn("skipping event " + event + " because partition key could not be calculated or was null");
-        } else if(bytes == null){
+        if(bytes == null){
             LOG.warn("skipping event " + event + " because could not be encoded or was null");
+        } else if (bytes.length > MAX_RECORD_SIZE) {
+            metrics.encodeFailed();
+            LOG.error(String.format("skipping event because encoded size was %.2f MB, larger than max record size", bytes.length / (1024.0 * 1024)));
         } else {
-            PutRecordsRequestEntry record = new PutRecordsRequestEntry()
-                    .withData(ByteBuffer.wrap(bytes))
-                    .withPartitionKey(partitionKey);
-            record = extra(record, event);
-            send(record);
+            String partitionKey = null;
+            try {
+                partitionKey = partitionKeyFn.apply(event);
+            } catch (Exception e) {
+                metrics.partitionKeyFailed();
+                LOG.error("Unexpected exception while calculating partition key for event " + event.toString(), e);
+            }
+            if (partitionKey == null) {
+                LOG.warn("skipping event " + event + " because partition key could not be calculated or was null");
+            } else {
+                PutRecordsRequestEntry record = new PutRecordsRequestEntry()
+                        .withData(ByteBuffer.wrap(bytes))
+                        .withPartitionKey(partitionKey);
+                record = extra(record, event);
+                send(record);
+            }
         }
     }
 
@@ -77,14 +86,14 @@ public abstract class Producer<E> implements Managed {
         shutdown = true;
     }
 
-    protected PutRecordsRequestEntry extra(PutRecordsRequestEntry record, @SuppressWarnings("UnusedParameters") E event){
+    protected PutRecordsRequestEntry extra(PutRecordsRequestEntry record, @SuppressWarnings("UnusedParameters") E event) {
         return record;
     }
 
     protected abstract void send(PutRecordsRequestEntry record) throws Exception;
 
     private void assertNotShutdownForSend() {
-        if(shutdown){
+        if (shutdown) {
             throw new IllegalStateException("cannot send more events because producer has been shutdown");
         }
     }

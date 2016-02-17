@@ -12,6 +12,10 @@ import java.util.function.Function;
 
 public class ProducerMetrics {
 
+    public static ProducerMetrics noOp() {
+        return new ProducerMetrics(null, "");
+    }
+
     private Meter partitionKeySuccessMeter;
     private Meter partitionKeyFailureMeter;
     private Meter encodeFailureMeter;
@@ -69,8 +73,8 @@ public class ProducerMetrics {
     public final Closeable time() {
         return putRecordsTimer == null ? NoOpClose.INSTANCE : putRecordsTimer.time();
     }
-
     private static final double failureFrequencyThreshold = 0.1;
+
     public List<String> highFailureMetrics(){
         List<String> failed = new ArrayList<>();
 
