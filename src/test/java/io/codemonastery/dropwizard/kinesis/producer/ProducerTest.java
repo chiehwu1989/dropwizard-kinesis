@@ -32,6 +32,8 @@ public class ProducerTest {
         byte[] almostTooLarge = new byte[Producer.MAX_RECORD_SIZE];
         producer.send(almostTooLarge);
         assertThat(innerSendCalled.get()).isTrue();
+
+        producer.start(); // does nothing hahaha
     }
 
     @Test

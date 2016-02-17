@@ -56,6 +56,13 @@ public class ConsumerFactoryTest {
         FakeConfiguration configuration = configurationFactory.build((s) -> new StringInputStream("consumer:\n  streamName: xyz"), "");
         assertThat(configuration).isNotNull();
         assertThat(configuration.consumer.getStreamName()).isEqualTo("xyz");
+
+        Environments.run("app", env->{
+            configuration.consumer.decoder(b->"")
+                    .build(env, kinesis, dynamoDb, "aaa"); // build so we can that check status of inferred
+            assertThat(configuration.consumer.getConsumer()).isNotNull();
+            assertThat(configuration.consumer.getConsumer().get().consume("aaa")).isTrue();
+        });
     }
 
     @Test
