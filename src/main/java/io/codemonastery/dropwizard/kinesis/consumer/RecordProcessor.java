@@ -21,12 +21,14 @@ public final class RecordProcessor<E> implements IRecordProcessor {
     private final EventConsumer<E> processor;
     private final RecordProcessorMetrics metrics;
 
-    public RecordProcessor(EventDecoder<E> decoder, EventConsumer<E> processor, RecordProcessorMetrics metrics) {
+    public RecordProcessor(EventDecoder<E> decoder,
+                           EventConsumer<E> eventConsumer,
+                           RecordProcessorMetrics metrics) {
         Preconditions.checkNotNull(decoder, "decoder cannot be null");
-        Preconditions.checkNotNull(processor, "processor cannot be null");
+        Preconditions.checkNotNull(eventConsumer, "eventConsumer cannot be null");
         Preconditions.checkNotNull(metrics, "metrics cannot be null");
         this.decoder = decoder;
-        this.processor = processor;
+        this.processor = eventConsumer;
         this.metrics = metrics;
     }
 

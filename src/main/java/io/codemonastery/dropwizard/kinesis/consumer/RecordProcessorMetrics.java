@@ -8,6 +8,10 @@ import io.codemonastery.dropwizard.kinesis.producer.NoOpClose;
 
 public class RecordProcessorMetrics {
 
+    public static RecordProcessorMetrics noOp() {
+        return new RecordProcessorMetrics(null, "");
+    }
+
     private Counter processorCounter;
     private Meter decodeFailureMeter;
     private Meter successMeter;
