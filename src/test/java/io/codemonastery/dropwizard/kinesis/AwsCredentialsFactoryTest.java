@@ -25,6 +25,18 @@ public class AwsCredentialsFactoryTest {
     }
 
     @Test
+    public void builderMethods() throws Exception {
+        AwsCredentialsFactory factory = new AwsCredentialsFactory()
+                .accessKey("aaa")
+                .secretAccessKey("bbb");
+
+        assertThat(factory.getAccessKey()).isEqualTo("aaa");
+        assertThat(factory.getSecretAccessKey()).isEqualTo("bbb");
+
+        factory.refresh(); // does nothing hahaha
+    }
+
+    @Test
     public void canConfigure() throws Exception {
         ConfigurationFactory<FakeConfiguration> configurationFactory = ConfigurationFactories.make(FakeConfiguration.class);
         FakeConfiguration configuration = configurationFactory.build(s -> new StringInputStream("aws:\n  accessKey: aaa\n  secretAccessKey: bbb"), "");
