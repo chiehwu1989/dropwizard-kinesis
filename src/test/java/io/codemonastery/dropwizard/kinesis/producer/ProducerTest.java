@@ -48,4 +48,55 @@ public class ProducerTest {
         producer.send(tooLarge);
         assertThat(innerSendCalled.get()).isFalse();
     }
+
+    @Test
+     public void encodeFailed() throws Exception {
+        AtomicBoolean innerSendCalled = new AtomicBoolean(false);
+        Producer<byte[]> producer = new Producer<byte[]>(b -> "", new EventEncoder<byte[]>() {
+            @Nullable
+            @Override
+            public byte[] encode(byte[] event) throws Exception {
+                throw new Exception("Oh noes");
+            }
+        }, ProducerMetrics.noOp()) {
+
+            @Override
+            protected void send(PutRecordsRequestEntry record) throws Exception {
+                innerSendCalled.set(true);
+            }
+        };
+        producer.send(new byte[1]);
+        assertThat(innerSendCalled.get()).isFalse();
+    }
+
+    @Test
+    public void partitionKeyFailed() throws Exception {
+        AtomicBoolean innerSendCalled = new AtomicBoolean(false);
+        Producer<byte[]> producer = new Producer<byte[]>(b -> {
+            throw new RuntimeException("oh noes again");
+        }, ENCODER, ProducerMetrics.noOp()) {
+
+            @Override
+            protected void send(PutRecordsRequestEntry record) throws Exception {
+                innerSendCalled.set(true);
+            }
+        };
+        producer.send(new byte[1]);
+        assertThat(innerSendCalled.get()).isFalse();
+    }
+
+    @Test(expected = IllegalStateException.class)
+    public void cannotSendAfterStopped() throws Exception {
+        Producer<byte[]> producer = new Producer<byte[]>(
+                b -> "",
+                ENCODER,
+                ProducerMetrics.noOp()) {
+
+            @Override
+            protected void send(PutRecordsRequestEntry record) throws Exception {
+            }
+        };
+        producer.stop();
+        producer.send(new byte[1]);
+    }
 }
