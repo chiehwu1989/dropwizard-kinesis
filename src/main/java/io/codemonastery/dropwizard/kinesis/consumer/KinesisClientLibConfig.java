@@ -5,6 +5,7 @@ import com.amazonaws.services.kinesis.clientlibrary.lib.worker.InitialPositionIn
 import com.amazonaws.services.kinesis.clientlibrary.lib.worker.KinesisClientLibConfiguration;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.Optional;
+import com.google.common.base.Preconditions;
 import io.codemonastery.dropwizard.kinesis.StreamConfiguration;
 import io.dropwizard.util.Duration;
 
@@ -175,31 +176,39 @@ public class KinesisClientLibConfig extends StreamConfiguration {
     }
 
     KinesisClientLibConfiguration makeKinesisClientLibConfiguration(String name) {
+        Preconditions.checkNotNull(getStreamName(), "streamName cannot be null");
+        Preconditions.checkNotNull(initialPositionInStream, "initialPositionInStream cannot be null");
+        Preconditions.checkNotNull(failOverTime, "failOverTime cannot be null");
+        Preconditions.checkNotNull(idleTimeBetweenReads, "idleTimeBetweenReads cannot be null");
+        Preconditions.checkNotNull(parentShardPollInterval, "parentShardPollInterval cannot be null");
+        Preconditions.checkNotNull(shardSyncInterval, "shardSyncInterval cannot be null");
+        Preconditions.checkNotNull(taskBackoffTime, "taskBackoffTime cannot be null");
+
         ClientConfiguration unusedConfig = new ClientConfiguration();
         //noinspection ConstantConditions
         return new KinesisClientLibConfiguration(
-                Optional.fromNullable(applicationName).or(name),
+                Optional.fromNullable(getApplicationName()).or(name),
                 getStreamName(),
                 null,
-                initialPositionInStream,
+                getInitialPositionInStream(),
                 null,
                 null,
                 null,
-                failOverTime.toMilliseconds(),
-                Optional.fromNullable(workerId).or(name),
-                maxRecords,
-                idleTimeBetweenReads.toMilliseconds(),
-                !callIfEmpty,
-                parentShardPollInterval.toMilliseconds(),
-                shardSyncInterval.toMilliseconds(),
-                cleanupLeasesOnShardCompletion,
+                getFailOverTime().toMilliseconds(),
+                Optional.fromNullable(getWorkerId()).or(name),
+                getMaxRecords(),
+                getIdleTimeBetweenReads().toMilliseconds(),
+                isCallIfEmpty(),
+                getParentShardPollInterval().toMilliseconds(),
+                getShardSyncInterval().toMilliseconds(),
+                isCleanupLeasesOnShardCompletion(),
                 unusedConfig,
                 unusedConfig,
                 unusedConfig,
-                taskBackoffTime.toMilliseconds(),
+                getTaskBackoffTime().toMilliseconds(),
                 DEFAULT_METRICS_BUFFER_TIME_MILLIS,
                 DEFAULT_METRICS_MAX_QUEUE_SIZE,
-                validateSequenceNumberBeforeCheckpoint,
+                isValidateSequenceNumberBeforeCheckpoint(),
                 null
         );
     }
