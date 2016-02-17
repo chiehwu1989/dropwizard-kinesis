@@ -11,7 +11,6 @@ import org.junit.After;
 import org.junit.Test;
 
 import javax.validation.Valid;
-import javax.validation.constraints.NotNull;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.fail;

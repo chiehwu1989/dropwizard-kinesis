@@ -2,22 +2,18 @@ package io.codemonastery.dropwizard.kinesis.producer;
 
 import com.amazonaws.services.kinesis.AmazonKinesis;
 import com.amazonaws.util.StringInputStream;
-import com.codahale.metrics.MetricRegistry;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.codemonastery.dropwizard.kinesis.ConfigurationFactories;
+import io.codemonastery.dropwizard.kinesis.Environments;
 import io.codemonastery.dropwizard.kinesis.EventEncoder;
 import io.dropwizard.Configuration;
 import io.dropwizard.configuration.ConfigurationFactory;
-import io.dropwizard.jackson.Jackson;
-import io.dropwizard.jersey.validation.Validators;
-import io.dropwizard.setup.Environment;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
-
 import java.util.function.Function;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -57,7 +53,7 @@ public class SimpleProducerFactoryTest {
         Function<String, String> partitionkeyFunction = s -> s;
         EventEncoder<String> encoder = String::getBytes;
 
-        SimpleProducerFactory<String> factory = (SimpleProducerFactory<String>)new SimpleProducerFactory<String>()
+        SimpleProducerFactory<String> factory = new SimpleProducerFactory<String>()
                 .streamName(streamName)
                 .partitionKeyFn(partitionkeyFunction)
                 .encoder(encoder);
@@ -65,13 +61,14 @@ public class SimpleProducerFactoryTest {
         assertThat(factory.getEncoder()).isSameAs(encoder);
         assertThat(factory.getPartitionKeyFn()).isSameAs(partitionkeyFunction);
 
-        Environment env = new Environment("app", Jackson.newObjectMapper(), Validators.newValidator(), new MetricRegistry(), this.getClass().getClassLoader());
-        assertThat(env.lifecycle().getManagedObjects().size()).isEqualTo(1);
-        Producer<String> producer = factory.build(env, kinesis, "foo");
-        assertThat(producer).isInstanceOf(SimpleProducer.class);
+        Environments.run("app", env->{
+            assertThat(env.lifecycle().getManagedObjects().size()).isEqualTo(1);
+            Producer<String> producer = factory.build(env, kinesis, "foo");
+            assertThat(producer).isInstanceOf(SimpleProducer.class);
 
-        assertThat(env.lifecycle().getManagedObjects().size()).isEqualTo(2);
-        assertThat(env.metrics().getNames()).contains("foo-sent");
-        assertThat(env.healthChecks().getNames()).contains("foo");
+            assertThat(env.lifecycle().getManagedObjects().size()).isEqualTo(2);
+            assertThat(env.metrics().getNames()).contains("foo-sent");
+            assertThat(env.healthChecks().getNames()).contains("foo");
+        });
     }
 }

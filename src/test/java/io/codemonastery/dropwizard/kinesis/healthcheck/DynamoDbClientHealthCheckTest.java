@@ -1,7 +1,6 @@
 package io.codemonastery.dropwizard.kinesis.healthcheck;
 
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDB;
-import com.amazonaws.services.kinesis.AmazonKinesis;
 import com.codahale.metrics.health.HealthCheck;
 import org.junit.Before;
 import org.junit.Test;

@@ -6,7 +6,6 @@ import com.amazonaws.services.dynamodbv2.AmazonDynamoDB;
 import com.amazonaws.services.kinesis.AmazonKinesis;
 import com.amazonaws.services.kinesis.clientlibrary.lib.worker.SimpleWorker;
 import io.codemonastery.dropwizard.kinesis.Event;
-import io.codemonastery.dropwizard.kinesis.consumer.EventConsumer;
 import io.codemonastery.dropwizard.kinesis.producer.Producer;
 import io.dropwizard.Application;
 import io.dropwizard.setup.Environment;
@@ -31,6 +30,7 @@ public class ExampleApplication extends Application<ExampleConfiguration> {
         final AmazonDynamoDB dynamodb = configuration.getDynamoDb().build(environment, credentialsProvider, "dynamodb");
 
         final Producer<Event> producer = configuration.getProducer().build(environment, kinesis, "example-producer");
+        //noinspection unused
         final SimpleWorker consumer = configuration.getConsumer()
                 .consumer(() -> event -> {
                     LOG.info("Consumed an tasty event: " + event.toString());

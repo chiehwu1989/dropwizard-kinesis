@@ -3,7 +3,6 @@ package io.codemonastery.dropwizard.kinesis.producer;
 import com.amazonaws.services.kinesis.AmazonKinesis;
 import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.health.HealthCheckRegistry;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import io.codemonastery.dropwizard.kinesis.EventEncoder;

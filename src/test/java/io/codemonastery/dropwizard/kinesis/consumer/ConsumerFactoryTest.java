@@ -3,21 +3,12 @@ package io.codemonastery.dropwizard.kinesis.consumer;
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDB;
 import com.amazonaws.services.kinesis.AmazonKinesis;
 import com.amazonaws.services.kinesis.clientlibrary.lib.worker.InitialPositionInStream;
-import com.amazonaws.services.kinesis.clientlibrary.lib.worker.SimpleWorker;
 import com.amazonaws.util.StringInputStream;
 import com.amazonaws.util.json.Jackson;
-import com.codahale.metrics.MetricRegistry;
-import com.codahale.metrics.health.HealthCheckRegistry;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import io.codemonastery.dropwizard.kinesis.ConfigurationFactories;
-import io.codemonastery.dropwizard.kinesis.Event;
-import io.codemonastery.dropwizard.kinesis.EventDecoder;
-import io.codemonastery.dropwizard.kinesis.EventObjectMapper;
+import io.codemonastery.dropwizard.kinesis.*;
 import io.dropwizard.Configuration;
 import io.dropwizard.configuration.ConfigurationFactory;
-import io.dropwizard.jersey.validation.Validators;
-import io.dropwizard.lifecycle.setup.LifecycleEnvironment;
-import io.dropwizard.setup.Environment;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
@@ -25,7 +16,6 @@ import org.mockito.Mock;
 import javax.annotation.Nullable;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
-
 import java.nio.ByteBuffer;
 import java.util.function.Supplier;
 
@@ -98,41 +88,43 @@ public class ConsumerFactoryTest {
         assertThat(factory.getDecoder()).isSameAs(decoder);
         assertThat(factory.getConsumer()).isSameAs(eventConsumer);
 
-        Environment env = new Environment("app", Jackson.getObjectMapper(), Validators.newValidator(), new MetricRegistry(), this.getClass().getClassLoader());
-        assertThat(env.lifecycle().getManagedObjects().size()).isEqualTo(1);
-        factory.build(env,
-                kinesis,
-                dynamoDb,
-                "foo");
+        Environments.run("app", env->{
+            assertThat(env.lifecycle().getManagedObjects().size()).isEqualTo(1);
+            factory.build(env,
+                    kinesis,
+                    dynamoDb,
+                    "foo");
 
-        assertThat(env.metrics().getNames()).contains("foo-success");
-        assertThat(env.lifecycle().getManagedObjects().size()).isEqualTo(3);
+            assertThat(env.metrics().getNames()).contains("foo-success");
+            assertThat(env.lifecycle().getManagedObjects().size()).isEqualTo(3);
+        });
     }
 
     @Test(expected = NullPointerException.class)
     public void buildCannotInferDecoder() throws Exception {
-        Environment env = new Environment("app", Jackson.getObjectMapper(), Validators.newValidator(), new MetricRegistry(), this.getClass().getClassLoader());
-        new ConsumerFactory<String>().streamName("xyz").build(env, kinesis, dynamoDb, "foo");
+        Environments.run("app", env-> new ConsumerFactory<String>().streamName("xyz").build(env, kinesis, dynamoDb, "foo"));
     }
 
     @Test
     public void buildCanInferDecoder() throws Exception {
-        Environment env = new Environment("app", Jackson.getObjectMapper(), Validators.newValidator(), new MetricRegistry(), this.getClass().getClassLoader());
-        ConsumerFactory<String> factory = new ConsumerFactory<String>() {}.streamName("xyz");
-        assertThat(factory.getDecoder()).isNull();
-        factory.build(env, kinesis, dynamoDb, "foo");
-        assertThat(factory.getDecoder()).isNotNull();
+        Environments.run("app", env->{
+            ConsumerFactory<String> factory = new ConsumerFactory<String>() {}.streamName("xyz");
+            assertThat(factory.getDecoder()).isNull();
+            factory.build(env, kinesis, dynamoDb, "foo");
+            assertThat(factory.getDecoder()).isNotNull();
+        });
     }
 
     @Test
     public void canInheritDecoder() throws Exception {
-        Environment env = new Environment("app", Jackson.getObjectMapper(), Validators.newValidator(), new MetricRegistry(), this.getClass().getClassLoader());
-        ConsumerFactory<String> parentFactory = new ConsumerFactory<String>() {}.streamName("xyz");
-        ConsumerFactory<String> factory = new ConsumerFactory<String>().streamName("xyz").inheritDecoder(parentFactory);
+        Environments.run("app", env->{
+            ConsumerFactory<String> parentFactory = new ConsumerFactory<String>() {}.streamName("xyz");
+            ConsumerFactory<String> factory = new ConsumerFactory<String>().streamName("xyz").inheritDecoder(parentFactory);
 
-        assertThat(factory.getDecoder()).isNull();
-        factory.build(env, kinesis, dynamoDb, "foo");
-        assertThat(factory.getDecoder()).isNotNull();
+            assertThat(factory.getDecoder()).isNull();
+            factory.build(env, kinesis, dynamoDb, "foo");
+            assertThat(factory.getDecoder()).isNotNull();
+        });
     }
 
     @Test(expected = NullPointerException.class)

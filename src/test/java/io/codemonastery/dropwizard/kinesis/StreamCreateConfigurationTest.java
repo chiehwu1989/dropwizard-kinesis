@@ -4,7 +4,6 @@ import com.amazonaws.services.kinesis.AmazonKinesis;
 import com.amazonaws.services.kinesis.model.DescribeStreamResult;
 import com.amazonaws.services.kinesis.model.ResourceInUseException;
 import com.amazonaws.services.kinesis.model.ResourceNotFoundException;
-import com.amazonaws.services.kinesis.model.StreamDescription;
 import com.amazonaws.util.StringInputStream;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.dropwizard.Configuration;
@@ -15,8 +14,6 @@ import org.junit.Test;
 import org.mockito.Mock;
 
 import javax.validation.Valid;
-
-import java.io.IOException;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -194,9 +191,7 @@ public class StreamCreateConfigurationTest {
 
     private boolean callCreateAssertTerminated(final StreamCreateConfiguration create, Duration wait) throws InterruptedException {
         final AtomicBoolean result = new AtomicBoolean(false);
-        Thread thread = new Thread(() -> {
-            result.set(create.setupStream(kinesis, STREAM_NAME));
-        }) {
+        Thread thread = new Thread(() -> result.set(create.setupStream(kinesis, STREAM_NAME))) {
             {
                 setDaemon(true);
             }

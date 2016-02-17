@@ -12,6 +12,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.stream.Collectors;
 
 /**
  * Simpler version of com.amazonaws.services.kinesis.clientlibrary.lib.worker.KinesisProxy
@@ -139,17 +140,13 @@ public final class SimpleKinesisProxy implements IKinesisProxyExtended {
     @Override
     public Set<String> getAllShardIds() throws ResourceNotFoundException {
         List<Shard> shards = getShardList();
+        Set<String> shardIds;
         if (shards == null) {
-            return null;
+            shardIds =  null;
         } else {
-            Set<String> shardIds = new HashSet<>();
-
-            for (Shard shard : getShardList()) {
-                shardIds.add(shard.getShardId());
-            }
-
-            return shardIds;
+            shardIds =  getShardList().stream().map(Shard::getShardId).collect(Collectors.toSet());
         }
+        return shardIds;
     }
 
     @Override

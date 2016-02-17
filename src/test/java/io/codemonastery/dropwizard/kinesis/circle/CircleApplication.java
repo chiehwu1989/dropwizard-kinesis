@@ -4,10 +4,8 @@ import com.amazonaws.auth.DefaultAWSCredentialsProviderChain;
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDB;
 import com.amazonaws.services.kinesis.AmazonKinesis;
 import io.codemonastery.dropwizard.kinesis.producer.Producer;
-import io.codemonastery.dropwizard.kinesis.rule.KinesisClientRule;
 import io.dropwizard.Application;
 import io.dropwizard.setup.Environment;
-import io.dropwizard.util.Duration;
 
 public class CircleApplication extends Application<CircleConfiguration> {
 

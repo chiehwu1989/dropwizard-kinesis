@@ -4,9 +4,30 @@ import com.amazonaws.services.kinesis.AmazonKinesis;
 import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.health.HealthCheckRegistry;
 import com.google.common.base.Preconditions;
+import io.codemonastery.dropwizard.kinesis.EventEncoder;
 import io.dropwizard.lifecycle.setup.LifecycleEnvironment;
 
+import java.util.function.Function;
+
 public class SimpleProducerFactory<E> extends AbstractProducerFactory<E> {
+
+    @Override
+    public SimpleProducerFactory<E> streamName(String streamName) {
+        super.streamName(streamName);
+        return this;
+    }
+
+    @Override
+    public SimpleProducerFactory<E> partitionKeyFn(Function<E, String> partitionKeyFn) {
+        super.partitionKeyFn(partitionKeyFn);
+        return this;
+    }
+
+    @Override
+    public SimpleProducerFactory<E> encoder(EventEncoder<E> encoder) {
+        super.encoder(encoder);
+        return this;
+    }
 
     @Override
     public SimpleProducer<E> build(MetricRegistry metrics,

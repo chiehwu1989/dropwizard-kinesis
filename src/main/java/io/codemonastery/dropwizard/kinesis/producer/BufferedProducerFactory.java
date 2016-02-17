@@ -6,6 +6,7 @@ import com.codahale.metrics.health.HealthCheckRegistry;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.Preconditions;
+import io.codemonastery.dropwizard.kinesis.EventEncoder;
 import io.dropwizard.lifecycle.setup.LifecycleEnvironment;
 import io.dropwizard.util.Duration;
 
@@ -16,6 +17,7 @@ import javax.validation.constraints.NotNull;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Function;
 
 public class BufferedProducerFactory<E> extends AbstractProducerFactory<E> {
 
@@ -40,6 +42,12 @@ public class BufferedProducerFactory<E> extends AbstractProducerFactory<E> {
         this.deliveryThreadCount = deliveryThreadCount;
     }
 
+    @JsonIgnore
+    public BufferedProducerFactory<E> deliveryThreadCount(int deliveryThreadCount) {
+        this.setDeliveryThreadCount(deliveryThreadCount);
+        return this;
+    }
+
     @JsonProperty
     public int getMaxBufferSize() {
         return maxBufferSize;
@@ -48,6 +56,12 @@ public class BufferedProducerFactory<E> extends AbstractProducerFactory<E> {
     @JsonProperty
     public void setMaxBufferSize(int maxBufferSize) {
         this.maxBufferSize = maxBufferSize;
+    }
+
+    @JsonIgnore
+    public BufferedProducerFactory<E> maxBufferSize(int maxBufferSize) {
+        this.setMaxBufferSize(maxBufferSize);
+        return this;
     }
 
     @JsonProperty
@@ -60,6 +74,29 @@ public class BufferedProducerFactory<E> extends AbstractProducerFactory<E> {
         this.flushPeriod = flushPeriod;
     }
 
+    @JsonIgnore
+    public BufferedProducerFactory<E> flushPeriod(Duration flushPeriod) {
+        this.setFlushPeriod(flushPeriod);
+        return this;
+    }
+
+    @Override
+    public BufferedProducerFactory<E> streamName(String streamName) {
+        super.streamName(streamName);
+        return this;
+    }
+
+    @Override
+    public BufferedProducerFactory<E> partitionKeyFn(Function<E, String> partitionKeyFn) {
+        super.partitionKeyFn(partitionKeyFn);
+        return this;
+    }
+
+    @Override
+    public BufferedProducerFactory<E> encoder(EventEncoder<E> encoder) {
+        super.encoder(encoder);
+        return this;
+    }
 
     @JsonIgnore
     public BufferedProducer<E> build(MetricRegistry metrics,
