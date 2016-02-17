@@ -79,6 +79,6 @@ consumer:
 
 Works in Progress
 -----
-* Consumer failure rate healthchecks
+* More producer tests around metrics
 * Consumer/Producer failure rate threshold configuration
 * Present Async startup via futures

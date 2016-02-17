@@ -51,11 +51,18 @@ public class RecordProcessorTest {
                 .withRecords(expectedRecords)
                 .withCheckpointer(checkpointer);
 
-        RecordProcessor<String> processor = new RecordProcessor<>(MAPPER, eventConsumer, RecordProcessorMetrics.noOp());
+        MetricRegistry metricRegistry = new MetricRegistry();
+        RecordProcessor<String> processor = new RecordProcessor<>(MAPPER, eventConsumer, new RecordProcessorMetrics(metricRegistry, "foo"));
         processor.processRecords(input);
 
         assertThat(actual).isEqualTo(expected);
         verify(checkpointer).checkpoint(expectedRecords.get(2));
+        assertThat(metricRegistry.meter("foo-success").getCount()).isEqualTo(3);
+        assertThat(metricRegistry.meter("foo-failure").getCount()).isEqualTo(0);
+        assertThat(metricRegistry.meter("foo-decode-success").getCount()).isEqualTo(3);
+        assertThat(metricRegistry.meter("foo-decode-failure").getCount()).isEqualTo(0);
+        assertThat(metricRegistry.timer("foo-checkpoint").getCount()).isEqualTo(1);
+        assertThat(metricRegistry.meter("foo-checkpoint-failure").getCount()).isEqualTo(0);
     }
 
     @Test
@@ -76,11 +83,18 @@ public class RecordProcessorTest {
                 .withRecords(expectedRecords)
                 .withCheckpointer(checkpointer);
 
-        RecordProcessor<String> processor = new RecordProcessor<>(MAPPER, eventConsumer, RecordProcessorMetrics.noOp());
+        MetricRegistry metricRegistry = new MetricRegistry();
+        RecordProcessor<String> processor = new RecordProcessor<>(MAPPER, eventConsumer, new RecordProcessorMetrics(metricRegistry, "foo"));
         processor.processRecords(input);
 
         assertThat(actual).isEqualTo(expected.subList(0, 2));
         verify(checkpointer).checkpoint(expectedRecords.get(1));
+        assertThat(metricRegistry.meter("foo-success").getCount()).isEqualTo(2);
+        assertThat(metricRegistry.meter("foo-failure").getCount()).isEqualTo(1);
+        assertThat(metricRegistry.meter("foo-decode-success").getCount()).isEqualTo(3);
+        assertThat(metricRegistry.meter("foo-decode-failure").getCount()).isEqualTo(0);
+        assertThat(metricRegistry.timer("foo-checkpoint").getCount()).isEqualTo(1);
+        assertThat(metricRegistry.meter("foo-checkpoint-failure").getCount()).isEqualTo(0);
     }
 
     @Test
@@ -101,11 +115,18 @@ public class RecordProcessorTest {
                 .withRecords(expectedRecords)
                 .withCheckpointer(checkpointer);
 
-        RecordProcessor<String> processor = new RecordProcessor<>(MAPPER, eventConsumer, RecordProcessorMetrics.noOp());
+        MetricRegistry metricRegistry = new MetricRegistry();
+        RecordProcessor<String> processor = new RecordProcessor<>(MAPPER, eventConsumer, new RecordProcessorMetrics(metricRegistry, "foo"));
         processor.processRecords(input);
 
         assertThat(actual).isEqualTo(expected.subList(0, 2));
         verify(checkpointer).checkpoint(expectedRecords.get(1));
+        assertThat(metricRegistry.meter("foo-success").getCount()).isEqualTo(2);
+        assertThat(metricRegistry.meter("foo-failure").getCount()).isEqualTo(1);
+        assertThat(metricRegistry.meter("foo-decode-success").getCount()).isEqualTo(3);
+        assertThat(metricRegistry.meter("foo-decode-failure").getCount()).isEqualTo(0);
+        assertThat(metricRegistry.timer("foo-checkpoint").getCount()).isEqualTo(1);
+        assertThat(metricRegistry.meter("foo-checkpoint-failure").getCount()).isEqualTo(0);
     }
 
     @Test
@@ -126,6 +147,7 @@ public class RecordProcessorTest {
                 .withRecords(expectedRecords)
                 .withCheckpointer(checkpointer);
 
+        MetricRegistry metricRegistry = new MetricRegistry();
         RecordProcessor<String> processor = new RecordProcessor<>(new EventDecoder<String>() {
             @Nullable
             @Override
@@ -136,11 +158,17 @@ public class RecordProcessorTest {
                 }
                 return value;
             }
-        }, eventConsumer, RecordProcessorMetrics.noOp());
+        }, eventConsumer, new RecordProcessorMetrics(metricRegistry, "foo"));
         processor.processRecords(input);
 
         assertThat(actual).isEqualTo(expected.subList(0, 2));
         verify(checkpointer).checkpoint(expectedRecords.get(1));
+        assertThat(metricRegistry.meter("foo-success").getCount()).isEqualTo(2);
+        assertThat(metricRegistry.meter("foo-failure").getCount()).isEqualTo(0);
+        assertThat(metricRegistry.meter("foo-decode-success").getCount()).isEqualTo(2);
+        assertThat(metricRegistry.meter("foo-decode-failure").getCount()).isEqualTo(1);
+        assertThat(metricRegistry.timer("foo-checkpoint").getCount()).isEqualTo(1);
+        assertThat(metricRegistry.meter("foo-checkpoint-failure").getCount()).isEqualTo(0);
     }
 
     @Test
@@ -161,6 +189,7 @@ public class RecordProcessorTest {
                 .withRecords(expectedRecords)
                 .withCheckpointer(checkpointer);
 
+        MetricRegistry metricRegistry = new MetricRegistry();
         RecordProcessor<String> processor = new RecordProcessor<>(new EventDecoder<String>() {
             @Nullable
             @Override
@@ -171,11 +200,17 @@ public class RecordProcessorTest {
                 }
                 return value;
             }
-        }, eventConsumer, RecordProcessorMetrics.noOp());
+        }, eventConsumer, new RecordProcessorMetrics(metricRegistry, "foo"));
         processor.processRecords(input);
 
         assertThat(actual).isEqualTo(expected.subList(0, 2)); // was not sent to consumer
         verify(checkpointer).checkpoint(expectedRecords.get(2)); //but still counts as processed
+        assertThat(metricRegistry.meter("foo-success").getCount()).isEqualTo(2);
+        assertThat(metricRegistry.meter("foo-failure").getCount()).isEqualTo(0);
+        assertThat(metricRegistry.meter("foo-decode-success").getCount()).isEqualTo(3);
+        assertThat(metricRegistry.meter("foo-decode-failure").getCount()).isEqualTo(0);
+        assertThat(metricRegistry.timer("foo-checkpoint").getCount()).isEqualTo(1);
+        assertThat(metricRegistry.meter("foo-checkpoint-failure").getCount()).isEqualTo(0);
     }
 
     @Test
@@ -187,9 +222,16 @@ public class RecordProcessorTest {
                 .withRecords(expectedRecords)
                 .withCheckpointer(checkpointer);
 
-        RecordProcessor<String> processor = new RecordProcessor<>(MAPPER, event -> true, RecordProcessorMetrics.noOp());
+        MetricRegistry metricRegistry = new MetricRegistry();
+        RecordProcessor<String> processor = new RecordProcessor<>(MAPPER, event -> true, new RecordProcessorMetrics(metricRegistry, "foo"));
         processor.processRecords(input);
         verify(checkpointer).checkpoint(expectedRecords.get(2)); //but still counts as processed
+        assertThat(metricRegistry.meter("foo-success").getCount()).isEqualTo(3);
+        assertThat(metricRegistry.meter("foo-failure").getCount()).isEqualTo(0);
+        assertThat(metricRegistry.meter("foo-decode-success").getCount()).isEqualTo(3);
+        assertThat(metricRegistry.meter("foo-decode-failure").getCount()).isEqualTo(0);
+        assertThat(metricRegistry.timer("foo-checkpoint").getCount()).isEqualTo(1);
+        assertThat(metricRegistry.meter("foo-checkpoint-failure").getCount()).isEqualTo(1);
     }
 
     @Test
@@ -201,9 +243,16 @@ public class RecordProcessorTest {
                 .withRecords(expectedRecords)
                 .withCheckpointer(checkpointer);
 
-        RecordProcessor<String> processor = new RecordProcessor<>(MAPPER, event -> true, RecordProcessorMetrics.noOp());
+        MetricRegistry metricRegistry = new MetricRegistry();
+        RecordProcessor<String> processor = new RecordProcessor<>(MAPPER, event -> true, new RecordProcessorMetrics(metricRegistry, "foo"));
         processor.processRecords(input);
         verify(checkpointer).checkpoint(expectedRecords.get(2)); //but still counts as processed
+        assertThat(metricRegistry.meter("foo-success").getCount()).isEqualTo(3);
+        assertThat(metricRegistry.meter("foo-failure").getCount()).isEqualTo(0);
+        assertThat(metricRegistry.meter("foo-decode-success").getCount()).isEqualTo(3);
+        assertThat(metricRegistry.meter("foo-decode-failure").getCount()).isEqualTo(0);
+        assertThat(metricRegistry.timer("foo-checkpoint").getCount()).isEqualTo(1);
+        assertThat(metricRegistry.meter("foo-checkpoint-failure").getCount()).isEqualTo(1);
     }
 
     @Test

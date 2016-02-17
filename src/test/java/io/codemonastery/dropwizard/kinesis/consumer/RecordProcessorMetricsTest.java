@@ -72,13 +72,31 @@ public class RecordProcessorMetricsTest {
     }
 
     @Test
-    public void time() throws Exception {
+    public void processTime() throws Exception {
         RecordProcessorMetrics metrics = new RecordProcessorMetrics(metricsRegistry, "foo");
-        assertThat(metricsRegistry.timer("foo-process-time").getCount()).isEqualTo(0);
+        assertThat(metricsRegistry.timer("foo-process").getCount()).isEqualTo(0);
         try(AutoCloseable ignored = metrics.processTime()){
             Thread.sleep(10);
         }
-        assertThat(metricsRegistry.timer("foo-process-time").getCount()).isEqualTo(1);
+        assertThat(metricsRegistry.timer("foo-process").getCount()).isEqualTo(1);
+    }
+
+    @Test
+    public void checkpointTime() throws Exception {
+        RecordProcessorMetrics metrics = new RecordProcessorMetrics(metricsRegistry, "foo");
+        assertThat(metricsRegistry.timer("foo-checkpoint").getCount()).isEqualTo(0);
+        try(AutoCloseable ignored = metrics.checkpointTime()){
+            Thread.sleep(10);
+        }
+        assertThat(metricsRegistry.timer("foo-checkpoint").getCount()).isEqualTo(1);
+    }
+
+    @Test
+    public void checkpointFailure() throws Exception {
+        RecordProcessorMetrics metrics = new RecordProcessorMetrics(metricsRegistry, "foo");
+        assertThat(metricsRegistry.meter("foo-checkpoint-failure").getCount()).isEqualTo(0);
+        metrics.checkpointFailed();
+        assertThat(metricsRegistry.meter("foo-checkpoint-failure").getCount()).isEqualTo(1);
     }
 
     @Test
@@ -127,5 +145,21 @@ public class RecordProcessorMetricsTest {
         }
         assertThat(metrics.highFailureMetrics().size()).isEqualTo(1);
         assertThat(metrics.highFailureMetrics().get(0)).contains("% process failure");
+    }
+
+    @Test
+    public void highCheckpointFailure() throws Exception {
+        MetricRegistry registry = new MetricRegistry();
+        RecordProcessorMetrics metrics = new RecordProcessorMetrics(registry, "foo");
+        for (int i = 0; i < 100; i++) {
+            try(AutoCloseable ignore = metrics.checkpointTime()){
+                if(i %2 == 0){
+                    metrics.checkpointFailed();
+                }
+                Thread.sleep(50);
+            }
+        }
+        assertThat(metrics.highFailureMetrics().size()).isEqualTo(1);
+        assertThat(metrics.highFailureMetrics().get(0)).contains("% checkpoint failure");
     }
 }

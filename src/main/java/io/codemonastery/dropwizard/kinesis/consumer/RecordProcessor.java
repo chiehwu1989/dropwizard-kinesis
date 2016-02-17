@@ -43,6 +43,7 @@ public final class RecordProcessor<E> implements IRecordProcessor {
 
             try{
                 event = decoder.decode(record.getData());
+                metrics.decoded();
             }catch (Exception e){
                 //unhandled exception, this record does not count as processed
                 metrics.decodeFailure();
@@ -73,13 +74,15 @@ public final class RecordProcessor<E> implements IRecordProcessor {
         }
 
         if(lastRecordProcessed != null){
-            try {
+            try(AutoCloseable ignore = metrics.checkpointTime()) {
                 processRecordsInput.getCheckpointer().checkpoint(lastRecordProcessed);
             } catch (ShutdownException e) {
+                metrics.checkpointFailed();
                 if(LOG.isDebugEnabled()){
                     LOG.debug("Abandoning checkpoint because processor was shutdown");
                 }
             } catch (Exception e){
+                metrics.checkpointFailed();
                 LOG.error("Could not checkpoint because of unexpected exception", e);
             }
         }
