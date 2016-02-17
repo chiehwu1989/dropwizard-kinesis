@@ -1,12 +1,15 @@
 sudo: false
 language: java
 jdk:
-  - oraclejdk8
+- oraclejdk8
 cache:
   directories:
-    - $HOME/.m2
+  - $HOME/.m2
 install: mvn -DskipTests=true -Dbasepom.check.skip-all=true -B install
 script:
-  - bash .travis_script.sh
+- bash .travis_script.sh
 after_success:
-  - bash .travis_after_success.sh
+- bash .travis_after_success.sh
+notifications:
+  slack:
+    secure: hNJEtyXOml0EYI/lkb7zBUKcxAP24WQfSrsHRPOVrxhS7ZGJdPPjHmxh8ErgInyHTmFzRjxqx37jNkjeF+uWqtOhFHv9Jopb5nTeneE/tpYiTCP3sDwu16ncNK14QdcdEg2dfNcJbK0Wp6cQOPOfsiOm97iV08rtXEkxf0KXjOxFvfIigdFWA/PeOpT9zF7O09UmRib95PT3Nco+llh0za/S5SBY+n8CMoaL2P8odnXKWUmGrOY4LjHlPYoNFd4/r601++zfViPoQvRt9dN/cNATQ6sIvPcFT8t6NyagQAy1xSzOAZN7E5Wdze+XgEVqRRamxcBoouYLWqJHpfPVGVGYhx/Qm83QV05moQ6hROnsiRjx14bLF45RqLY7juVOfcnV/pywsUEzD6I3JGEUPKpONVH8cndv/oRYWVkSBm1BP5MpqhSamXFwcgHQF3UIs8+7nXG3oKbsWi+XrWBOjXkUW1rtNC5ybUzd0KytjzKvjFVt3liSJ8FfwNR2+bLYU2ugBRMRdSHKMtTbd/QTr6vK3jp/ltwB+toAsXIsYkXIqU4PB87gRs70Cqc/cnCEDm0Tondw+fJp3aAriONWHxU6nx0hs24Bzliv1uMWFrbU9Jg/zzp2aaoxm2czv47o1+DFlgLcWmlESiZT0AX58PRStObBxolIQV/keEWgm6c=
