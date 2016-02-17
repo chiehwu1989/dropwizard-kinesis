@@ -64,6 +64,7 @@ public class StreamConfigurationTest {
         when(create.setupStream(any(AmazonKinesis.class), any(String.class))).thenReturn(false);
 
         StreamConfiguration configuration = new StreamConfiguration();
+        configuration.setStreamName("xyz");
         configuration.setCreate(create);
         boolean result = configuration.setupStream(null);
 
