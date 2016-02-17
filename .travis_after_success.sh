@@ -1,3 +1,3 @@
 #!/bin/bash
 
-mvn -B jacoco:report #coveralls:report
+mvn -B jacoco:report coveralls:report
