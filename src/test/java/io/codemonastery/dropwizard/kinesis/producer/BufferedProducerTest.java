@@ -164,4 +164,10 @@ public class BufferedProducerTest {
             assertThat(record.getPartitionKey()).isEqualTo(recordId);
         }
     }
+
+    @Test
+    public void flushOnShutdownIfNotEmpty() throws Exception {
+        producer.stop(); // forces immediate flush
+        assertThat(putRecordRequests.size()).isEqualTo(0);
+    }
 }
