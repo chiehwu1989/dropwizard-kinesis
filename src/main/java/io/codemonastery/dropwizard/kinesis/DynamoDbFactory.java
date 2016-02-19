@@ -6,10 +6,12 @@ import com.amazonaws.regions.Regions;
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDB;
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDBClient;
 import com.codahale.metrics.MetricRegistry;
+import com.codahale.metrics.health.HealthCheck;
 import com.codahale.metrics.health.HealthCheckRegistry;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import io.codemonastery.dropwizard.kinesis.healthcheck.DynamoDbClientHealthCheck;
+import io.codemonastery.dropwizard.kinesis.healthcheck.DynamoDbClientHealthCheckFactory;
+import io.codemonastery.dropwizard.kinesis.healthcheck.ListTablesHealthCheckFactory;
 import io.codemonastery.dropwizard.kinesis.lifecycle.ManagedDynamoDbClient;
 import io.codemonastery.dropwizard.kinesis.metric.ClientMetricsProxyFactory;
 import io.codemonastery.dropwizard.kinesis.metric.DynamoDbMetricsProxy;
@@ -29,6 +31,10 @@ public class DynamoDbFactory {
     @Valid
     @NotNull
     private JacksonClientConfiguration client = new JacksonClientConfiguration();
+
+    @Valid
+    @NotNull
+    private DynamoDbClientHealthCheckFactory healthCheck = new ListTablesHealthCheckFactory();
 
     @JsonProperty
     public Regions getRegion() {
@@ -87,6 +93,22 @@ public class DynamoDbFactory {
         return this;
     }
 
+    @JsonProperty
+    public DynamoDbClientHealthCheckFactory getHealthCheck() {
+        return healthCheck;
+    }
+
+    @JsonProperty
+    public void setHealthCheck(DynamoDbClientHealthCheckFactory healthCheck) {
+        this.healthCheck = healthCheck;
+    }
+
+    @JsonIgnore
+    public DynamoDbFactory healthCheck(DynamoDbClientHealthCheckFactory healthCheck) {
+        this.setHealthCheck(healthCheck);
+        return this;
+    }
+
     @JsonIgnore
     public AmazonDynamoDB build(Environment environment, AWSCredentialsProvider credentialsProvider, String name){
         return build(environment == null ? null : environment.metrics(),
@@ -104,11 +126,12 @@ public class DynamoDbFactory {
                                 String name) {
         AmazonDynamoDB client = makeClient(credentialsProvider);
 
-        if(metrics != null  && metricsProxyFactory != null){
-            client = metricsProxyFactory.proxy(client, metrics, name);
+        if(metrics != null  && getMetricsProxyFactory() != null){
+            client = getMetricsProxyFactory().proxy(client, metrics, name);
         }
         if(healthChecks != null){
-            healthChecks.register(name, new DynamoDbClientHealthCheck(client));
+            HealthCheck healthCheck = this.getHealthCheck().build(client);
+            healthChecks.register(name, healthCheck);
         }
         if(lifecycle != null){
             lifecycle.manage(new ManagedDynamoDbClient(client));
@@ -117,9 +140,9 @@ public class DynamoDbFactory {
     }
 
     private AmazonDynamoDBClient makeClient(AWSCredentialsProvider credentialsProvider) {
-        final AmazonDynamoDBClient client = new AmazonDynamoDBClient(credentialsProvider, this.client);
-        if(region != null){
-            client.withRegion(region);
+        final AmazonDynamoDBClient client = new AmazonDynamoDBClient(credentialsProvider, this.getClient());
+        if(getRegion() != null){
+            client.withRegion(getRegion());
         }
         return client;
     }

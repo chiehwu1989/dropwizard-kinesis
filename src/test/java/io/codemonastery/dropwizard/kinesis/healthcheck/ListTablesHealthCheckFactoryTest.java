@@ -10,7 +10,7 @@ import static org.junit.Assert.*;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
 
-public class DynamoDbClientHealthCheckTest {
+public class ListTablesHealthCheckFactoryTest {
 
     @Mock
     private AmazonDynamoDB client;
@@ -22,7 +22,7 @@ public class DynamoDbClientHealthCheckTest {
 
     @Test
     public void healthy() throws Exception {
-        DynamoDbClientHealthCheck healthCheck = new DynamoDbClientHealthCheck(client);
+        HealthCheck healthCheck = new ListTablesHealthCheckFactory().build(client);
 
         HealthCheck.Result result = healthCheck.execute();
         assertNotNull(result);
@@ -33,7 +33,7 @@ public class DynamoDbClientHealthCheckTest {
     public void unhealthy() throws Exception {
         when(client.listTables()).thenThrow(new RuntimeException("exception from test"));
 
-        DynamoDbClientHealthCheck healthCheck = new DynamoDbClientHealthCheck(client);
+        HealthCheck healthCheck = new ListTablesHealthCheckFactory().build(client);
 
         HealthCheck.Result result = healthCheck.execute();
         assertNotNull(result);
