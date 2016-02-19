@@ -173,7 +173,7 @@ public class ConsumerFactory<E> extends KinesisClientLibConfig {
             eventClass = (Class) ((ParameterizedType) getClass().getGenericSuperclass())
                     .getActualTypeArguments()[0];
         } catch (Exception e) {
-            LOG.error("Tried to infer event class to make default decoder, but failed", e);
+            LOG.debug("Tried to infer event class to make default decoder, but failed", e);
         }
         if (eventClass != null) {
             //noinspection unchecked

@@ -6,6 +6,7 @@ dynamoDb:
 
 producer:
   streamName: test-circle
+  create: {}
 
 consumer:
   streamName: test-circle

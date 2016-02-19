@@ -85,23 +85,25 @@ public final class BufferedProducer<E> extends Producer<E> {
     }
 
     private void putRecords(List<PutRecordsRequestEntry> records) {
-        int failedCount = records.size();
-        try(Closeable ignored = metrics.time()) {
-            PutRecordsResult result = kinesis.putRecords(new PutRecordsRequest()
-                    .withRecords(records)
-                    .withStreamName(streamName));
-            failedCount = result.getFailedRecordCount();
-            if (LOG.isDebugEnabled()) {
-                String message = String.format("Put %d records to stream %s, %d failed",
-                        result.getRecords().size(),
-                        streamName,
-                        failedCount);
-                LOG.debug(message);
+        if(records != null && !records.isEmpty()){
+            int failedCount = records.size();
+            try(Closeable ignored = metrics.time()) {
+                PutRecordsResult result = kinesis.putRecords(new PutRecordsRequest()
+                        .withRecords(records)
+                        .withStreamName(streamName));
+                failedCount = result.getFailedRecordCount();
+                if (LOG.isDebugEnabled()) {
+                    String message = String.format("Put %d records to stream %s, %d failed",
+                            result.getRecords().size(),
+                            streamName,
+                            failedCount);
+                    LOG.debug(message);
+                }
+            } catch (Exception e) {
+                LOG.error("Unexpected error while putting records", e);
+            }finally {
+                metrics.sent(records.size()-failedCount, failedCount);
             }
-        } catch (Exception e) {
-            LOG.error("Unexpected error while putting records", e);
-        }finally {
-            metrics.sent(records.size()-failedCount, failedCount);
         }
     }
 }

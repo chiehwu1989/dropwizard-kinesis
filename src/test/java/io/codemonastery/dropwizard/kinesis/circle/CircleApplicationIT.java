@@ -12,6 +12,7 @@ import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.MediaType;
+import java.io.File;
 import java.util.Arrays;
 import java.util.List;
 
@@ -28,8 +29,8 @@ public class CircleApplicationIT {
 
 
     static {
-        CircleConfiguration circleConfiguration = new CircleConfiguration();
-        APP_RULE = new DropwizardAppRule<>(CircleApplication.class, circleConfiguration);
+
+        APP_RULE = new DropwizardAppRule<>(CircleApplication.class, new File("./src/test/resources/config.circle.yml").getPath());
 
         ORDERED_CLASS_RULE = RuleChain.outerRule(CLIENT_RULE).around(APP_RULE);
     }
