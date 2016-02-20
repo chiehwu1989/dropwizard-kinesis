@@ -16,14 +16,14 @@ public class ExampleConfigurationTest {
     @Test
     public void parseMinimal() throws Exception {
         ConfigurationFactory<ExampleConfiguration> configurationFactory = ConfigurationFactories.make(ExampleConfiguration.class);
-        ExampleConfiguration configuration = configurationFactory.build((s) -> new StringInputStream("consumer:\n  streamName: test-stream\n\nproducer:\n  streamName: test-stream"), "");
+        ExampleConfiguration configuration = configurationFactory.build((s) -> new StringInputStream("kinesis:\n  region: US_WEST_2\ndynamoDb:\n  region: US_WEST_2\nconsumer:\n  streamName: test-stream\n\nproducer:\n  streamName: test-stream"), "");
         assertThat(configuration).isNotNull();
     }
 
     @Test
     public void emitComplete() throws Exception {
         ConfigurationFactory<ExampleConfiguration> configurationFactory = ConfigurationFactories.make(ExampleConfiguration.class);
-        ExampleConfiguration configuration = configurationFactory.build((s) -> new StringInputStream("consumer:\n  streamName: test-stream\n\nproducer:\n  streamName: test-stream"), "");
+        ExampleConfiguration configuration = configurationFactory.build((s) -> new StringInputStream("kinesis:\n  region: US_WEST_2\ndynamoDb:\n  region: US_WEST_2\nconsumer:\n  streamName: test-stream\n\nproducer:\n  streamName: test-stream"), "");
         ObjectMapper objectMapper = Jackson.newObjectMapper();
         YAMLFactory yamlFactory = new YAMLFactory();
         objectMapper.writeValue(yamlFactory.createGenerator(System.out), configuration);

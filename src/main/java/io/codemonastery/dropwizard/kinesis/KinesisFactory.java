@@ -23,7 +23,7 @@ import javax.validation.constraints.NotNull;
 public class KinesisFactory {
 
     @NotNull
-    private Regions region = Regions.DEFAULT_REGION;
+    private Regions region;
 
     private ClientMetricsProxyFactory<AmazonKinesis> metricsProxy = KinesisMetricsProxy::new;
 

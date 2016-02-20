@@ -26,6 +26,12 @@ After configuring your credentials you can then configure aws kinesis/dynamodb c
  
 An example minimal configuration for an application with both a producer and consumer:
 ``` yaml
+kinesis:
+    region: US_WEST_2
+
+dynamoDb:
+    region: US_WEST_2
+
 producer:
     streamName: test-stream
 

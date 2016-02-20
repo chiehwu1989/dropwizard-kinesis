@@ -9,6 +9,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import io.codemonastery.dropwizard.kinesis.metric.ClientMetricsProxyFactory;
 import io.codemonastery.dropwizard.kinesis.metric.KinesisMetricsProxy;
 import io.dropwizard.Configuration;
+import io.dropwizard.configuration.ConfigurationValidationException;
 import org.junit.After;
 import org.junit.Test;
 
@@ -58,12 +59,20 @@ public class KinesisFactoryTest {
         assertThat(metrics.timer("test-client-list-streams").getCount()).isEqualTo(1L);
     }
 
-    @Test
-    public void emptyConfigurationIsOk() throws Exception {
-        FakeConfiguration configuration = ConfigurationFactories.make(FakeConfiguration.class)
+    @Test(expected = ConfigurationValidationException.class)
+    public void regionIsRequired() throws Exception {
+        ConfigurationFactories.make(FakeConfiguration.class)
                 .build((s)->new StringInputStream("kinesis: {}"), "");
+
+    }
+
+    @Test
+    public void regionOnlyIsOk() throws Exception {
+        FakeConfiguration configuration = ConfigurationFactories.make(FakeConfiguration.class)
+                .build((s)->new StringInputStream("kinesis:\n  region: US_WEST_2"), "");
         assertThat(configuration).isNotNull();
         assertThat(configuration.kinesis).isNotNull();
+        assertThat(configuration.kinesis.getRegion()).isEqualTo(Regions.US_WEST_2);
     }
 
     @Test
