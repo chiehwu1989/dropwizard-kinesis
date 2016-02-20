@@ -4,6 +4,7 @@ import com.amazonaws.regions.Regions;
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDB;
 import com.amazonaws.util.StringInputStream;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import io.codemonastery.dropwizard.kinesis.healthcheck.DescribeTableHealthCheckFactory;
 import io.codemonastery.dropwizard.kinesis.healthcheck.DynamoDbClientHealthCheckFactory;
 import io.codemonastery.dropwizard.kinesis.healthcheck.ListTablesHealthCheckFactory;
 import io.codemonastery.dropwizard.kinesis.metric.ClientMetricsProxyFactory;
@@ -48,6 +49,7 @@ public class DynamoDbFactoryTest {
                 .build((s)->new StringInputStream("dynamoDb: {}"), "");
         assertThat(configuration).isNotNull();
         assertThat(configuration.dynamoDb).isNotNull();
+        assertThat(configuration.dynamoDb.getHealthCheck()).isInstanceOf(DescribeTableHealthCheckFactory.class);
     }
 
     @Test

@@ -10,6 +10,7 @@ import com.codahale.metrics.health.HealthCheck;
 import com.codahale.metrics.health.HealthCheckRegistry;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import io.codemonastery.dropwizard.kinesis.healthcheck.DescribeTableHealthCheckFactory;
 import io.codemonastery.dropwizard.kinesis.healthcheck.DynamoDbClientHealthCheckFactory;
 import io.codemonastery.dropwizard.kinesis.healthcheck.ListTablesHealthCheckFactory;
 import io.codemonastery.dropwizard.kinesis.lifecycle.ManagedDynamoDbClient;
@@ -34,7 +35,7 @@ public class DynamoDbFactory {
 
     @Valid
     @NotNull
-    private DynamoDbClientHealthCheckFactory healthCheck = new ListTablesHealthCheckFactory();
+    private DynamoDbClientHealthCheckFactory healthCheck = new DescribeTableHealthCheckFactory();
 
     @JsonProperty
     public Regions getRegion() {
