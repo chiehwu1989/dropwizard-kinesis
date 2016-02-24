@@ -17,7 +17,7 @@ import java.util.stream.Collectors;
  * Simpler version of com.amazonaws.services.kinesis.clientlibrary.lib.worker.KinesisProxy
  * Which does not try to decorate request with credentials
  */
-public final class SimpleKinesisProxy implements IKinesisProxyExtended {
+public class SimpleKinesisProxy implements IKinesisProxyExtended {
 
     private static final Logger LOG = LoggerFactory.getLogger(SimpleKinesisProxy.class);
 
@@ -95,12 +95,13 @@ public final class SimpleKinesisProxy implements IKinesisProxyExtended {
 
     @Override
     public Shard getShard(String shardId) {
-        if (this.listOfShardsSinceLastGet.get() == null) {
+        List<Shard> shards = getListOfShardsSinceLastGet();
+        if (shards == null) {
             //Update this.listOfShardsSinceLastGet as needed.
-            this.getShardList();
+            shards = this.getShardList();
         }
 
-        for (Shard shard : listOfShardsSinceLastGet.get()) {
+        for (Shard shard : shards) {
             if (shard.getShardId().equals(shardId))  {
                 return shard;
             }
@@ -132,7 +133,7 @@ public final class SimpleKinesisProxy implements IKinesisProxyExtended {
                 lastShardId = shards.get(shards.size() - 1).getShardId();
             }
         } while (response.getStreamDescription().isHasMoreShards());
-        this.listOfShardsSinceLastGet.set(result);
+        updateShardsSinceLastGet(result);
         return result;
     }
 
@@ -172,5 +173,13 @@ public final class SimpleKinesisProxy implements IKinesisProxyExtended {
         putRecordRequest.setData(data);
 
         return client.putRecord(putRecordRequest);
+    }
+
+    List<Shard> getListOfShardsSinceLastGet() {
+        return this.listOfShardsSinceLastGet.get();
+    }
+
+    void updateShardsSinceLastGet(List<Shard> result) {
+        this.listOfShardsSinceLastGet.set(result);
     }
 }
