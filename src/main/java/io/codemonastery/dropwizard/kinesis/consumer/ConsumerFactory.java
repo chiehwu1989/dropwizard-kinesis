@@ -12,8 +12,10 @@ import io.codemonastery.dropwizard.kinesis.EventDecoder;
 import io.codemonastery.dropwizard.kinesis.EventObjectMapper;
 import io.codemonastery.dropwizard.kinesis.healthcheck.StreamHealthCheck;
 import io.codemonastery.dropwizard.kinesis.producer.StreamFailureCheck;
+import io.dropwizard.lifecycle.setup.ExecutorServiceBuilder;
 import io.dropwizard.lifecycle.setup.LifecycleEnvironment;
 import io.dropwizard.setup.Environment;
+import org.eclipse.jetty.util.component.AbstractLifeCycle;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -158,11 +160,19 @@ public class ConsumerFactory<E> extends KinesisClientLibConfig {
         SimpleWorker worker = builder.build();
 
         if (lifeCycle != null){
-            lifeCycle.executorService(name + "-consumer-worker")
+            ExecutorService workerExecutor = lifeCycle.executorService(name + "-consumer-worker-%d")
                     .minThreads(1).maxThreads(1)
-                    .build().submit(worker::run);
-        }
+                    .build();
 
+            lifeCycle.manage(new AbstractLifeCycle() {
+                @Override
+                protected void doStop() throws Exception {
+                    worker.shutdown();
+                }
+            });
+
+            workerExecutor.submit(worker::run);
+        }
         return worker;
     }
 
