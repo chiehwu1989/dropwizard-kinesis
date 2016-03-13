@@ -6,12 +6,17 @@ import com.amazonaws.services.kinesis.model.PutRecordsRequestEntry;
 import com.amazonaws.services.kinesis.model.PutRecordsResult;
 import com.amazonaws.services.kinesis.model.PutRecordsResultEntry;
 import com.google.common.util.concurrent.RateLimiter;
+import io.codemonastery.dropwizard.kinesis.Assertions;
 import io.codemonastery.dropwizard.kinesis.KinesisResults;
 import io.codemonastery.dropwizard.kinesis.producer.ProducerMetrics;
 import io.codemonastery.dropwizard.kinesis.producer.RecordPutter;
+import io.dropwizard.util.Duration;
 import org.assertj.core.data.Offset;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TestRule;
+import org.junit.runners.model.Statement;
 import org.mockito.Mock;
 
 import java.nio.ByteBuffer;
@@ -24,6 +29,14 @@ import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
 
 public class RateLimitedRecordPutterTest {
+
+    @Rule
+    public final TestRule RETRY_BECAUSE_SLEEPS = (statement, description) -> new Statement() {
+        @Override
+        public void evaluate() throws Throwable {
+            Assertions.retry(3, Duration.milliseconds(0), statement::evaluate);
+        }
+    };
 
     private static final String STREAM_NAME = "test-stream";
 
