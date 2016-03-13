@@ -69,7 +69,7 @@ public class DynamicRateLimiterTest {
             assertTrue(rateLimiter.tryAcquire(1000, 0, TimeUnit.MILLISECONDS));
             for (int i = 0; i < 3; i++) {
                 assertFalse(rateLimiter.tryAcquire(1000, 0, TimeUnit.MILLISECONDS));
-                assertTrue(rateLimiter.tryAcquire(1000, 1, TimeUnit.SECONDS));
+                assertTrue(rateLimiter.tryAcquire(1000, 1100, TimeUnit.MILLISECONDS));
             }
         }
 
@@ -79,7 +79,7 @@ public class DynamicRateLimiterTest {
             assertTrue(rateLimiter.tryAcquire(500, 0, TimeUnit.MILLISECONDS));
             for (int i = 0; i < 3; i++) {
                 assertFalse(rateLimiter.tryAcquire(500, 0, TimeUnit.MILLISECONDS));
-                assertTrue(rateLimiter.tryAcquire(500, 500, TimeUnit.MILLISECONDS));
+                assertTrue(rateLimiter.tryAcquire(500, 550, TimeUnit.MILLISECONDS));
             }
         }
     }
