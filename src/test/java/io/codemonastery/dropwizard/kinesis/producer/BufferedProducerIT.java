@@ -4,14 +4,8 @@ import com.amazonaws.auth.DefaultAWSCredentialsProviderChain;
 import com.amazonaws.regions.Regions;
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDB;
 import com.amazonaws.services.kinesis.AmazonKinesis;
-import com.amazonaws.services.kinesis.clientlibrary.lib.worker.SimpleWorker;
-import com.amazonaws.services.kinesis.model.PutRecordsRequest;
-import com.amazonaws.services.kinesis.model.PutRecordsRequestEntry;
-import com.amazonaws.services.kinesis.model.PutRecordsResult;
-import com.amazonaws.services.kinesis.model.PutRecordsResultEntry;
 import io.codemonastery.dropwizard.kinesis.*;
 import io.codemonastery.dropwizard.kinesis.consumer.ConsumerFactory;
-import io.codemonastery.dropwizard.kinesis.consumer.EventConsumer;
 import io.dropwizard.jackson.Jackson;
 import io.dropwizard.lifecycle.setup.LifecycleEnvironment;
 import io.dropwizard.util.Duration;
@@ -19,22 +13,13 @@ import org.eclipse.jetty.util.component.LifeCycle;
 import org.junit.*;
 import org.junit.rules.TestRule;
 import org.junit.rules.Timeout;
-import org.mockito.Mock;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.function.Supplier;
-import java.util.stream.Collectors;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Matchers.any;
-import static org.mockito.Mockito.when;
-import static org.mockito.MockitoAnnotations.initMocks;
 
-@Ignore
 public class BufferedProducerIT {
 
     @Rule
@@ -88,7 +73,7 @@ public class BufferedProducerIT {
     }
 
     @Test
-    public void noSendNoPutRecords() throws Throwable {
+    public void tryHardToExceedRateLimit() throws Throwable {
         final int numRecords = 10000;
         final AtomicInteger count = new AtomicInteger(0);
         final String prefix = UUID.randomUUID().toString();

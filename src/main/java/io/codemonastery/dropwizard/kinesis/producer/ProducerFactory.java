@@ -6,6 +6,7 @@ import com.codahale.metrics.health.HealthCheckRegistry;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import io.codemonastery.dropwizard.kinesis.EventEncoder;
+import io.codemonastery.dropwizard.kinesis.producer.ratelimit.AcquireLimiterFactory;
 import io.dropwizard.lifecycle.setup.LifecycleEnvironment;
 import io.dropwizard.setup.Environment;
 
@@ -36,6 +37,12 @@ public interface ProducerFactory<E> {
     void setEncoder(EventEncoder<E> encoder);
 
     ProducerFactory<E> encoder(EventEncoder<E> encoder);
+
+    AcquireLimiterFactory getRateLimit();
+
+    void setRateLimit(AcquireLimiterFactory rateLimit);
+
+    ProducerFactory<E> rateLimit(AcquireLimiterFactory rateLimit);
 
     Producer<E> build(Environment environment, AmazonKinesis kinesis, String name);
 

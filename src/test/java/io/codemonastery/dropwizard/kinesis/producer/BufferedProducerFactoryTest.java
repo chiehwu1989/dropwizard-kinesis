@@ -8,6 +8,8 @@ import io.codemonastery.dropwizard.kinesis.Assertions;
 import io.codemonastery.dropwizard.kinesis.ConfigurationFactories;
 import io.codemonastery.dropwizard.kinesis.Environments;
 import io.codemonastery.dropwizard.kinesis.EventEncoder;
+import io.codemonastery.dropwizard.kinesis.producer.ratelimit.AcquireLimiterFactory;
+import io.codemonastery.dropwizard.kinesis.producer.ratelimit.FixedAcquireLimiterFactory;
 import io.dropwizard.Configuration;
 import io.dropwizard.configuration.ConfigurationFactory;
 import io.dropwizard.util.Duration;
@@ -73,18 +75,21 @@ public class BufferedProducerFactoryTest {
         EventEncoder<String> encoder = String::getBytes;
         Duration flushPeriod = Duration.hours(1);
         int maxBufferSize = 111;
+        AcquireLimiterFactory rateLimit = new FixedAcquireLimiterFactory();
 
         BufferedProducerFactory<String> factory = new BufferedProducerFactory<String>()
                 .streamName(streamName)
                 .partitionKeyFn(partitionkeyFunction)
                 .encoder(encoder)
                 .flushPeriod(flushPeriod)
-                .maxBufferSize(maxBufferSize);
+                .maxBufferSize(maxBufferSize)
+                .rateLimit(rateLimit);
         assertThat(factory.getStreamName()).isEqualTo(streamName);
         assertThat(factory.getEncoder()).isSameAs(encoder);
         assertThat(factory.getPartitionKeyFn()).isSameAs(partitionkeyFunction);
         assertThat(factory.getFlushPeriod()).isEqualTo(flushPeriod);
         assertThat(factory.getMaxBufferSize()).isEqualTo(maxBufferSize);
+        assertThat(factory.getRateLimit()).isEqualTo(rateLimit);
 
         Environments.run("app", env->{
             assertThat(env.lifecycle().getManagedObjects().size()).isEqualTo(1);

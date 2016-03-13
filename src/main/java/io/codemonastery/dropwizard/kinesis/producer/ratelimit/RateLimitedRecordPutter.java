@@ -1,7 +1,9 @@
-package io.codemonastery.dropwizard.kinesis.producer;
+package io.codemonastery.dropwizard.kinesis.producer.ratelimit;
 
 import com.amazonaws.services.kinesis.AmazonKinesis;
 import com.amazonaws.services.kinesis.model.*;
+import io.codemonastery.dropwizard.kinesis.producer.PutterMetrics;
+import io.codemonastery.dropwizard.kinesis.producer.RecordPutter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -16,28 +18,29 @@ public class RateLimitedRecordPutter implements RecordPutter {
 
     private final AmazonKinesis kinesis;
     private final PutterMetrics metrics;
-    private final DynamicRateLimiter recordRateLimiter;
+    private final AcquireLimiter limiter;
 
-    public RateLimitedRecordPutter(AmazonKinesis kinesis, PutterMetrics metrics) {
+    public RateLimitedRecordPutter(AmazonKinesis kinesis, PutterMetrics metrics, AcquireLimiter limiter) {
         this.kinesis = kinesis;
         this.metrics = metrics;
-        this.recordRateLimiter = DynamicRateLimiter.create(1000.0, 1.20, 1 / 60);
+        this.limiter = limiter;
     }
 
     @Override
     public int send(PutRecordsRequest request) throws Exception {
-        int failedCount = request.getRecords().size();
+        int failedCount = 0;
         try (Closeable ignored = metrics.time()) {
             boolean success = false;
             //ok to retry indefinitely, only catching rate limit exceptions
             while (!success) {
+                int numRecordsSent = request.getRecords().size();
+                int numRecordsRateExceeded = 0;
                 try {
-                    recordRateLimiter.acquire(request.getRecords().size());
+                    limiter.acquire(request.getRecords().size());
                     PutRecordsResult result = kinesis.putRecords(request);
-                    failedCount = Optional.ofNullable(result.getFailedRecordCount()).orElse(0);
-                    if (failedCount == 0) {
+                    int requestFailedCount = Optional.ofNullable(result.getFailedRecordCount()).orElse(0);
+                    if (requestFailedCount == 0) {
                         success = true;
-                        recordRateLimiter.moveForward();
                     } else {
                         List<PutRecordsRequestEntry> newRecordsFromBackoff = new ArrayList<>(result.getRecords().size());
                         List<PutRecordsRequestEntry> oldRecords = request.getRecords();
@@ -48,22 +51,22 @@ public class RateLimitedRecordPutter implements RecordPutter {
                             }
                         }
 
-                        if(newRecordsFromBackoff.isEmpty()){
+                        if (newRecordsFromBackoff.isEmpty()) {
                             success = true;
-                        }else{
+                        } else {
+                            numRecordsRateExceeded = newRecordsFromBackoff.size();
                             request.setRecords(newRecordsFromBackoff);
-                            recordRateLimiter.backOff();
                         }
+                        failedCount += requestFailedCount - numRecordsRateExceeded;
                     }
+                    limiter.update(numRecordsSent, numRecordsRateExceeded);
                 } catch (ProvisionedThroughputExceededException e) {
                     if (LOG.isDebugEnabled()) {
                         String message = String.format("Exceeded rate limit for stream \"%s\", backing off",
                                 request.getStreamName());
                         LOG.debug(message, e);
                     }
-                    if (e.getMessage() != null) {
-                        recordRateLimiter.backOff();
-                    }
+                    limiter.update(request.getRecords().size(), request.getRecords().size());
                 }
             }
         } finally {

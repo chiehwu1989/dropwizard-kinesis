@@ -74,7 +74,7 @@ public class SimpleProducerIT {
     }
 
     @Test
-    public void noSendNoPutRecords() throws Throwable {
+    public void tryHardToExceedRateLimit() throws Throwable {
         final int numRecords = 10000;
         final AtomicInteger count = new AtomicInteger(0);
         final String prefix = UUID.randomUUID().toString();

@@ -1,9 +1,14 @@
-package io.codemonastery.dropwizard.kinesis.producer;
+package io.codemonastery.dropwizard.kinesis.producer.ratelimit;
 
 import com.amazonaws.services.kinesis.AmazonKinesis;
-import com.amazonaws.services.kinesis.model.*;
+import com.amazonaws.services.kinesis.model.PutRecordsRequest;
+import com.amazonaws.services.kinesis.model.PutRecordsRequestEntry;
+import com.amazonaws.services.kinesis.model.PutRecordsResult;
+import com.amazonaws.services.kinesis.model.PutRecordsResultEntry;
 import com.google.common.util.concurrent.RateLimiter;
 import io.codemonastery.dropwizard.kinesis.KinesisResults;
+import io.codemonastery.dropwizard.kinesis.producer.ProducerMetrics;
+import io.codemonastery.dropwizard.kinesis.producer.RecordPutter;
 import org.assertj.core.data.Offset;
 import org.junit.Before;
 import org.junit.Test;
@@ -12,7 +17,6 @@ import org.mockito.Mock;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Matchers.any;
@@ -27,7 +31,7 @@ public class RateLimitedRecordPutterTest {
     private AmazonKinesis kinesis;
 
     private RateLimiter expectedRecordLimiter;
-    private List<PutRecordsRequest> putRecordRequests;
+    private List<PutRecordsRequestEntry> putRecordRequests;
     private RecordPutter putter;
 
     @Before
@@ -39,21 +43,33 @@ public class RateLimitedRecordPutterTest {
         when(kinesis.describeStream(STREAM_NAME)).thenReturn(KinesisResults.activeStream(STREAM_NAME));
         when(kinesis.putRecords(any())).then(invocationOnMock -> {
             PutRecordsRequest request = (PutRecordsRequest) invocationOnMock.getArguments()[0];
-            boolean rateExceeded = !expectedRecordLimiter.tryAcquire(request.getRecords().size());
-            if (rateExceeded) {
-                throw new ProvisionedThroughputExceededException("Rate Exceeded");
+
+            int numRecords = request.getRecords().size();
+            int ratedExceededCount = 0;
+            while(ratedExceededCount < numRecords){
+                if(expectedRecordLimiter.tryAcquire(numRecords - ratedExceededCount)){
+                    break;
+                }
+                ratedExceededCount++;
             }
-            putRecordRequests.add(request);
-            List<PutRecordsResultEntry> resultRecords = request.getRecords()
-                    .stream()
-                    .map(r -> (PutRecordsResultEntry) null)
-                    .collect(Collectors.toList());
+
+            List<PutRecordsResultEntry> resultRecords = new ArrayList<>();
+            for (int i = 0; i < request.getRecords().size(); i++) {
+                final PutRecordsResultEntry resultRecord = new PutRecordsResultEntry();
+                if(i < numRecords - ratedExceededCount){
+                    putRecordRequests.add(request.getRecords().get(i));
+                }else{
+                    resultRecord.setErrorCode("ProvisionedThroughputExceededException");
+                }
+                resultRecords.add(resultRecord);
+            }
+            System.out.println("rate exceeded: " + ratedExceededCount);
             return new PutRecordsResult()
                     .withRecords(resultRecords)
-                    .withFailedRecordCount(0);
+                    .withFailedRecordCount(ratedExceededCount);
         });
 
-        putter = new RateLimitedRecordPutter(kinesis, ProducerMetrics.noOp());
+        putter = new RateLimitedRecordPutter(kinesis, ProducerMetrics.noOp(), new DynamicAcquireLimiter(20, 2, 0.01));
     }
 
     @Test
@@ -62,13 +78,16 @@ public class RateLimitedRecordPutterTest {
 
         long start = System.currentTimeMillis();
         int numRecords = 20;
-        for (int i = 0; i < numRecords; i++) {
-            putter.send(request(1, 1));
+        int numBatches = 5;
+        for (int i = 0; i < numBatches; i++) {
+            putter.send(request(numRecords/numBatches, 1));
         }
         double durationMs = System.currentTimeMillis() - start;
 
-        assertThat(numRecords).isEqualTo(putRecordRequests.size());
-        assertThat(durationMs).isEqualTo(2000.0, Offset.offset(100.0));
+        assertThat(putRecordRequests.size()).isEqualTo(numRecords);
+        //first batch is not rate limited, so expected duration should be based on rate limiting n-1 batches
+        double expectedDurationMs = 1000 * (numRecords - numRecords/numBatches)/ expectedRecordLimiter.getRate();
+        assertThat(durationMs).isEqualTo(expectedDurationMs, Offset.offset(100.0));
     }
 
     private static PutRecordsRequest request(int numRecords, int byteSize) {
@@ -85,5 +104,4 @@ public class RateLimitedRecordPutterTest {
     private static PutRecordsRequestEntry record(int recordByteSize) {
         return new PutRecordsRequestEntry().withData(ByteBuffer.allocate(recordByteSize));
     }
-
 }

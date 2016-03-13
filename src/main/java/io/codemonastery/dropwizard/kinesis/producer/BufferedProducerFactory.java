@@ -9,6 +9,8 @@ import com.google.common.base.Preconditions;
 import io.codemonastery.dropwizard.kinesis.EventEncoder;
 import io.codemonastery.dropwizard.kinesis.StreamCreateConfiguration;
 import io.codemonastery.dropwizard.kinesis.healthcheck.StreamHealthCheck;
+import io.codemonastery.dropwizard.kinesis.producer.ratelimit.AcquireLimiterFactory;
+import io.codemonastery.dropwizard.kinesis.producer.ratelimit.RateLimitedRecordPutter;
 import io.dropwizard.lifecycle.setup.LifecycleEnvironment;
 import io.dropwizard.util.Duration;
 
@@ -80,8 +82,14 @@ public class BufferedProducerFactory<E> extends AbstractProducerFactory<E> {
     }
 
     @JsonIgnore
-    public BufferedProducerFactory<E> create(StreamCreateConfiguration create){
+    public BufferedProducerFactory<E> create(StreamCreateConfiguration create) {
         this.setCreate(create);
+        return this;
+    }
+
+    @Override
+    public BufferedProducerFactory<E> rateLimit(AcquireLimiterFactory rateLimit) {
+        super.rateLimit(rateLimit);
         return this;
     }
 
@@ -96,10 +104,11 @@ public class BufferedProducerFactory<E> extends AbstractProducerFactory<E> {
         Preconditions.checkNotNull(flushPeriod, "flushPeriod cannot be null");
         Preconditions.checkArgument(flushPeriod.getQuantity() > 0, "flush period must be positive");
         Preconditions.checkState(super.setupStream(kinesis), String.format("stream %s was not setup successfully", getStreamName()));
+        Preconditions.checkNotNull(rateLimit, "rateLimit cannot be null");
 
         final ExecutorService deliveryExecutor;
         final ScheduledExecutorService flushExecutor;
-        if(lifecycle != null){
+        if (lifecycle != null) {
             deliveryExecutor = lifecycle.executorService(name + "-delivery-executor-%d")
                     .workQueue(new SingletonBlockOnSubmitQueue())
                     .minThreads(1)
@@ -109,17 +118,24 @@ public class BufferedProducerFactory<E> extends AbstractProducerFactory<E> {
                     .scheduledExecutorService(name + "-flush-executor-%d")
                     .threads(1)
                     .build();
-        }else{
+        } else {
             deliveryExecutor = Executors.newSingleThreadExecutor();
             flushExecutor = Executors.newScheduledThreadPool(1);
         }
 
         BufferedProducerMetrics producerMetrics = new BufferedProducerMetrics(metrics, name);
-        if(healthChecks != null){
+        if (healthChecks != null) {
             healthChecks.register(name, new StreamFailureCheck(producerMetrics, new StreamHealthCheck(kinesis, getStreamName())));
         }
-        BufferedProducer<E> producer = new BufferedProducer<>(kinesis, getStreamName(), partitionKeyFn, encoder, maxBufferSize, deliveryExecutor, producerMetrics);
-        if(lifecycle != null){
+        BufferedProducer<E> producer = new BufferedProducer<>(
+                getStreamName(),
+                partitionKeyFn,
+                encoder,
+                maxBufferSize,
+                deliveryExecutor,
+                producerMetrics,
+                new RateLimitedRecordPutter(kinesis, producerMetrics, rateLimit.build()));
+        if (lifecycle != null) {
             lifecycle.manage(producer);
         }
 

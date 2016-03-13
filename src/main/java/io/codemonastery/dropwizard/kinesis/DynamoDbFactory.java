@@ -12,7 +12,6 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.codemonastery.dropwizard.kinesis.healthcheck.DescribeTableHealthCheckFactory;
 import io.codemonastery.dropwizard.kinesis.healthcheck.DynamoDbClientHealthCheckFactory;
-import io.codemonastery.dropwizard.kinesis.healthcheck.ListTablesHealthCheckFactory;
 import io.codemonastery.dropwizard.kinesis.lifecycle.ManagedDynamoDbClient;
 import io.codemonastery.dropwizard.kinesis.metric.ClientMetricsProxyFactory;
 import io.codemonastery.dropwizard.kinesis.metric.DynamoDbMetricsProxy;

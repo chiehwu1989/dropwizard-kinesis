@@ -1,6 +1,5 @@
 package io.codemonastery.dropwizard.kinesis.producer;
 
-import com.amazonaws.services.kinesis.AmazonKinesis;
 import com.amazonaws.services.kinesis.model.PutRecordsRequest;
 import com.amazonaws.services.kinesis.model.PutRecordsRequestEntry;
 import com.google.common.base.Preconditions;
@@ -23,28 +22,28 @@ public final class BufferedProducer<E> extends Producer<E> {
     private final BufferedProducerMetrics bufferedMetrics;
 
     private final PutRecordsBuffer buffer;
-    private final RateLimitedRecordPutter putter;
+    private final RecordPutter putter;
 
-    public BufferedProducer(AmazonKinesis kinesis,
-                            String streamName,
+    public BufferedProducer(String streamName,
                             Function<E, String> partitionKeyFn,
                             EventEncoder<E> encoder,
                             int maxBufferSize,
                             ExecutorService deliveryExecutor,
-                            BufferedProducerMetrics metrics) {
+                            BufferedProducerMetrics metrics,
+                            RecordPutter putter) {
         super(partitionKeyFn, encoder, metrics);
 
-        Preconditions.checkNotNull(kinesis, "kinesis cannot be null");
         Preconditions.checkArgument(!Strings.isNullOrEmpty(streamName), "must have a stream name");
         Preconditions.checkArgument(maxBufferSize > 0, "maxBufferSize must be positive");
         Preconditions.checkNotNull(deliveryExecutor, "must have a delivery executor");
+        Preconditions.checkNotNull(putter, "putter cannot be null");
 
         this.streamName = streamName;
         this.deliveryExecutor = deliveryExecutor;
         this.bufferedMetrics = metrics;
 
         this.buffer = new PutRecordsBuffer(maxBufferSize);
-        this.putter = new RateLimitedRecordPutter(kinesis, metrics);
+        this.putter = putter;
     }
 
     public void flush() {

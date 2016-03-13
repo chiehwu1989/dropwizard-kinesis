@@ -6,6 +6,8 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import io.codemonastery.dropwizard.kinesis.ConfigurationFactories;
 import io.codemonastery.dropwizard.kinesis.Environments;
 import io.codemonastery.dropwizard.kinesis.EventEncoder;
+import io.codemonastery.dropwizard.kinesis.producer.ratelimit.AcquireLimiterFactory;
+import io.codemonastery.dropwizard.kinesis.producer.ratelimit.FixedAcquireLimiterFactory;
 import io.dropwizard.Configuration;
 import io.dropwizard.configuration.ConfigurationFactory;
 import org.junit.Before;
@@ -52,14 +54,17 @@ public class SimpleProducerFactoryTest {
         String streamName = "xyz";
         Function<String, String> partitionkeyFunction = s -> s;
         EventEncoder<String> encoder = String::getBytes;
+        AcquireLimiterFactory rateLimit = new FixedAcquireLimiterFactory();
 
         SimpleProducerFactory<String> factory = new SimpleProducerFactory<String>()
                 .streamName(streamName)
                 .partitionKeyFn(partitionkeyFunction)
-                .encoder(encoder);
+                .encoder(encoder)
+                .rateLimit(rateLimit);
         assertThat(factory.getStreamName()).isEqualTo(streamName);
         assertThat(factory.getEncoder()).isSameAs(encoder);
         assertThat(factory.getPartitionKeyFn()).isSameAs(partitionkeyFunction);
+        assertThat(factory.getRateLimit()).isSameAs(rateLimit);
 
         Environments.run("app", env->{
             assertThat(env.lifecycle().getManagedObjects().size()).isEqualTo(1);
