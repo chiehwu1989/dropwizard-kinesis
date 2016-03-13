@@ -28,7 +28,7 @@ import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
 
-public class RateLimitedRecordPutterTest {
+public class RateLimitedRecordPutterIT {
 
     @Rule
     public final TestRule RETRY_BECAUSE_SLEEPS = (statement, description) -> new Statement() {
