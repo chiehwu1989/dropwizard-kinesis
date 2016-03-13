@@ -14,9 +14,10 @@ import org.junit.*;
 import org.junit.rules.TestRule;
 import org.junit.rules.Timeout;
 
+import java.util.HashSet;
+import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -76,23 +77,30 @@ public class BufferedProducerIT {
     @Test
     public void tryHardToExceedRateLimit() throws Throwable {
         final int numRecords = 10000;
-        final AtomicInteger count = new AtomicInteger(0);
+        final Set<String> actualRecords = new HashSet<>();
         final String prefix = UUID.randomUUID().toString();
         BufferedProducer<String> producer = producerFactory.build(null, null, lifecycle, kinesis, "test-producer");
         consumerFactory.consumer(() -> event -> {
             if(event.startsWith(prefix)){
-                count.incrementAndGet();
+                synchronized (actualRecords){
+                    actualRecords.add(event);
+                }
             }
-
             return true;
         }).build(null, null, lifecycle, kinesis, dynamodb, "test-consumer");
 
-        Thread.sleep(20000);
-
+        final Set<String> expectedRecords = new HashSet<>();
         for (int i = 0; i < numRecords; i++) {
-            producer.send(prefix + "_" + Integer.toString(i));
+            String record = prefix + "_" + Integer.toString(i);
+            expectedRecords.add(record);
+            producer.send(record);
         }
 
-        Assertions.retry(80, Duration.seconds(2), () -> assertThat(count.get()).isEqualTo(numRecords));
+        Assertions.retry(80, Duration.seconds(2), () -> {
+            assertThat(actualRecords.size()).isEqualTo(expectedRecords.size());
+            synchronized (actualRecords) {
+                assertThat(actualRecords).isEqualTo(expectedRecords);
+            }
+        });
     }
 }
