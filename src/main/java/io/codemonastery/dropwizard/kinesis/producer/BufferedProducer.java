@@ -20,13 +20,13 @@ public final class BufferedProducer<E> extends Producer<E> {
 
     private static final Logger LOG = LoggerFactory.getLogger(BufferedProducer.class);
 
-    private final AmazonKinesis kinesis;
     private final String streamName;
 
     private final ExecutorService deliveryExecutor;
     private final BufferedProducerMetrics bufferedMetrics;
 
     private final PutRecordsBuffer buffer;
+    private final RateLimitedRecordPutter putter;
 
     public BufferedProducer(AmazonKinesis kinesis,
                             String streamName,
@@ -42,12 +42,12 @@ public final class BufferedProducer<E> extends Producer<E> {
         Preconditions.checkArgument(maxBufferSize > 0, "maxBufferSize must be positive");
         Preconditions.checkNotNull(deliveryExecutor, "must have a delivery executor");
 
-        this.kinesis = kinesis;
         this.streamName = streamName;
         this.deliveryExecutor = deliveryExecutor;
         this.bufferedMetrics = metrics;
 
         this.buffer = new PutRecordsBuffer(maxBufferSize);
+        this.putter = new RateLimitedRecordPutter(kinesis, metrics);
     }
 
     public void flush() {
@@ -85,25 +85,23 @@ public final class BufferedProducer<E> extends Producer<E> {
     }
 
     private void putRecords(List<PutRecordsRequestEntry> records) {
-        if(records != null && !records.isEmpty()){
-            int failedCount = records.size();
-            try(Closeable ignored = metrics.time()) {
-                PutRecordsResult result = kinesis.putRecords(new PutRecordsRequest()
+        try {
+            if(records != null && !records.isEmpty()){
+                PutRecordsRequest request = new PutRecordsRequest()
                         .withRecords(records)
-                        .withStreamName(streamName));
-                failedCount = result.getFailedRecordCount();
+                        .withStreamName(streamName);
+                int failedCount = records.size();
+                putter.send(request);
                 if (LOG.isDebugEnabled()) {
                     String message = String.format("Put %d records to stream %s, %d failed",
-                            result.getRecords().size(),
+                            request.getRecords().size(),
                             streamName,
                             failedCount);
                     LOG.debug(message);
                 }
-            } catch (Exception e) {
-                LOG.error("Unexpected error while putting records", e);
-            }finally {
-                metrics.sent(records.size()-failedCount, failedCount);
             }
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 }

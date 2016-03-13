@@ -11,7 +11,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Function;
 
-public class ProducerMetrics implements HasFailureThresholds {
+public class ProducerMetrics implements PutterMetrics, HasFailureThresholds {
 
     public static ProducerMetrics noOp() {
         return new ProducerMetrics(null, "");
@@ -64,13 +64,15 @@ public class ProducerMetrics implements HasFailureThresholds {
         }
     }
 
-    public final void sent(long numRecords, long numFailedRecords) {
+    @Override
+    public final void sent(long successCount, long numFailedRecords) {
         if(sentMeter != null){
-            sentMeter.mark(numRecords);
+            sentMeter.mark(successCount);
             failedMeter.mark(numFailedRecords);
         }
     }
 
+    @Override
     public final Closeable time() {
         return putRecordsTimer == null ? NoOpClose.INSTANCE : putRecordsTimer.time();
     }

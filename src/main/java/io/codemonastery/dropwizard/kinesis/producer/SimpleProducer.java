@@ -18,8 +18,8 @@ public final class SimpleProducer<E> extends Producer<E> {
 
     private static final Logger LOG = LoggerFactory.getLogger(SimpleProducer.class);
 
-    private final AmazonKinesis kinesis;
     private final String streamName;
+    private final RateLimitedRecordPutter putter;
 
     public SimpleProducer(AmazonKinesis kinesis,
                           String streamName,
@@ -29,27 +29,22 @@ public final class SimpleProducer<E> extends Producer<E> {
         super(partitionKeyFn, encoder, metrics);
         Preconditions.checkNotNull(kinesis, "client cannot be null");
         Preconditions.checkNotNull(streamName, "streamName cannot be null");
-        this.kinesis = kinesis;
         this.streamName = streamName;
+        this.putter = new RateLimitedRecordPutter(kinesis, metrics);
     }
 
     @Override
     protected void send(PutRecordsRequestEntry record) throws Exception {
-        int failedCount = 1;
-        try(Closeable ignored = metrics.time()) {
-            PutRecordsResult  result = kinesis.putRecords(new PutRecordsRequest()
-                    .withRecords(record)
-                    .withStreamName(streamName));
-            failedCount = Optional.ofNullable(result.getFailedRecordCount()).orElse(0);
-            if (LOG.isDebugEnabled()) {
-                String message = String.format("Put %d records to stream %s, %d failed",
-                        result.getRecords().size(),
-                        streamName,
-                        failedCount);
-                LOG.debug(message);
-            }
-        }finally {
-            metrics.sent(1-failedCount, failedCount);
+        PutRecordsRequest request = new PutRecordsRequest()
+                .withRecords(record)
+                .withStreamName(streamName);
+        int failedCount = putter.send(request);
+        if (LOG.isDebugEnabled()) {
+            String message = String.format("Put %d records to stream %s, %d failed",
+                    request.getRecords().size(),
+                    streamName,
+                    failedCount);
+            LOG.debug(message);
         }
     }
 }

@@ -86,7 +86,7 @@ public class BufferedProducerTest {
     }
 
     @Test
-    public void sendOneFlushedEventually() throws Exception {
+    public void sendOneFlushedEventually() throws Throwable {
         producer.send("abc");
 
         Assertions.retry(5, FLUSH_PERIOD, () -> {
@@ -102,7 +102,7 @@ public class BufferedProducerTest {
     }
 
     @Test
-    public void fillBuffer() throws Exception {
+    public void fillBuffer() throws Throwable {
         for (int i = 0; i < MAX_BUFFER_SIZE; i++) {
             producer.send(Integer.toString(i));
         }
@@ -122,7 +122,7 @@ public class BufferedProducerTest {
     }
 
     @Test
-    public void fillBufferCoupleOfTimes() throws Exception {
+    public void fillBufferCoupleOfTimes() throws Throwable {
         for (int i = 0; i < MAX_BUFFER_SIZE * 5; i++) {
             producer.send(Integer.toString(i));
         }

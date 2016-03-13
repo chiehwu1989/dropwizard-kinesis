@@ -101,7 +101,7 @@ public class BufferedProducerFactoryTest {
     }
 
     @Test
-    public void noLifecycleCanStillDeliver() throws Exception {
+    public void noLifecycleCanStillDeliver() throws Throwable {
         String streamName = "xyz";
         Function<String, String> partitionkeyFunction = s -> s;
         EventEncoder<String> encoder = String::getBytes;

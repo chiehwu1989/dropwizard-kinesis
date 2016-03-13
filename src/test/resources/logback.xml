@@ -8,6 +8,8 @@
         </encoder>
     </appender>
 
+    <logger name="io.codemonastery.dropwizard.kinesis.producer.RateLimitedRecordPutter" level="info" />
+
     <root level="debug">
         <appender-ref ref="STDOUT" />
     </root>
