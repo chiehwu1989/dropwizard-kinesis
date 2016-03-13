@@ -9,8 +9,9 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
         defaultImpl = DynamicAcquireLimiterFactory.class
 )
 @JsonSubTypes({
+        @JsonSubTypes.Type(value = DynamicAcquireLimiterFactory.class, name = "dynamic"),
         @JsonSubTypes.Type(value = FixedAcquireLimiterFactory.class, name = "fixed"),
-        @JsonSubTypes.Type(value = DynamicAcquireLimiterFactory.class, name = "dynamic")
+        @JsonSubTypes.Type(value = NoLimitAcquireLimiterFactory.class, name = "nolimit")
 })
 public interface AcquireLimiterFactory {
 
