@@ -63,7 +63,6 @@ public class RateLimitedRecordPutterTest {
                 }
                 resultRecords.add(resultRecord);
             }
-            System.out.println("rate exceeded: " + ratedExceededCount);
             return new PutRecordsResult()
                     .withRecords(resultRecords)
                     .withFailedRecordCount(ratedExceededCount);

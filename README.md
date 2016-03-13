@@ -85,4 +85,16 @@ consumer:
 
 Rate Limiting
 -------------
-Almost all api calls are rate limited. Consumer rate limits can be configured via taskBackoffTime, which limits the rate of GetRecords and shard information request.
+Almost all api calls are rate limited and are retried if rate limits are exceeded.
+Consumer rate limits can be configured via taskBackoffTime, which limits the rate of GetRecords and shard information request.
+Producer PutRecords can be rate limited with a dynamic or fixed rate limits. The default behavior is dynamic. For fixed rate limiting behavior, configure your producer like this:
+``` yaml
+producer:
+  streamName: ...
+  create: ...
+  rateLimit:
+    type: fixed
+    initialPerSecond: 1000.0
+  maxBufferSize: ...
+  flushPeriod: ...
+    
