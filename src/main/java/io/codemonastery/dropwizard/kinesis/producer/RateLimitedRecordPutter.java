@@ -23,7 +23,7 @@ public class RateLimitedRecordPutter implements RecordPutter {
     public RateLimitedRecordPutter(AmazonKinesis kinesis, PutterMetrics metrics) {
         this.kinesis = kinesis;
         this.metrics = metrics;
-        this.recordRateLimiter = DynamicRateLimiter.create(1000.0);
+        this.recordRateLimiter = DynamicRateLimiter.create(1000.0, 1.20, 1/60);
     }
 
     @Override

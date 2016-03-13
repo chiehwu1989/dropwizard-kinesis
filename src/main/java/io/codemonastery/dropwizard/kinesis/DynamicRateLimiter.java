@@ -6,8 +6,16 @@ import java.util.concurrent.TimeUnit;
 
 public class DynamicRateLimiter {
 
-    public static DynamicRateLimiter create(double initialPermitsPerSecond){
-        return new DynamicRateLimiter(initialPermitsPerSecond, 2.0, initialPermitsPerSecond/1000.0);
+    public static DynamicRateLimiter create(double initialPermitsPerSecond) {
+        return new DynamicRateLimiter(initialPermitsPerSecond, 2.0, 1.0 / 60.0);
+    }
+
+    public static DynamicRateLimiter create(double initialPermitsPerSecond,
+                                            double backoffDivisor,
+                                            double moveForwardAddend) {
+        return new DynamicRateLimiter(initialPermitsPerSecond,
+                backoffDivisor,
+                moveForwardAddend);
     }
 
     private final double backoffDivisor;
@@ -15,8 +23,8 @@ public class DynamicRateLimiter {
     private final RateLimiter rateLimiter;
 
     DynamicRateLimiter(double initialPermitsPerSecond,
-                              double backoffDivisor,
-                              double moveForwardAddend) {
+                       double backoffDivisor,
+                       double moveForwardAddend) {
         this.backoffDivisor = backoffDivisor;
         this.moveForwardAddend = moveForwardAddend;
         this.rateLimiter = RateLimiter.create(initialPermitsPerSecond);
@@ -30,19 +38,19 @@ public class DynamicRateLimiter {
         return rateLimiter.acquire(permits);
     }
 
-    public void backOff(){
-        synchronized (this.rateLimiter){
+    public void backOff() {
+        synchronized (this.rateLimiter) {
             double newRate = this.rateLimiter.getRate() / backoffDivisor;
             this.rateLimiter.setRate(newRate);
         }
     }
 
-    public void moveForward(){
+    public void moveForward() {
         moveForward(1);
     }
 
-    public void moveForward(int n){
-        synchronized (this.rateLimiter){
+    public void moveForward(int n) {
+        synchronized (this.rateLimiter) {
             double newRate = this.rateLimiter.getRate() + (n * moveForwardAddend);
             this.rateLimiter.setRate(newRate);
         }
