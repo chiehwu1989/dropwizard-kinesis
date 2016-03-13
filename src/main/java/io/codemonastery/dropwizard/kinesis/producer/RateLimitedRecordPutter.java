@@ -3,7 +3,6 @@ package io.codemonastery.dropwizard.kinesis.producer;
 import com.amazonaws.services.kinesis.AmazonKinesis;
 import com.amazonaws.services.kinesis.model.ProvisionedThroughputExceededException;
 import com.amazonaws.services.kinesis.model.PutRecordsRequest;
-import com.amazonaws.services.kinesis.model.PutRecordsRequestEntry;
 import com.amazonaws.services.kinesis.model.PutRecordsResult;
 import io.codemonastery.dropwizard.kinesis.DynamicRateLimiter;
 import org.slf4j.Logger;
