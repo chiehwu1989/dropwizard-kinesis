@@ -4,11 +4,13 @@ import com.amazonaws.services.kinesis.AmazonKinesis;
 import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.health.HealthCheckRegistry;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
 import io.codemonastery.dropwizard.kinesis.EventEncoder;
 import io.codemonastery.dropwizard.kinesis.StreamCreateConfiguration;
 import io.codemonastery.dropwizard.kinesis.healthcheck.StreamHealthCheck;
 import io.codemonastery.dropwizard.kinesis.producer.ratelimit.AcquireLimiterFactory;
+import io.codemonastery.dropwizard.kinesis.producer.ratelimit.NoLimitAcquireLimiter;
 import io.codemonastery.dropwizard.kinesis.producer.ratelimit.RateLimitedRecordPutter;
 import io.dropwizard.lifecycle.setup.LifecycleEnvironment;
 
@@ -54,7 +56,6 @@ public class SimpleProducerFactory<E> extends AbstractProducerFactory<E> {
                                    String name) {
         Preconditions.checkNotNull(encoder, "encoder cannot be null, was not inferred");
         Preconditions.checkNotNull(partitionKeyFn, "partitionKeyFn cannot be null, is allowed to return null");
-        Preconditions.checkNotNull(rateLimit, "rateLimit cannot be null");
         Preconditions.checkState(super.setupStream(kinesis), String.format("stream %s was not setup successfully", getStreamName()));
 
         ProducerMetrics producerMetrics = new ProducerMetrics(metrics, name);
@@ -66,7 +67,12 @@ public class SimpleProducerFactory<E> extends AbstractProducerFactory<E> {
                 partitionKeyFn,
                 encoder,
                 producerMetrics,
-                new RateLimitedRecordPutter(kinesis, producerMetrics, rateLimit.build()));
+                new RateLimitedRecordPutter(
+                        kinesis,
+                        producerMetrics,
+                        Optional.fromNullable(rateLimit).or(NoLimitAcquireLimiter::new).build()
+                )
+        );
         if (lifecycle != null) {
             lifecycle.manage(producer);
         }

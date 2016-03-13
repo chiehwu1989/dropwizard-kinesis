@@ -5,11 +5,13 @@ import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.health.HealthCheckRegistry;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
 import io.codemonastery.dropwizard.kinesis.EventEncoder;
 import io.codemonastery.dropwizard.kinesis.StreamCreateConfiguration;
 import io.codemonastery.dropwizard.kinesis.healthcheck.StreamHealthCheck;
 import io.codemonastery.dropwizard.kinesis.producer.ratelimit.AcquireLimiterFactory;
+import io.codemonastery.dropwizard.kinesis.producer.ratelimit.NoLimitAcquireLimiter;
 import io.codemonastery.dropwizard.kinesis.producer.ratelimit.RateLimitedRecordPutter;
 import io.dropwizard.lifecycle.setup.LifecycleEnvironment;
 import io.dropwizard.util.Duration;
@@ -18,7 +20,10 @@ import javax.validation.Valid;
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
-import java.util.concurrent.*;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 
 public class BufferedProducerFactory<E> extends AbstractProducerFactory<E> {
@@ -104,7 +109,6 @@ public class BufferedProducerFactory<E> extends AbstractProducerFactory<E> {
         Preconditions.checkNotNull(flushPeriod, "flushPeriod cannot be null");
         Preconditions.checkArgument(flushPeriod.getQuantity() > 0, "flush period must be positive");
         Preconditions.checkState(super.setupStream(kinesis), String.format("stream %s was not setup successfully", getStreamName()));
-        Preconditions.checkNotNull(rateLimit, "rateLimit cannot be null");
 
         final ExecutorService deliveryExecutor;
         final ScheduledExecutorService flushExecutor;
@@ -134,7 +138,12 @@ public class BufferedProducerFactory<E> extends AbstractProducerFactory<E> {
                 maxBufferSize,
                 deliveryExecutor,
                 producerMetrics,
-                new RateLimitedRecordPutter(kinesis, producerMetrics, rateLimit.build()));
+                new RateLimitedRecordPutter(
+                        kinesis,
+                        producerMetrics,
+                        Optional.fromNullable(rateLimit).or(NoLimitAcquireLimiter::new).build()
+                )
+        );
         if (lifecycle != null) {
             lifecycle.manage(producer);
         }
