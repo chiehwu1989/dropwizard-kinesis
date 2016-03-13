@@ -10,9 +10,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Preconditions;
 import io.codemonastery.dropwizard.kinesis.EventDecoder;
 import io.codemonastery.dropwizard.kinesis.EventObjectMapper;
+import io.codemonastery.dropwizard.kinesis.StreamCreateConfiguration;
 import io.codemonastery.dropwizard.kinesis.healthcheck.StreamHealthCheck;
 import io.codemonastery.dropwizard.kinesis.producer.StreamFailureCheck;
-import io.dropwizard.lifecycle.setup.ExecutorServiceBuilder;
 import io.dropwizard.lifecycle.setup.LifecycleEnvironment;
 import io.dropwizard.setup.Environment;
 import org.eclipse.jetty.util.component.AbstractLifeCycle;
@@ -67,6 +67,18 @@ public class ConsumerFactory<E> extends KinesisClientLibConfig {
     @JsonIgnore
     public ConsumerFactory<E> consumer(Supplier<EventConsumer<E>> consumer) {
         this.setConsumer(consumer);
+        return this;
+    }
+
+    @JsonIgnore
+    public ConsumerFactory<E> create(StreamCreateConfiguration create){
+        this.setCreate(create);
+        return this;
+    }
+
+    @JsonIgnore
+    public ConsumerFactory<E> applicationName(String applicationName){
+        this.setApplicationName(applicationName);
         return this;
     }
 

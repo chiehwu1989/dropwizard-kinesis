@@ -1,5 +1,5 @@
 Dropwizard Kinesis
-===================
+==================
 *Why doesn't this exist already...*
 
 [![Build Status](https://travis-ci.org/code-monastery/dropwizard-kinesis.svg?branch=master)](https://travis-ci.org/code-monastery/dropwizard-kinesis)
@@ -10,7 +10,7 @@ Dropwizard Kinesis
 Kinesis (+DynamoDB) configuration, metrics, health-checks, lifecycle management and rate limiting integrated with dropwizard, focused on common use cases. Inspired by [dropwizard-core](https://github.com/dropwizard/dropwizard/tree/master/dropwizard-core) and [dropwizard-extra](//github.com/datasift/dropwizard-extra), depends on [Amazon Kinesis Client Library](https://github.com/awslabs/amazon-kinesis-client).
 
 Configuration
------
+-------------
 Configuration follows the dropwizard pattern - configuration classes are also factories for the classes they configure.
 
 There are a few classes to configure, and some you'll need to implement, but before you do that you need to determine how you provide aws credentials to the aws clients!
@@ -43,12 +43,12 @@ consumer:
 For all configurations see [Complete-Configuration](/../../wiki/Complete-Configuration) or see class [ExampleConfiguration](src/test/java/io/codemonastery/dropwizard/kinesis/example/ExampleConfiguration.java). To see how the configuration could be used to create producers and consumers, look at [ExampleApplication](src/test/java/io/codemonastery/dropwizard/kinesis/example/ExampleApplication.java).
 
 Event Consumer
------
-To meaningfully consume events you'll need to implement [EventConsumer](src/main/java/io/codemonastery/dropwizard/kinesis/consumer/EventConsumer.java) and a [Supplier](https://docs.oracle.com/javase/8/docs/api/java/util/function/Supplier.html) for that consumer.
+--------------
+To consume events you'll need to implement [EventConsumer](src/main/java/io/codemonastery/dropwizard/kinesis/consumer/EventConsumer.java) and a [Supplier](https://docs.oracle.com/javase/8/docs/api/java/util/function/Supplier.html) for that consumer.
 Whenever a event is successfully consumed the EventConsumer should return true. If the event was not successfully consumed, return false. The event will be consumed later, and hopefully next time it will be successful. Important note: if the event is never successfully consumed by the application, it will halt processing of events from that shard. So in some cases you may want to return true regardless of outcome.
 
 Event Encoder/Decoder
------
+---------------------
 By default the producer/consumer will try to encode/decode events to/from json using Jackson [ObjectMapper](https://github.com/FasterXML/jackson-databind/blob/master/src/main/java/com/fasterxml/jackson/databind/ObjectMapper.java), but only because that is a dependency of dropwizard-core. Naturally you'll want to use some other technique. For an example take a look at [EventObjectMapper](src/main/java/io/codemonastery/dropwizard/kinesis/EventObjectMapper.java).
 
 There is one serious gotcha with the default EventDecoder: the EventDecoder cannot infer how to decode objects unless the ConsumerFactory field was a anonymous subclass with the correct type information. Moreover, you should make sure any new consumer factories inherit default decoding from the previous consumer factory. Example:
@@ -75,7 +75,7 @@ There is one serious gotcha with the default EventDecoder: the EventDecoder cann
 ```
 
 Latest vs Trim Horizon
------
+----------------------
 There are many configurations to pay attention to, but perhaps the most important consumer configuration is initialPositionInStream, which needs to either be "TRIM_HORIZON" or "LATEST". When a consumer is created for the very first time, identified by the applicationName configuration, the consumer will decide where in the stream to start reading from based on initialPositionInStream. LATEST will cause a consumer to start immediately after the latest published record, while TRIM_HORIZON will cause a consumer to start reading from the oldest record still in kinesis. Example configuration: 
 ``` yaml
 consumer:
@@ -83,8 +83,6 @@ consumer:
     initialPositionInStream: "TRIM_HORIZON"
 ```
 
-Works in Progress
------
-* More producer tests around metrics
-* Consumer/Producer failure rate threshold configuration
-* Present Async startup via futures
+Rate Limiting
+-------------
+Almost all api calls are rate limited. Consumer rate limits can be configured via taskBackoffTime, which limits the rate of GetRecords and shard information request.

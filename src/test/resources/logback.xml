@@ -8,7 +8,9 @@
         </encoder>
     </appender>
 
-    <logger name="io.codemonastery.dropwizard.kinesis.producer.RateLimitedRecordPutter" level="info" />
+    <logger name="io.codemonastery.dropwizard.kinesis" level="info" />
+    <logger name="com.amazonaws" level="warn" />
+    <logger name="org.apache.http" level="warn" />
 
     <root level="debug">
         <appender-ref ref="STDOUT" />

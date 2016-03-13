@@ -7,6 +7,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.Preconditions;
 import io.codemonastery.dropwizard.kinesis.EventEncoder;
+import io.codemonastery.dropwizard.kinesis.StreamCreateConfiguration;
 import io.codemonastery.dropwizard.kinesis.healthcheck.StreamHealthCheck;
 import io.dropwizard.lifecycle.setup.LifecycleEnvironment;
 import io.dropwizard.util.Duration;
@@ -15,15 +16,10 @@ import javax.validation.Valid;
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 import java.util.function.Function;
 
 public class BufferedProducerFactory<E> extends AbstractProducerFactory<E> {
-
-    @Min(1)
-    private int deliveryThreadCount = 10;
 
     @Min(1)
     @Max(500)
@@ -32,22 +28,6 @@ public class BufferedProducerFactory<E> extends AbstractProducerFactory<E> {
     @Valid
     @NotNull
     private Duration flushPeriod = Duration.seconds(10);
-
-    @JsonProperty
-    public int getDeliveryThreadCount() {
-        return deliveryThreadCount;
-    }
-
-    @JsonProperty
-    public void setDeliveryThreadCount(int deliveryThreadCount) {
-        this.deliveryThreadCount = deliveryThreadCount;
-    }
-
-    @JsonIgnore
-    public BufferedProducerFactory<E> deliveryThreadCount(int deliveryThreadCount) {
-        this.setDeliveryThreadCount(deliveryThreadCount);
-        return this;
-    }
 
     @JsonProperty
     public int getMaxBufferSize() {
@@ -100,6 +80,12 @@ public class BufferedProducerFactory<E> extends AbstractProducerFactory<E> {
     }
 
     @JsonIgnore
+    public BufferedProducerFactory<E> create(StreamCreateConfiguration create){
+        this.setCreate(create);
+        return this;
+    }
+
+    @JsonIgnore
     public BufferedProducer<E> build(MetricRegistry metrics,
                                      HealthCheckRegistry healthChecks,
                                      LifecycleEnvironment lifecycle,
@@ -111,13 +97,21 @@ public class BufferedProducerFactory<E> extends AbstractProducerFactory<E> {
         Preconditions.checkArgument(flushPeriod.getQuantity() > 0, "flush period must be positive");
         Preconditions.checkState(super.setupStream(kinesis), String.format("stream %s was not setup successfully", getStreamName()));
 
-        ScheduledExecutorService deliveryExecutor;
+        final ExecutorService deliveryExecutor;
+        final ScheduledExecutorService flushExecutor;
         if(lifecycle != null){
-            deliveryExecutor = lifecycle
-                    .scheduledExecutorService(name + "-delivery-executor")
-                    .threads(deliveryThreadCount).build();
+            deliveryExecutor = lifecycle.executorService(name + "-delivery-executor-%d")
+                    .workQueue(new SingletonBlockOnSubmitQueue())
+                    .minThreads(1)
+                    .maxThreads(1)
+                    .build();
+            flushExecutor = lifecycle
+                    .scheduledExecutorService(name + "-flush-executor-%d")
+                    .threads(1)
+                    .build();
         }else{
-            deliveryExecutor = Executors.newScheduledThreadPool(deliveryThreadCount);
+            deliveryExecutor = Executors.newSingleThreadExecutor();
+            flushExecutor = Executors.newScheduledThreadPool(1);
         }
 
         BufferedProducerMetrics producerMetrics = new BufferedProducerMetrics(metrics, name);
@@ -129,12 +123,11 @@ public class BufferedProducerFactory<E> extends AbstractProducerFactory<E> {
             lifecycle.manage(producer);
         }
 
-        deliveryExecutor.scheduleAtFixedRate(producer::flush,
+        flushExecutor.scheduleAtFixedRate(producer::flush,
                 flushPeriod.toMilliseconds(),
                 flushPeriod.toMilliseconds(),
                 TimeUnit.MILLISECONDS);
 
         return producer;
     }
-
 }

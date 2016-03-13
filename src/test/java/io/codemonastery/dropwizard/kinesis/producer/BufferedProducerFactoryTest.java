@@ -71,7 +71,6 @@ public class BufferedProducerFactoryTest {
         String streamName = "xyz";
         Function<String, String> partitionkeyFunction = s -> s;
         EventEncoder<String> encoder = String::getBytes;
-        int deliveryThreadCount = 11;
         Duration flushPeriod = Duration.hours(1);
         int maxBufferSize = 111;
 
@@ -79,13 +78,11 @@ public class BufferedProducerFactoryTest {
                 .streamName(streamName)
                 .partitionKeyFn(partitionkeyFunction)
                 .encoder(encoder)
-                .deliveryThreadCount(deliveryThreadCount)
                 .flushPeriod(flushPeriod)
                 .maxBufferSize(maxBufferSize);
         assertThat(factory.getStreamName()).isEqualTo(streamName);
         assertThat(factory.getEncoder()).isSameAs(encoder);
         assertThat(factory.getPartitionKeyFn()).isSameAs(partitionkeyFunction);
-        assertThat(factory.getDeliveryThreadCount()).isEqualTo(deliveryThreadCount);
         assertThat(factory.getFlushPeriod()).isEqualTo(flushPeriod);
         assertThat(factory.getMaxBufferSize()).isEqualTo(maxBufferSize);
 
@@ -94,7 +91,7 @@ public class BufferedProducerFactoryTest {
             Producer<String> producer = factory.build(env, kinesis, "foo");
             assertThat(producer).isInstanceOf(BufferedProducer.class);
 
-            assertThat(env.lifecycle().getManagedObjects().size()).isEqualTo(3);
+            assertThat(env.lifecycle().getManagedObjects().size()).isEqualTo(4);
             assertThat(env.metrics().getNames()).contains("foo-sent");
             assertThat(env.healthChecks().getNames()).contains("foo");
         });

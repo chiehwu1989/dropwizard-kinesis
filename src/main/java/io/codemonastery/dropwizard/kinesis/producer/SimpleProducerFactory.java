@@ -3,8 +3,10 @@ package io.codemonastery.dropwizard.kinesis.producer;
 import com.amazonaws.services.kinesis.AmazonKinesis;
 import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.health.HealthCheckRegistry;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.base.Preconditions;
 import io.codemonastery.dropwizard.kinesis.EventEncoder;
+import io.codemonastery.dropwizard.kinesis.StreamCreateConfiguration;
 import io.codemonastery.dropwizard.kinesis.healthcheck.StreamHealthCheck;
 import io.dropwizard.lifecycle.setup.LifecycleEnvironment;
 
@@ -27,6 +29,12 @@ public class SimpleProducerFactory<E> extends AbstractProducerFactory<E> {
     @Override
     public SimpleProducerFactory<E> encoder(EventEncoder<E> encoder) {
         super.encoder(encoder);
+        return this;
+    }
+
+    @JsonIgnore
+    public SimpleProducerFactory<E> create(StreamCreateConfiguration create){
+        this.setCreate(create);
         return this;
     }
 

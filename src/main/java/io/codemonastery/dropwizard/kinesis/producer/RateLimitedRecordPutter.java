@@ -1,14 +1,14 @@
 package io.codemonastery.dropwizard.kinesis.producer;
 
 import com.amazonaws.services.kinesis.AmazonKinesis;
-import com.amazonaws.services.kinesis.model.ProvisionedThroughputExceededException;
-import com.amazonaws.services.kinesis.model.PutRecordsRequest;
-import com.amazonaws.services.kinesis.model.PutRecordsResult;
+import com.amazonaws.services.kinesis.model.*;
 import io.codemonastery.dropwizard.kinesis.DynamicRateLimiter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.Closeable;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 public class RateLimitedRecordPutter implements RecordPutter {
@@ -22,7 +22,7 @@ public class RateLimitedRecordPutter implements RecordPutter {
     public RateLimitedRecordPutter(AmazonKinesis kinesis, PutterMetrics metrics) {
         this.kinesis = kinesis;
         this.metrics = metrics;
-        this.recordRateLimiter = DynamicRateLimiter.create(1000.0, 1.20, 1/60);
+        this.recordRateLimiter = DynamicRateLimiter.create(1000.0, 1.20, 1 / 60);
     }
 
     @Override
@@ -36,8 +36,26 @@ public class RateLimitedRecordPutter implements RecordPutter {
                     recordRateLimiter.acquire(request.getRecords().size());
                     PutRecordsResult result = kinesis.putRecords(request);
                     failedCount = Optional.ofNullable(result.getFailedRecordCount()).orElse(0);
-                    recordRateLimiter.moveForward();
-                    success = true;
+                    if (failedCount == 0) {
+                        success = true;
+                        recordRateLimiter.moveForward();
+                    } else {
+                        List<PutRecordsRequestEntry> newRecordsFromBackoff = new ArrayList<>(result.getRecords().size());
+                        List<PutRecordsRequestEntry> oldRecords = request.getRecords();
+                        for (int i = 0; i < result.getRecords().size(); i++) {
+                            PutRecordsResultEntry recordResult = result.getRecords().get(i);
+                            if ("ProvisionedThroughputExceededException".equals(recordResult.getErrorCode())) {
+                                newRecordsFromBackoff.add(oldRecords.get(i));
+                            }
+                        }
+
+                        if(newRecordsFromBackoff.isEmpty()){
+                            success = true;
+                        }else{
+                            request.setRecords(newRecordsFromBackoff);
+                            recordRateLimiter.backOff();
+                        }
+                    }
                 } catch (ProvisionedThroughputExceededException e) {
                     if (LOG.isDebugEnabled()) {
                         String message = String.format("Exceeded rate limit for stream \"%s\", backing off",

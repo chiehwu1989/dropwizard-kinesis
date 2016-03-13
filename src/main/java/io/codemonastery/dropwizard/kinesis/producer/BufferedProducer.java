@@ -3,17 +3,14 @@ package io.codemonastery.dropwizard.kinesis.producer;
 import com.amazonaws.services.kinesis.AmazonKinesis;
 import com.amazonaws.services.kinesis.model.PutRecordsRequest;
 import com.amazonaws.services.kinesis.model.PutRecordsRequestEntry;
-import com.amazonaws.services.kinesis.model.PutRecordsResult;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
 import io.codemonastery.dropwizard.kinesis.EventEncoder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.Closeable;
-import java.util.*;
+import java.util.List;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.ScheduledExecutorService;
 import java.util.function.Function;
 
 public final class BufferedProducer<E> extends Producer<E> {
@@ -33,7 +30,7 @@ public final class BufferedProducer<E> extends Producer<E> {
                             Function<E, String> partitionKeyFn,
                             EventEncoder<E> encoder,
                             int maxBufferSize,
-                            ScheduledExecutorService deliveryExecutor,
+                            ExecutorService deliveryExecutor,
                             BufferedProducerMetrics metrics) {
         super(partitionKeyFn, encoder, metrics);
 
@@ -90,8 +87,7 @@ public final class BufferedProducer<E> extends Producer<E> {
                 PutRecordsRequest request = new PutRecordsRequest()
                         .withRecords(records)
                         .withStreamName(streamName);
-                int failedCount = records.size();
-                putter.send(request);
+                int failedCount = putter.send(request);
                 if (LOG.isDebugEnabled()) {
                     String message = String.format("Put %d records to stream %s, %d failed",
                             request.getRecords().size(),
@@ -101,7 +97,7 @@ public final class BufferedProducer<E> extends Producer<E> {
                 }
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            LOG.error("Unexpected exception putting records", e);
         }
     }
 }
