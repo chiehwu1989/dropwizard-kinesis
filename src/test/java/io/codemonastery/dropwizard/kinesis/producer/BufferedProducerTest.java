@@ -14,7 +14,10 @@ import io.dropwizard.util.Duration;
 import org.eclipse.jetty.util.component.LifeCycle;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TestRule;
+import org.junit.runners.model.Statement;
 import org.mockito.Mock;
 
 import java.util.ArrayList;
@@ -27,6 +30,14 @@ import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
 
 public class BufferedProducerTest {
+
+    @Rule
+    public final TestRule RETRY_BECAUSE_SLEEPS = (statement, description) -> new Statement() {
+        @Override
+        public void evaluate() throws Throwable {
+            Assertions.retry(3, Duration.milliseconds(0), statement::evaluate);
+        }
+    };
 
     private static final EventObjectMapper<String> ENCODER = new EventObjectMapper<>(Jackson.newObjectMapper(), String.class);
 
