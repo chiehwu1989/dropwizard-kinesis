@@ -2,7 +2,6 @@ package io.codemonastery.dropwizard.kinesis.producer;
 
 import com.amazonaws.services.kinesis.AmazonKinesis;
 import com.amazonaws.services.kinesis.model.*;
-import io.codemonastery.dropwizard.kinesis.DynamicRateLimiter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

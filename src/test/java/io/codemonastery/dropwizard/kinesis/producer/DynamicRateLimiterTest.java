@@ -1,5 +1,6 @@
-package io.codemonastery.dropwizard.kinesis;
+package io.codemonastery.dropwizard.kinesis.producer;
 
+import io.codemonastery.dropwizard.kinesis.Assertions;
 import io.dropwizard.util.Duration;
 import org.junit.Rule;
 import org.junit.Test;

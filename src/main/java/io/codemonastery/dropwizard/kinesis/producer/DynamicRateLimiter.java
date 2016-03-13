@@ -1,4 +1,4 @@
-package io.codemonastery.dropwizard.kinesis;
+package io.codemonastery.dropwizard.kinesis.producer;
 
 import com.google.common.util.concurrent.RateLimiter;
 
