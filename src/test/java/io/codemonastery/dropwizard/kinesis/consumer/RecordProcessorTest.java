@@ -31,10 +31,14 @@ public class RecordProcessorTest {
 
     @Mock
     private IRecordProcessorCheckpointer checkpointer;
+    private MetricRegistry metricRegistry;
+    private RecordProcessorMetrics metrics;
 
     @Before
     public void setUp() throws Exception {
         initMocks(this);
+        metricRegistry = new MetricRegistry();
+        metrics = new RecordProcessorMetrics(metricRegistry, "foo");
     }
 
     @Test
@@ -51,8 +55,7 @@ public class RecordProcessorTest {
                 .withRecords(expectedRecords)
                 .withCheckpointer(checkpointer);
 
-        MetricRegistry metricRegistry = new MetricRegistry();
-        RecordProcessor<String> processor = new RecordProcessor<>(MAPPER, eventConsumer, new RecordProcessorMetrics(metricRegistry, "foo"));
+        RecordProcessor<String> processor = new RecordProcessor<>(MAPPER, eventConsumer, metrics);
         processor.processRecords(input);
 
         assertThat(actual).isEqualTo(expected);
@@ -83,8 +86,7 @@ public class RecordProcessorTest {
                 .withRecords(expectedRecords)
                 .withCheckpointer(checkpointer);
 
-        MetricRegistry metricRegistry = new MetricRegistry();
-        RecordProcessor<String> processor = new RecordProcessor<>(MAPPER, eventConsumer, new RecordProcessorMetrics(metricRegistry, "foo"));
+        RecordProcessor<String> processor = new RecordProcessor<>(MAPPER, eventConsumer, metrics);
         processor.processRecords(input);
 
         assertThat(actual).isEqualTo(expected.subList(0, 2));
@@ -115,8 +117,7 @@ public class RecordProcessorTest {
                 .withRecords(expectedRecords)
                 .withCheckpointer(checkpointer);
 
-        MetricRegistry metricRegistry = new MetricRegistry();
-        RecordProcessor<String> processor = new RecordProcessor<>(MAPPER, eventConsumer, new RecordProcessorMetrics(metricRegistry, "foo"));
+        RecordProcessor<String> processor = new RecordProcessor<>(MAPPER, eventConsumer, metrics);
         processor.processRecords(input);
 
         assertThat(actual).isEqualTo(expected.subList(0, 2));
@@ -147,7 +148,6 @@ public class RecordProcessorTest {
                 .withRecords(expectedRecords)
                 .withCheckpointer(checkpointer);
 
-        MetricRegistry metricRegistry = new MetricRegistry();
         RecordProcessor<String> processor = new RecordProcessor<>(new EventDecoder<String>() {
             @Nullable
             @Override
@@ -158,7 +158,7 @@ public class RecordProcessorTest {
                 }
                 return value;
             }
-        }, eventConsumer, new RecordProcessorMetrics(metricRegistry, "foo"));
+        }, eventConsumer, metrics);
         processor.processRecords(input);
 
         assertThat(actual).isEqualTo(expected.subList(0, 2));
@@ -189,7 +189,6 @@ public class RecordProcessorTest {
                 .withRecords(expectedRecords)
                 .withCheckpointer(checkpointer);
 
-        MetricRegistry metricRegistry = new MetricRegistry();
         RecordProcessor<String> processor = new RecordProcessor<>(new EventDecoder<String>() {
             @Nullable
             @Override
@@ -200,7 +199,7 @@ public class RecordProcessorTest {
                 }
                 return value;
             }
-        }, eventConsumer, new RecordProcessorMetrics(metricRegistry, "foo"));
+        }, eventConsumer, metrics);
         processor.processRecords(input);
 
         assertThat(actual).isEqualTo(expected.subList(0, 2)); // was not sent to consumer
@@ -222,8 +221,7 @@ public class RecordProcessorTest {
                 .withRecords(expectedRecords)
                 .withCheckpointer(checkpointer);
 
-        MetricRegistry metricRegistry = new MetricRegistry();
-        RecordProcessor<String> processor = new RecordProcessor<>(MAPPER, event -> true, new RecordProcessorMetrics(metricRegistry, "foo"));
+        RecordProcessor<String> processor = new RecordProcessor<>(MAPPER, event -> true, metrics);
         processor.processRecords(input);
         verify(checkpointer).checkpoint(expectedRecords.get(2)); //but still counts as processed
         assertThat(metricRegistry.meter("foo-success").getCount()).isEqualTo(3);
@@ -243,8 +241,7 @@ public class RecordProcessorTest {
                 .withRecords(expectedRecords)
                 .withCheckpointer(checkpointer);
 
-        MetricRegistry metricRegistry = new MetricRegistry();
-        RecordProcessor<String> processor = new RecordProcessor<>(MAPPER, event -> true, new RecordProcessorMetrics(metricRegistry, "foo"));
+        RecordProcessor<String> processor = new RecordProcessor<>(MAPPER, event -> true, metrics);
         processor.processRecords(input);
         verify(checkpointer).checkpoint(expectedRecords.get(2)); //but still counts as processed
         assertThat(metricRegistry.meter("foo-success").getCount()).isEqualTo(3);
@@ -257,9 +254,6 @@ public class RecordProcessorTest {
 
     @Test
     public void startupShutdownMetrics() throws Exception {
-        MetricRegistry metricRegistry = new MetricRegistry();
-        RecordProcessorMetrics metrics = new RecordProcessorMetrics(metricRegistry, "foo");
-
         RecordProcessor<String> processor = new RecordProcessor<>(MAPPER, event -> true, metrics);
         assertThat(metricRegistry.counter("foo-processors").getCount()).isEqualTo(0);
         processor.initialize(null);

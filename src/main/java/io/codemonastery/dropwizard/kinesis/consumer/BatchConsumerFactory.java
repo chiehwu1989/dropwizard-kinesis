@@ -147,7 +147,7 @@ public class BatchConsumerFactory<E> extends KinesisClientLibConfig {
 
         super.setupStream(kinesis);
 
-        RecordProcessorMetrics processorMetrics = new RecordProcessorMetrics(metrics, name);
+        BatchProcessorMetrics processorMetrics = new BatchProcessorMetrics(metrics, name);
         BatchRecordProcessorFactory<E> recordProcessorFactory = new BatchRecordProcessorFactory<>(
                 decoder,
                 consumer,

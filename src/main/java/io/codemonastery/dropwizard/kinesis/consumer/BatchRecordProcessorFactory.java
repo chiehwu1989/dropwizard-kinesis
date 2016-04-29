@@ -11,11 +11,11 @@ public class BatchRecordProcessorFactory<E> implements IRecordProcessorFactory {
 
     private final EventDecoder<E> decoder;
     private final Supplier<BatchConsumer<E>> eventConsumerFactory;
-    private final RecordProcessorMetrics metrics;
+    private final BatchProcessorMetrics metrics;
 
     public BatchRecordProcessorFactory(EventDecoder<E> decoder,
-                                  Supplier<BatchConsumer<E>> eventConsumerFactory,
-                                  RecordProcessorMetrics metrics) {
+                                       Supplier<BatchConsumer<E>> eventConsumerFactory,
+                                       BatchProcessorMetrics metrics) {
         Preconditions.checkNotNull(decoder, "decoder cannot be null");
         Preconditions.checkNotNull(eventConsumerFactory, "eventConsumerFactory cannot be null");
         Preconditions.checkNotNull(metrics, "metrics cannot be null");

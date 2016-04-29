@@ -19,10 +19,10 @@ public class BatchProcessor<E> implements IRecordProcessor {
 
     private final EventDecoder<E> decoder;
     private final BatchConsumer<E> processor;
-    private final RecordProcessorMetrics metrics;
+    private final BatchProcessorMetrics metrics;
 
 
-    public BatchProcessor(EventDecoder<E> decoder, BatchConsumer<E> processor, RecordProcessorMetrics metrics) {
+    public BatchProcessor(EventDecoder<E> decoder, BatchConsumer<E> processor, BatchProcessorMetrics metrics) {
         this.decoder = decoder;
         this.processor = processor;
         this.metrics = metrics;

@@ -30,9 +30,15 @@ public class BatchProcessorTest {
     @Mock
     private IRecordProcessorCheckpointer checkpointer;
 
+    private BatchProcessorMetrics metrics;
+
+    private MetricRegistry metricRegistry;
+
     @Before
     public void setUp() throws Exception {
         initMocks(this);
+        metricRegistry = new MetricRegistry();
+        metrics = new BatchProcessorMetrics(metricRegistry, "foo");
     }
 
     @Test
@@ -49,8 +55,7 @@ public class BatchProcessorTest {
                 .withRecords(expectedRecords)
                 .withCheckpointer(checkpointer);
 
-        MetricRegistry metricRegistry = new MetricRegistry();
-        BatchProcessor<String> processor = new BatchProcessor<>(MAPPER, eventConsumer, new RecordProcessorMetrics(metricRegistry, "foo"));
+        BatchProcessor<String> processor = new BatchProcessor<>(MAPPER, eventConsumer, metrics);
         processor.processRecords(input);
 
         assertThat(actual).isEqualTo(expected);
@@ -73,8 +78,7 @@ public class BatchProcessorTest {
                 .withRecords(expectedRecords)
                 .withCheckpointer(checkpointer);
 
-        MetricRegistry metricRegistry = new MetricRegistry();
-        BatchProcessor<String> processor = new BatchProcessor<>(MAPPER, eventConsumer, new RecordProcessorMetrics(metricRegistry, "foo"));
+        BatchProcessor<String> processor = new BatchProcessor<>(MAPPER, eventConsumer, metrics);
         processor.processRecords(input);
 
         verify(checkpointer, never()).checkpoint();
@@ -98,8 +102,7 @@ public class BatchProcessorTest {
                 .withRecords(expectedRecords)
                 .withCheckpointer(checkpointer);
 
-        MetricRegistry metricRegistry = new MetricRegistry();
-        BatchProcessor<String> processor = new BatchProcessor<>(MAPPER, eventConsumer, new RecordProcessorMetrics(metricRegistry, "foo"));
+        BatchProcessor<String> processor = new BatchProcessor<>(MAPPER, eventConsumer, metrics);
         processor.processRecords(input);
 
         verify(checkpointer, never()).checkpoint();
@@ -129,7 +132,7 @@ public class BatchProcessorTest {
                 throw new Exception("decode failure");
             }
         };
-        BatchProcessor<String> processor = new BatchProcessor<>(eventDecoder, eventConsumer, new RecordProcessorMetrics(metricRegistry, "foo"));
+        BatchProcessor<String> processor = new BatchProcessor<>(eventDecoder, eventConsumer, metrics);
         processor.processRecords(input);
 
         verify(checkpointer, never()).checkpoint();
@@ -151,18 +154,17 @@ public class BatchProcessorTest {
                 .withRecords(expectedRecords)
                 .withCheckpointer(checkpointer);
 
-        MetricRegistry metricRegistry = new MetricRegistry();
         BatchProcessor<String> processor = new BatchProcessor<>(new EventDecoder<String>() {
             @Nullable
             @Override
             public String decode(ByteBuffer bytes) throws Exception {
                 String value = MAPPER.decode(bytes);
-                if("ccc".equals(value)){
+                if ("ccc".equals(value)) {
                     value = null;
                 }
                 return value;
             }
-        }, eventConsumer, new RecordProcessorMetrics(metricRegistry, "foo"));
+        }, eventConsumer, metrics);
         processor.processRecords(input);
 
         verify(checkpointer).checkpoint();
@@ -183,8 +185,7 @@ public class BatchProcessorTest {
                 .withRecords(expectedRecords)
                 .withCheckpointer(checkpointer);
 
-        MetricRegistry metricRegistry = new MetricRegistry();
-        BatchProcessor<String> processor = new BatchProcessor<>(MAPPER, event -> true, new RecordProcessorMetrics(metricRegistry, "foo"));
+        BatchProcessor<String> processor = new BatchProcessor<>(MAPPER, event -> true, metrics);
         processor.processRecords(input);
 
         verify(checkpointer).checkpoint(); //but still counts as processed
@@ -206,7 +207,7 @@ public class BatchProcessorTest {
                 .withCheckpointer(checkpointer);
 
         MetricRegistry metricRegistry = new MetricRegistry();
-        BatchProcessor<String> processor = new BatchProcessor<>(MAPPER, event -> true, new RecordProcessorMetrics(metricRegistry, "foo"));
+        BatchProcessor<String> processor = new BatchProcessor<>(MAPPER, event -> true, metrics);
         processor.processRecords(input);
         verify(checkpointer).checkpoint(); //but still counts as processed
         assertThat(metricRegistry.meter("foo-success").getCount()).isEqualTo(3);
@@ -219,9 +220,6 @@ public class BatchProcessorTest {
 
     @Test
     public void startupShutdownMetrics() throws Exception {
-        MetricRegistry metricRegistry = new MetricRegistry();
-        RecordProcessorMetrics metrics = new RecordProcessorMetrics(metricRegistry, "foo");
-
         BatchProcessor<String> processor = new BatchProcessor<>(MAPPER, event -> true, metrics);
         assertThat(metricRegistry.counter("foo-processors").getCount()).isEqualTo(0);
         processor.initialize(null);
