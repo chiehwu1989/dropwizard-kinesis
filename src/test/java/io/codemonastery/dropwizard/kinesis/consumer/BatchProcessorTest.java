@@ -124,7 +124,6 @@ public class BatchProcessorTest {
                 .withRecords(expectedRecords)
                 .withCheckpointer(checkpointer);
 
-        MetricRegistry metricRegistry = new MetricRegistry();
         final EventDecoder<String> eventDecoder = new EventDecoder<String>() {
             @Nullable
             @Override
@@ -206,7 +205,6 @@ public class BatchProcessorTest {
                 .withRecords(expectedRecords)
                 .withCheckpointer(checkpointer);
 
-        MetricRegistry metricRegistry = new MetricRegistry();
         BatchProcessor<String> processor = new BatchProcessor<>(MAPPER, event -> true, metrics);
         processor.processRecords(input);
         verify(checkpointer).checkpoint(); //but still counts as processed
