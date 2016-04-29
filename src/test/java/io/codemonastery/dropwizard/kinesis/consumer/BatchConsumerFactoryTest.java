@@ -18,6 +18,7 @@ import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 import java.nio.ByteBuffer;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.function.Supplier;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -62,7 +63,7 @@ public class BatchConsumerFactoryTest {
             configuration.consumer.decoder(b -> "")
                     .build(env, kinesis, dynamoDb, "aaa"); // build so we can that check status of inferred
             assertThat(configuration.consumer.getConsumer()).isNotNull();
-            assertThat(configuration.consumer.getConsumer().get().consume(Arrays.asList("aaa"))).isTrue();
+            assertThat(configuration.consumer.getConsumer().get().consume(Collections.singletonList("aaa"))).isTrue();
         });
     }
 
