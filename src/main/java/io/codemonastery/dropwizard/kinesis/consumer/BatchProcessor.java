@@ -48,9 +48,7 @@ public class BatchProcessor<E> implements IRecordProcessor {
                 LOG.error("Unhandled exception processing batch: " + batch, e);
             }
             if(processed){
-                for (int i = 0; i < batch.size(); i++) {
-                    metrics.processSuccess();
-                }
+                metrics.processSuccess(batch.size());
                 try (AutoCloseable ignore = metrics.checkpointTime()) {
                     processRecordsInput.getCheckpointer().checkpoint();
                 } catch (ShutdownException e) {
@@ -66,9 +64,7 @@ public class BatchProcessor<E> implements IRecordProcessor {
         }
 
         if(!processed) {
-            for (int i = 0; i < processRecordsInput.getRecords().size(); i++) {
-                metrics.processFailure();
-            }
+            metrics.processFailure(processRecordsInput.getRecords().size());
         }
     }
 

@@ -17,7 +17,9 @@ public class BatchProcessorMetrics implements HasFailureThresholds {
     private Meter decodeSuccessMeter;
     private Meter decodeFailureMeter;
     private Meter successMeter;
+    private Meter batchSuccessMeter;
     private Meter failureMeter;
+    private Meter batchFailureMeter;
     private Timer processTimer;
     private Timer checkpointTimer;
     private Meter checkpointFailure;
@@ -29,7 +31,9 @@ public class BatchProcessorMetrics implements HasFailureThresholds {
             decodeSuccessMeter = metrics.meter(name + "-decode-success");
             decodeFailureMeter = metrics.meter(name + "-decode-failure");
             successMeter = metrics.meter(name + "-success");
+            batchSuccessMeter = metrics.meter(name + "-batch-success");
             failureMeter = metrics.meter(name + "-failure");
+            batchFailureMeter = metrics.meter(name + "-batch-failure");
             processTimer = metrics.timer(name + "-process");
             checkpointTimer = metrics.timer(name + "-checkpoint");
             checkpointFailure = metrics.meter(name + "-checkpoint-failure");
@@ -63,15 +67,21 @@ public class BatchProcessorMetrics implements HasFailureThresholds {
         }
     }
 
-    public void processSuccess() {
+    public void processSuccess(int size) {
         if(successMeter != null){
-            successMeter.mark();
+            successMeter.mark(size);
+        }
+        if(batchSuccessMeter != null){
+            batchSuccessMeter.mark();
         }
     }
 
-    public void processFailure() {
+    public void processFailure(int size) {
         if(failureMeter != null){
-            failureMeter.mark();
+            failureMeter.mark(size);
+        }
+        if(batchFailureMeter != null){
+            batchFailureMeter.mark();
         }
     }
 
