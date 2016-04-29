@@ -5,19 +5,22 @@ import com.amazonaws.services.kinesis.AmazonKinesis;
 import com.amazonaws.services.kinesis.clientlibrary.lib.worker.InitialPositionInStream;
 import com.amazonaws.util.StringInputStream;
 import com.amazonaws.util.json.Jackson;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import io.codemonastery.dropwizard.kinesis.*;
+import io.codemonastery.dropwizard.kinesis.ConfigurationFactories;
+import io.codemonastery.dropwizard.kinesis.Environments;
+import io.codemonastery.dropwizard.kinesis.Event;
+import io.codemonastery.dropwizard.kinesis.EventDecoder;
+import io.codemonastery.dropwizard.kinesis.EventObjectMapper;
 import io.dropwizard.Configuration;
 import io.dropwizard.configuration.ConfigurationFactory;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import javax.annotation.Nullable;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 import java.nio.ByteBuffer;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.function.Supplier;
 
@@ -48,7 +51,7 @@ public class BatchConsumerFactoryTest {
 
     @Test
     public void inferClassUsingAnonymousClass() throws Exception {
-        EventObjectMapper<Event> eventObjectMapper = new ConsumerFactory<Event>(){}.inferDecoder(Jackson.getObjectMapper());
+        EventObjectMapper<Event> eventObjectMapper = new BatchConsumerFactory<Event>(){}.inferDecoder(Jackson.getObjectMapper());
         assertThat(eventObjectMapper).isNotNull();
     }
 
@@ -86,16 +89,16 @@ public class BatchConsumerFactoryTest {
                 return new String(bytes.array());
             }
         };
-        Supplier<EventConsumer<String>> eventConsumer = () -> e -> true;
+        Supplier<BatchConsumer<String>> batchConsumerSupplier = () -> e -> true;
 
-        ConsumerFactory factory = new ConsumerFactory<String>()
+        BatchConsumerFactory factory = new BatchConsumerFactory<String>()
                 .streamName(streamName)
                 .decoder(decoder)
-                .consumer(eventConsumer);
+                .consumer(batchConsumerSupplier);
 
         assertThat(factory.getStreamName()).isEqualTo(streamName);
         assertThat(factory.getDecoder()).isSameAs(decoder);
-        assertThat(factory.getConsumer()).isSameAs(eventConsumer);
+        assertThat(factory.getConsumer()).isSameAs(batchConsumerSupplier);
 
         Environments.run("app", env->{
             assertThat(env.lifecycle().getManagedObjects().size()).isEqualTo(1);
@@ -112,13 +115,13 @@ public class BatchConsumerFactoryTest {
 
     @Test(expected = NullPointerException.class)
     public void buildCannotInferDecoder() throws Exception {
-        Environments.run("app", env-> new ConsumerFactory<String>().streamName("xyz").build(env, kinesis, dynamoDb, "foo"));
+        Environments.run("app", env-> new BatchConsumerFactory<String>().streamName("xyz").build(env, kinesis, dynamoDb, "foo"));
     }
 
     @Test
     public void buildCanInferDecoder() throws Exception {
         Environments.run("app", env->{
-            ConsumerFactory<String> factory = new ConsumerFactory<String>() {}.streamName("xyz");
+            BatchConsumerFactory<String> factory = new BatchConsumerFactory<String>() {}.streamName("xyz");
             assertThat(factory.getDecoder()).isNull();
             factory.build(env, kinesis, dynamoDb, "foo");
             assertThat(factory.getDecoder()).isNotNull();
@@ -128,8 +131,8 @@ public class BatchConsumerFactoryTest {
     @Test
     public void canInheritDecoder() throws Exception {
         Environments.run("app", env->{
-            ConsumerFactory<String> parentFactory = new ConsumerFactory<String>() {}.streamName("xyz");
-            ConsumerFactory<String> factory = new ConsumerFactory<String>().streamName("xyz").inheritDecoder(parentFactory);
+            BatchConsumerFactory<String> parentFactory = new BatchConsumerFactory<String>() {}.streamName("xyz");
+            BatchConsumerFactory<String> factory = new BatchConsumerFactory<String>().streamName("xyz").inheritDecoder(parentFactory);
 
             assertThat(factory.getDecoder()).isNull();
             factory.build(env, kinesis, dynamoDb, "foo");
@@ -139,7 +142,7 @@ public class BatchConsumerFactoryTest {
 
     @Test(expected = NullPointerException.class)
     public void canBuildWithoutEnvironmentAndDecoder() throws Exception {
-        ConsumerFactory<String> factory = new ConsumerFactory<String>(){}.streamName("xyz");
+        BatchConsumerFactory<String> factory = new BatchConsumerFactory<String>(){}.streamName("xyz");
         factory.build(null, kinesis, dynamoDb, "foo");
     }
 
