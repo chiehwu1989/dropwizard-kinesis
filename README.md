@@ -45,7 +45,11 @@ For all configurations see [Complete-Configuration](/../../wiki/Complete-Configu
 Event Consumer
 --------------
 To consume events you'll need to implement [EventConsumer](src/main/java/io/codemonastery/dropwizard/kinesis/consumer/EventConsumer.java) and a [Supplier](https://docs.oracle.com/javase/8/docs/api/java/util/function/Supplier.html) for that consumer.
-Whenever a event is successfully consumed the EventConsumer should return true. If the event was not successfully consumed, return false. The event will be consumed later, and hopefully next time it will be successful. Important note: if the event is never successfully consumed by the application, it will halt processing of events from that shard. So in some cases you may want to return true regardless of outcome.
+Whenever a event is successfully consumed the [EventConsumer](src/main/java/io/codemonastery/dropwizard/kinesis/consumer/EventConsumer.java) should return true.
+If the event was not successfully consumed, return false.
+The event will be consumed later, and hopefully next time it will be successful.
+Important note: if the event is never successfully consumed by the application, it will halt processing of events from that shard.
+So in some cases you may want to return true regardless of outcome.
 
 Event Encoder/Decoder
 ---------------------
@@ -97,4 +101,12 @@ producer:
     perSecond: 1000.0
   maxBufferSize: ...
   flushPeriod: ...
+
+Batch Consumer
+--------------
+Even though [EventConsumer](src/main/java/io/codemonastery/dropwizard/kinesis/consumer/EventConsumer.java) is buffered, you'll occasionally want to consume batches.
+Implement [BatchConsumer](src/main/java/io/codemonastery/dropwizard/kinesis/consumer/BatchConsumer.java), but beware that check pointing occurs at the batch level now.
+If you fail to decode a single record, the entire batch os failed and eventually retried.
+Similar to [EventConsumer](src/main/java/io/codemonastery/dropwizard/kinesis/consumer/EventConsumer.java), whenever a batch is successfully consumed the [BatchConsumer](src/main/java/io/codemonastery/dropwizard/kinesis/consumer/BatchConsumer.java) should return true.
+To create a [BatchConsumer](src/main/java/io/codemonastery/dropwizard/kinesis/consumer/BatchConsumer.java), use the [BatchConsumerFactory](src/main/java/io/codemonastery/dropwizard/kinesis/consumer/BatchConsumerFactory.java) and follow the patterns described for [ConsumerFactory](src/main/java/io/codemonastery/dropwizard/kinesis/consumer/ConsumerFactory.java).
     
