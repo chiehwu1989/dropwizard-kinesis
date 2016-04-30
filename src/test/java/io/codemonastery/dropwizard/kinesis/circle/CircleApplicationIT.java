@@ -77,6 +77,7 @@ public class CircleApplicationIT {
                 Thread.sleep(2000);
             }
         }
+        Thread.sleep(60000);
     }
 
 }

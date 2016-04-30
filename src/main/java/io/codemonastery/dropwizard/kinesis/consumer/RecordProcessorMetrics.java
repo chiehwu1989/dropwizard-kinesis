@@ -2,6 +2,7 @@ package io.codemonastery.dropwizard.kinesis.consumer;
 
 import com.codahale.metrics.*;
 import io.codemonastery.dropwizard.kinesis.metric.HasFailureThresholds;
+import io.codemonastery.dropwizard.kinesis.metric.ShardMillisBehindLatest;
 import io.codemonastery.dropwizard.kinesis.producer.NoOpClose;
 
 import java.util.ArrayList;
@@ -22,6 +23,7 @@ public class RecordProcessorMetrics implements HasFailureThresholds {
     private Timer checkpointTimer;
     private Meter checkpointFailure;
     private Meter unhandledExceptionMeter;
+    private ShardMillisBehindLatest millisBehindLatest;
 
     public RecordProcessorMetrics(MetricRegistry metrics, String name) {
         if(metrics != null){
@@ -34,6 +36,7 @@ public class RecordProcessorMetrics implements HasFailureThresholds {
             checkpointTimer = metrics.timer(name + "-checkpoint");
             checkpointFailure = metrics.meter(name + "-checkpoint-failure");
             unhandledExceptionMeter = metrics.meter(name + "-unhandled-exception");
+            millisBehindLatest = metrics.register(name + "-millis-behind-latest", new ShardMillisBehindLatest());
         }
     }
 
@@ -43,9 +46,12 @@ public class RecordProcessorMetrics implements HasFailureThresholds {
         }
     }
 
-    public void processorShutdown() {
+    public void processorShutdown(String shardId) {
         if(processorCounter != null){
             processorCounter.dec();
+        }
+        if(millisBehindLatest != null && shardId != null){
+            millisBehindLatest.remove(shardId);
         }
     }
 
@@ -81,6 +87,12 @@ public class RecordProcessorMetrics implements HasFailureThresholds {
         }
     }
 
+    public void millisBehindLatest(String shardId, long millis) {
+        if(millisBehindLatest != null  && shardId != null){
+            millisBehindLatest.update(shardId, millis);
+        }
+    }
+
     public AutoCloseable processTime(){
         return processTimer == null ? NoOpClose.INSTANCE : processTimer.time();
     }
@@ -89,10 +101,10 @@ public class RecordProcessorMetrics implements HasFailureThresholds {
         return checkpointTimer == null ? NoOpClose.INSTANCE : checkpointTimer.time();
     }
 
+
     public void checkpointFailed(){
         checkpointFailure.mark();
     }
-
 
     private static final double failureFrequencyThreshold = 0.1;
 
