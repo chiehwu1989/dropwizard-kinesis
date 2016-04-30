@@ -6,7 +6,7 @@ import org.junit.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class RecordProcessorMetricsTest {
+public class BatchProcessorMetricsTest {
 
     private MetricRegistry metricsRegistry;
 
@@ -17,23 +17,23 @@ public class RecordProcessorMetricsTest {
 
     @Test
     public void noOpWorksOk() throws Exception {
-        RecordProcessorMetrics metrics = RecordProcessorMetrics.noOp();
+        BatchProcessorMetrics metrics = BatchProcessorMetrics.noOp();
         assertThat(metricsRegistry.getNames()).isEmpty();
 
         metrics.decodeFailure();
-        metrics.processFailure();
+        metrics.processFailure(10);
         metrics.processorShutdown();
         metrics.processorStarted();
         //noinspection EmptyTryBlock
         try (AutoCloseable ignore = metrics.processTime()) {
         }
-        metrics.processSuccess();
+        metrics.processSuccess(10);
         metrics.unhandledException();
     }
 
     @Test
     public void decoded() throws Exception {
-        RecordProcessorMetrics metrics = new RecordProcessorMetrics(metricsRegistry, "foo");
+        BatchProcessorMetrics metrics = new BatchProcessorMetrics(metricsRegistry, "foo");
         assertThat(metricsRegistry.meter("foo-decode-success").getCount()).isEqualTo(0);
         metrics.decoded();
         assertThat(metricsRegistry.meter("foo-decode-success").getCount()).isEqualTo(1);
@@ -41,7 +41,7 @@ public class RecordProcessorMetricsTest {
 
     @Test
     public void decodeFailure() throws Exception {
-        RecordProcessorMetrics metrics = new RecordProcessorMetrics(metricsRegistry, "foo");
+        BatchProcessorMetrics metrics = new BatchProcessorMetrics(metricsRegistry, "foo");
         assertThat(metricsRegistry.meter("foo-decode-failure").getCount()).isEqualTo(0);
         metrics.decodeFailure();
         assertThat(metricsRegistry.meter("foo-decode-failure").getCount()).isEqualTo(1);
@@ -49,23 +49,27 @@ public class RecordProcessorMetricsTest {
 
     @Test
     public void failure() throws Exception {
-        RecordProcessorMetrics metrics = new RecordProcessorMetrics(metricsRegistry, "foo");
+        BatchProcessorMetrics metrics = new BatchProcessorMetrics(metricsRegistry, "foo");
         assertThat(metricsRegistry.meter("foo-failure").getCount()).isEqualTo(0);
-        metrics.processFailure();
-        assertThat(metricsRegistry.meter("foo-failure").getCount()).isEqualTo(1);
+        assertThat(metricsRegistry.meter("foo-batch-failure").getCount()).isEqualTo(0);
+        metrics.processFailure(10);
+        assertThat(metricsRegistry.meter("foo-failure").getCount()).isEqualTo(10);
+        assertThat(metricsRegistry.meter("foo-batch-failure").getCount()).isEqualTo(1);
     }
 
     @Test
     public void success() throws Exception {
-        RecordProcessorMetrics metrics = new RecordProcessorMetrics(metricsRegistry, "foo");
+        BatchProcessorMetrics metrics = new BatchProcessorMetrics(metricsRegistry, "foo");
         assertThat(metricsRegistry.meter("foo-success").getCount()).isEqualTo(0);
-        metrics.processSuccess();
-        assertThat(metricsRegistry.meter("foo-success").getCount()).isEqualTo(1);
+        assertThat(metricsRegistry.meter("foo-batch-success").getCount()).isEqualTo(0);
+        metrics.processSuccess(10);
+        assertThat(metricsRegistry.meter("foo-success").getCount()).isEqualTo(10);
+        assertThat(metricsRegistry.meter("foo-batch-success").getCount()).isEqualTo(1);
     }
 
     @Test
     public void unhandledException() throws Exception {
-        RecordProcessorMetrics metrics = new RecordProcessorMetrics(metricsRegistry, "foo");
+        BatchProcessorMetrics metrics = new BatchProcessorMetrics(metricsRegistry, "foo");
         assertThat(metricsRegistry.meter("foo-unhandled-exception").getCount()).isEqualTo(0);
         metrics.unhandledException();
         assertThat(metricsRegistry.meter("foo-unhandled-exception").getCount()).isEqualTo(1);
@@ -73,7 +77,7 @@ public class RecordProcessorMetricsTest {
 
     @Test
     public void processTime() throws Exception {
-        RecordProcessorMetrics metrics = new RecordProcessorMetrics(metricsRegistry, "foo");
+        BatchProcessorMetrics metrics = new BatchProcessorMetrics(metricsRegistry, "foo");
         assertThat(metricsRegistry.timer("foo-process").getCount()).isEqualTo(0);
         try(AutoCloseable ignored = metrics.processTime()){
             Thread.sleep(10);
@@ -83,7 +87,7 @@ public class RecordProcessorMetricsTest {
 
     @Test
     public void checkpointTime() throws Exception {
-        RecordProcessorMetrics metrics = new RecordProcessorMetrics(metricsRegistry, "foo");
+        BatchProcessorMetrics metrics = new BatchProcessorMetrics(metricsRegistry, "foo");
         assertThat(metricsRegistry.timer("foo-checkpoint").getCount()).isEqualTo(0);
         try(AutoCloseable ignored = metrics.checkpointTime()){
             Thread.sleep(10);
@@ -93,7 +97,7 @@ public class RecordProcessorMetricsTest {
 
     @Test
     public void checkpointFailure() throws Exception {
-        RecordProcessorMetrics metrics = new RecordProcessorMetrics(metricsRegistry, "foo");
+        BatchProcessorMetrics metrics = new BatchProcessorMetrics(metricsRegistry, "foo");
         assertThat(metricsRegistry.meter("foo-checkpoint-failure").getCount()).isEqualTo(0);
         metrics.checkpointFailed();
         assertThat(metricsRegistry.meter("foo-checkpoint-failure").getCount()).isEqualTo(1);
@@ -101,23 +105,23 @@ public class RecordProcessorMetricsTest {
 
     @Test
     public void noEventsNoFailure() throws Exception {
-        RecordProcessorMetrics metrics = new RecordProcessorMetrics(metricsRegistry, "foo");
+        BatchProcessorMetrics metrics = new BatchProcessorMetrics(metricsRegistry, "foo");
         assertThat(metrics.highFailureMetrics()).isEmpty();
     }
 
     @Test
     public void manySuccessFullEvents() throws Exception {
-        RecordProcessorMetrics metrics = new RecordProcessorMetrics(metricsRegistry, "foo");
-        for (int i = 0; i < 100; i++) {
+        BatchProcessorMetrics metrics = new BatchProcessorMetrics(metricsRegistry, "foo");
+        for (int i = 0; i < 10; i++) {
             metrics.decoded();
-            metrics.processSuccess();
+            metrics.processSuccess(10);
         }
         assertThat(metrics.highFailureMetrics()).isEmpty();
     }
 
     @Test
     public void highEncodeFailure() throws Exception {
-        RecordProcessorMetrics metrics = new RecordProcessorMetrics(metricsRegistry, "foo");
+        BatchProcessorMetrics metrics = new BatchProcessorMetrics(metricsRegistry, "foo");
         for (int i = 0; i < 100; i++) {
             if(i % 2 == 0){
                 metrics.decoded();
@@ -132,14 +136,14 @@ public class RecordProcessorMetricsTest {
 
     @Test
     public void highSendFailure() throws Exception {
-        RecordProcessorMetrics metrics = new RecordProcessorMetrics(metricsRegistry, "foo");
-        for (int i = 0; i < 100; i++) {
+        BatchProcessorMetrics metrics = new BatchProcessorMetrics(metricsRegistry, "foo");
+        for (int i = 0; i < 50; i++) {
             if(i % 2 == 0){
-                metrics.processSuccess();
+                metrics.processSuccess(2);
             }else{
-                metrics.processFailure();
+                metrics.processFailure(2);
             }
-            Thread.sleep(50);
+            Thread.sleep(100);
         }
         assertThat(metrics.highFailureMetrics().size()).isEqualTo(1);
         assertThat(metrics.highFailureMetrics().get(0)).contains("% process failure");
@@ -147,7 +151,7 @@ public class RecordProcessorMetricsTest {
 
     @Test
     public void highCheckpointFailure() throws Exception {
-        RecordProcessorMetrics metrics = new RecordProcessorMetrics(metricsRegistry, "foo");
+        BatchProcessorMetrics metrics = new BatchProcessorMetrics(metricsRegistry, "foo");
         for (int i = 0; i < 100; i++) {
             try(AutoCloseable ignore = metrics.checkpointTime()){
                 if(i %2 == 0){
