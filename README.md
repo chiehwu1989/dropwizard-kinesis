@@ -101,6 +101,7 @@ producer:
     perSecond: 1000.0
   maxBufferSize: ...
   flushPeriod: ...
+```
 
 Batch Consumer
 --------------
