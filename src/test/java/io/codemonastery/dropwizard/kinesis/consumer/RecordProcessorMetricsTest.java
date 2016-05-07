@@ -22,7 +22,7 @@ public class RecordProcessorMetricsTest {
 
         metrics.decodeFailure();
         metrics.processFailure();
-        metrics.processorShutdown();
+        metrics.processorShutdown(null);
         metrics.processorStarted();
         //noinspection EmptyTryBlock
         try (AutoCloseable ignore = metrics.processTime()) {

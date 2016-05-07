@@ -22,7 +22,7 @@ public class BatchProcessorMetricsTest {
 
         metrics.decodeFailure();
         metrics.processFailure(10);
-        metrics.processorShutdown();
+        metrics.processorShutdown(null);
         metrics.processorStarted();
         //noinspection EmptyTryBlock
         try (AutoCloseable ignore = metrics.processTime()) {

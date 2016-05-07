@@ -19,6 +19,8 @@ public final class RecordProcessor<E> implements IRecordProcessor {
     private final EventConsumer<E> processor;
     private final RecordProcessorMetrics metrics;
 
+    private String shardId = null;
+
     public RecordProcessor(EventDecoder<E> decoder,
                            EventConsumer<E> eventConsumer,
                            RecordProcessorMetrics metrics) {
@@ -32,11 +34,17 @@ public final class RecordProcessor<E> implements IRecordProcessor {
 
     @Override
     public void initialize(InitializationInput initializationInput) {
+        if(initializationInput != null){
+            shardId = initializationInput.getShardId();
+        }
         metrics.processorStarted();
     }
 
     @Override
     public void processRecords(ProcessRecordsInput processRecordsInput) {
+        if(processRecordsInput.getMillisBehindLatest() != null){
+            metrics.millisBehindLatest(shardId, processRecordsInput.getMillisBehindLatest());
+        }
         Record lastRecordProcessed = null;
         for (Record record : processRecordsInput.getRecords()) {
             E event;
@@ -90,6 +98,7 @@ public final class RecordProcessor<E> implements IRecordProcessor {
 
     @Override
     public void shutdown(ShutdownInput shutdownInput) {
-        metrics.processorShutdown();
+        shardId = "UNKNOWN";
+        metrics.processorShutdown(shardId);
     }
 }

@@ -20,7 +20,7 @@ public class BatchProcessor<E> implements IRecordProcessor {
     private final EventDecoder<E> decoder;
     private final BatchConsumer<E> processor;
     private final BatchProcessorMetrics metrics;
-
+    private String shardId;
 
     public BatchProcessor(EventDecoder<E> decoder, BatchConsumer<E> processor, BatchProcessorMetrics metrics) {
         this.decoder = decoder;
@@ -32,10 +32,17 @@ public class BatchProcessor<E> implements IRecordProcessor {
     @Override
     public void initialize(InitializationInput initializationInput) {
         metrics.processorStarted();
+        if(initializationInput != null){
+            shardId = initializationInput.getShardId();
+        }
     }
 
     @Override
     public void processRecords(ProcessRecordsInput processRecordsInput) {
+        if(processRecordsInput.getMillisBehindLatest() != null){
+            metrics.millisBehindLatest(shardId, processRecordsInput.getMillisBehindLatest());
+        }
+
         boolean processed = false;
         List<E> batch = decodeBatch(processRecordsInput.getRecords());
 
@@ -70,7 +77,7 @@ public class BatchProcessor<E> implements IRecordProcessor {
 
     @Override
     public void shutdown(ShutdownInput shutdownInput) {
-        metrics.processorShutdown();
+        metrics.processorShutdown(shardId);
     }
 
     /*
