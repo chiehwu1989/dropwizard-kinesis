@@ -9,5 +9,5 @@ Dropwizard Kinesis
 
 Kinesis (+DynamoDB) configuration, metrics, health-checks, lifecycle management and rate limiting integrated with dropwizard, focused on common use cases. Inspired by [dropwizard-core](https://github.com/dropwizard/dropwizard/tree/master/dropwizard-core) and [dropwizard-extra](//github.com/datasift/dropwizard-extra), depends on [Amazon Kinesis Client Library](https://github.com/awslabs/amazon-kinesis-client).
 
-* [Overview](/code-monastery/dropwizard-kinesis/wiki)
-* [IAM Security Policies](/code-monastery/dropwizard-kinesis/wiki/IAM-Security-Policies)    
+* [Overview](https://github.com/code-monastery/dropwizard-kinesis/wiki)
+* [IAM Security Policies](https://github.com/code-monastery/dropwizard-kinesis/wiki/IAM-Security-Policies)    
