@@ -40,8 +40,8 @@ public class SimpleProducerIT {
     @Before
     public void setUp() throws Exception {
         lifecycle = new LifecycleEnvironment();
-        kinesis = new KinesisFactory().region(Regions.US_WEST_2).build(null, null, lifecycle, new DefaultAWSCredentialsProviderChain(), "kinesis");
-        dynamodb = new DynamoDbFactory().region(Regions.US_WEST_2).build(null, null, lifecycle, new DefaultAWSCredentialsProviderChain(), "dynamodb");
+        kinesis = new KinesisFactory().region(Regions.US_WEST_2).build(null, lifecycle, new DefaultAWSCredentialsProviderChain(), "kinesis");
+        dynamodb = new DynamoDbFactory().region(Regions.US_WEST_2).build(null, lifecycle, new DefaultAWSCredentialsProviderChain(), "dynamodb");
         producerFactory = new SimpleProducerFactory<String>()
                 .create(new StreamCreateConfiguration())
                 .encoder(ENCODER)

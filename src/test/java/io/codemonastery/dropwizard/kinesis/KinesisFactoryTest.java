@@ -48,7 +48,7 @@ public class KinesisFactoryTest {
     public void someMetrics() throws Exception {
         MetricRegistry metrics = new MetricRegistry();
         KinesisFactory builder = new KinesisFactory();
-        client = builder.build(metrics, null, null, new NoCredentialsProvider(), "test-client");
+        client = builder.build(metrics, null, new NoCredentialsProvider(), "test-client");
         assertThat(client).isInstanceOf(KinesisMetricsProxy.class);
         try{
             client.listStreams();

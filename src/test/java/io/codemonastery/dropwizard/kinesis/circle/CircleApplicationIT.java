@@ -52,8 +52,6 @@ public class CircleApplicationIT {
 
     @Test
     public void someRecords() throws Exception {
-
-
         final List<String> expected = ImmutableList.of("hello seinfeld", "hello newman", "george!");
         {
             final String[] sendMe = expected.toArray(new String[expected.size()]);
@@ -61,14 +59,16 @@ public class CircleApplicationIT {
                     .request()
                     .post(Entity.entity(sendMe, MediaType.APPLICATION_JSON_TYPE));
         }
+        Thread.sleep(30000);
         {
-            final int numRetries = 25;
+            final int numRetries = 100;
             for (int i = 0; i < numRetries; i++) {
                 try {
                     final String[] actual = circleTarget
                             .request()
                             .get(String[].class);
                     assertThat(Arrays.asList(actual)).isEqualTo(expected);
+                    break;
                 } catch (AssertionError e) {
                     if (i == numRetries - 1) {
                         throw e;
