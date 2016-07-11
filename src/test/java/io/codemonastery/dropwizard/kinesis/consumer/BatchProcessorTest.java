@@ -2,6 +2,7 @@ package io.codemonastery.dropwizard.kinesis.consumer;
 
 import com.amazonaws.services.kinesis.clientlibrary.exceptions.ShutdownException;
 import com.amazonaws.services.kinesis.clientlibrary.interfaces.IRecordProcessorCheckpointer;
+import com.amazonaws.services.kinesis.clientlibrary.types.InitializationInput;
 import com.amazonaws.services.kinesis.clientlibrary.types.ProcessRecordsInput;
 import com.amazonaws.services.kinesis.model.Record;
 import com.codahale.metrics.MetricRegistry;
@@ -53,9 +54,11 @@ public class BatchProcessorTest {
         List<Record> expectedRecords = records(expected);
         ProcessRecordsInput input = new ProcessRecordsInput()
                 .withRecords(expectedRecords)
-                .withCheckpointer(checkpointer);
+                .withCheckpointer(checkpointer)
+                .withMillisBehindLatest(1000L);
 
         BatchProcessor<String> processor = new BatchProcessor<>(MAPPER, eventConsumer, metrics);
+        processor.initialize(new InitializationInput().withShardId("123"));
         processor.processRecords(input);
 
         assertThat(actual).isEqualTo(expected);
@@ -66,6 +69,7 @@ public class BatchProcessorTest {
         assertThat(metricRegistry.meter("foo-decode-failure").getCount()).isEqualTo(0);
         assertThat(metricRegistry.timer("foo-checkpoint").getCount()).isEqualTo(1);
         assertThat(metricRegistry.meter("foo-checkpoint-failure").getCount()).isEqualTo(0);
+        assertThat(metricRegistry.getGauges().containsKey("foo-millis-behind-latest-123")).isTrue();
     }
 
     @Test

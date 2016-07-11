@@ -2,11 +2,12 @@ package io.codemonastery.dropwizard.kinesis.consumer;
 
 import com.codahale.metrics.*;
 import io.codemonastery.dropwizard.kinesis.metric.HasFailureThresholds;
-import io.codemonastery.dropwizard.kinesis.metric.ShardMillisBehindLatest;
 import io.codemonastery.dropwizard.kinesis.producer.NoOpClose;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class RecordProcessorMetrics implements HasFailureThresholds {
 
@@ -14,6 +15,8 @@ public class RecordProcessorMetrics implements HasFailureThresholds {
         return new RecordProcessorMetrics(null, "");
     }
 
+    private final MetricRegistry metrics;
+    private final String name;
     private Counter processorCounter;
     private Meter decodeSuccessMeter;
     private Meter decodeFailureMeter;
@@ -23,9 +26,11 @@ public class RecordProcessorMetrics implements HasFailureThresholds {
     private Timer checkpointTimer;
     private Meter checkpointFailure;
     private Meter unhandledExceptionMeter;
-    private ShardMillisBehindLatest millisBehindLatest;
+    private final Map<String, LongGauge> millisBehindLatest = new HashMap<>();
 
     public RecordProcessorMetrics(MetricRegistry metrics, String name) {
+        this.metrics = metrics;
+        this.name = name;
         if(metrics != null){
             processorCounter = metrics.counter(name + "-processors");
             decodeSuccessMeter = metrics.meter(name + "-decode-success");
@@ -36,7 +41,6 @@ public class RecordProcessorMetrics implements HasFailureThresholds {
             checkpointTimer = metrics.timer(name + "-checkpoint");
             checkpointFailure = metrics.meter(name + "-checkpoint-failure");
             unhandledExceptionMeter = metrics.meter(name + "-unhandled-exception");
-            millisBehindLatest = metrics.register(name + "-millis-behind-latest", new ShardMillisBehindLatest());
         }
     }
 
@@ -50,8 +54,9 @@ public class RecordProcessorMetrics implements HasFailureThresholds {
         if(processorCounter != null){
             processorCounter.dec();
         }
-        if(millisBehindLatest != null && shardId != null){
+        if(metrics != null && shardId != null){
             millisBehindLatest.remove(shardId);
+            metrics.remove(millisBehindLatestName(shardId));
         }
     }
 
@@ -88,8 +93,8 @@ public class RecordProcessorMetrics implements HasFailureThresholds {
     }
 
     public void millisBehindLatest(String shardId, long millis) {
-        if(millisBehindLatest != null  && shardId != null){
-            millisBehindLatest.update(shardId, millis);
+        if(metrics != null  && shardId != null){
+            millisBehindLatest(shardId).setValue(millis);
         }
     }
 
@@ -104,6 +109,20 @@ public class RecordProcessorMetrics implements HasFailureThresholds {
 
     public void checkpointFailed(){
         checkpointFailure.mark();
+    }
+
+    private synchronized LongGauge millisBehindLatest(String shardId) {
+        LongGauge longGauge = millisBehindLatest.get(shardId);
+        if(longGauge == null){
+            longGauge = new LongGauge();
+            metrics.register(millisBehindLatestName(shardId), longGauge);
+            millisBehindLatest.put(shardId, longGauge);
+        }
+        return longGauge;
+    }
+
+    private String millisBehindLatestName(String shardId) {
+        return name + "-millis-behind-latest-" + shardId;
     }
 
     private static final double failureFrequencyThreshold = 0.1;

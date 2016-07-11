@@ -159,4 +159,14 @@ public class RecordProcessorMetricsTest {
         assertThat(metrics.highFailureMetrics().size()).isEqualTo(1);
         assertThat(metrics.highFailureMetrics().get(0)).contains("% checkpoint failure");
     }
+
+    @Test
+    public void millisBehindLatest() throws Exception {
+        RecordProcessorMetrics metrics = new RecordProcessorMetrics(metricsRegistry, "foo");
+        assertThat(metricsRegistry.getGauges().containsKey("foo-millis-behind-latest-123")).isFalse();
+        metrics.millisBehindLatest("123", 1000);
+        assertThat(metricsRegistry.getGauges().containsKey("foo-millis-behind-latest-123")).isTrue();
+        metrics.processorShutdown("123");
+        assertThat(metricsRegistry.getGauges().containsKey("foo-millis-behind-latest-123")).isFalse();
+    }
 }
