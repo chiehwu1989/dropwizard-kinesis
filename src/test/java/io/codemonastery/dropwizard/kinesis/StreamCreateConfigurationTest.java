@@ -90,9 +90,7 @@ public class StreamCreateConfigurationTest {
                 .thenReturn(NOT_ACTIVE)
                 .thenReturn(ACTIVE);
 
-        doNothing().doThrow(new ResourceInUseException("exists"))
-                .when(kinesis)
-                .createStream(eq(STREAM_NAME), anyInt());
+        when(kinesis.createStream(eq(STREAM_NAME), anyInt())).thenThrow(new ResourceInUseException("exists"));
 
         StreamCreateConfiguration create = new StreamCreateConfiguration()
                 .retryPeriod(Duration.milliseconds(100))
@@ -154,7 +152,7 @@ public class StreamCreateConfigurationTest {
                 .retryPeriod(Duration.milliseconds(100));
 
         AtomicBoolean setup = new AtomicBoolean(false);
-        Thread thread = new Thread(() -> setup.set(create.setupStream(kinesis, STREAM_NAME))){
+        Thread thread = new Thread(() -> setup.set(create.setupStream(kinesis, STREAM_NAME))) {
             {
                 setDaemon(true);
             }
@@ -173,8 +171,7 @@ public class StreamCreateConfigurationTest {
         when(kinesis.describeStream(STREAM_NAME))
                 .thenThrow(new ResourceNotFoundException("does not exist yet"));
 
-        doNothing().when(kinesis)
-                .createStream(eq(STREAM_NAME), anyInt());
+        when(kinesis.createStream(eq(STREAM_NAME), anyInt())).thenReturn(null);
 
         StreamCreateConfiguration create = new StreamCreateConfiguration()
                 .retryPeriod(Duration.milliseconds(10))
