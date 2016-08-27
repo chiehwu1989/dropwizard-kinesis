@@ -1,0 +1,12 @@
+<settings>
+    <servers>
+        <server>
+            <id>ossrh</id>
+            <username>${env.osshr_user}</username>
+            <password>${env.osshr_password}</password>
+        </server>
+    </servers>
+    <activeProfiles>
+        <activeProfile>gpg</activeProfile>
+    </activeProfiles>
+</settings>

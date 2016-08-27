@@ -1,0 +1,6 @@
+#!/bin/bash
+
+set -e
+
+mvn -B -DskipTests=true release:clean release:prepare
+mvn release:clean

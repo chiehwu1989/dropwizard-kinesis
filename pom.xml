@@ -197,7 +197,7 @@
         <profile>
             <id>gpg</id>
             <properties>
-                <gpg.executable>gpg2</gpg.executable>
+                <gpg.executable>gpg</gpg.executable>
             </properties>
             <build>
                 <plugins>
