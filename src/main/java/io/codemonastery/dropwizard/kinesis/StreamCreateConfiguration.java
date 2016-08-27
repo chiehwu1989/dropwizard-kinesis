@@ -1,6 +1,7 @@
 package io.codemonastery.dropwizard.kinesis;
 
 import com.amazonaws.services.kinesis.AmazonKinesis;
+import com.amazonaws.services.kinesis.model.CreateStreamResult;
 import com.amazonaws.services.kinesis.model.DescribeStreamResult;
 import com.amazonaws.services.kinesis.model.ResourceInUseException;
 import com.amazonaws.services.kinesis.model.ResourceNotFoundException;
@@ -113,7 +114,8 @@ public class StreamCreateConfiguration {
     private void createStream(AmazonKinesis kinesis, String streamName) {
         LOG.info(String.format("stream %s was not found, creating with %d shards", streamName, getShardCount()));
         try{
-            kinesis.createStream(streamName, getShardCount());
+            final CreateStreamResult stream = kinesis.createStream(streamName, getShardCount());
+
         } catch (ResourceInUseException ue){
             LOG.info(String.format("failed to create stream %s because it already existed", streamName));
         } catch (Exception e){

@@ -63,45 +63,57 @@ public class KinesisMetricsProxy implements AmazonKinesis {
     }
 
     @Override
-    public void addTagsToStream(AddTagsToStreamRequest addTagsToStreamRequest) {
+    public AddTagsToStreamResult addTagsToStream(AddTagsToStreamRequest addTagsToStreamRequest) {
+        final AddTagsToStreamResult addTagsToStreamResult;
         try (Timer.Context time = addTagsToStreamTimer.time()) {
-            delegate.addTagsToStream(addTagsToStreamRequest);
+            addTagsToStreamResult = delegate.addTagsToStream(addTagsToStreamRequest);
         }
+        return addTagsToStreamResult;
     }
 
     @Override
-    public void createStream(CreateStreamRequest createStreamRequest) {
+    public CreateStreamResult createStream(CreateStreamRequest createStreamRequest) {
+        final CreateStreamResult createStreamResult;
         try (Timer.Context time = createStreamTimer.time()) {
-            delegate.createStream(createStreamRequest);
+            createStreamResult = delegate.createStream(createStreamRequest);
         }
+        return createStreamResult;
     }
 
     @Override
-    public void createStream(String streamName, Integer shardCount) {
+    public CreateStreamResult createStream(String streamName, Integer shardCount) {
+        final CreateStreamResult createStreamResult;
         try (Timer.Context time = createStreamTimer.time()) {
-            delegate.createStream(streamName, shardCount);
+            createStreamResult = delegate.createStream(streamName, shardCount);
         }
+        return createStreamResult;
     }
 
     @Override
-    public void decreaseStreamRetentionPeriod(DecreaseStreamRetentionPeriodRequest decreaseStreamRetentionPeriodRequest) {
+    public DecreaseStreamRetentionPeriodResult decreaseStreamRetentionPeriod(DecreaseStreamRetentionPeriodRequest decreaseStreamRetentionPeriodRequest) {
+        final DecreaseStreamRetentionPeriodResult decreaseStreamRetentionPeriodResult;
         try (Timer.Context time = decreaseStreamRetentionPeriodTimer.time()) {
-            delegate.decreaseStreamRetentionPeriod(decreaseStreamRetentionPeriodRequest);
+            decreaseStreamRetentionPeriodResult = delegate.decreaseStreamRetentionPeriod(decreaseStreamRetentionPeriodRequest);
         }
+        return decreaseStreamRetentionPeriodResult;
     }
 
     @Override
-    public void deleteStream(DeleteStreamRequest deleteStreamRequest) {
+    public DeleteStreamResult deleteStream(DeleteStreamRequest deleteStreamRequest) {
+        final DeleteStreamResult deleteStreamResult;
         try (Timer.Context time = deleteStreamTimer.time()) {
-            delegate.deleteStream(deleteStreamRequest);
+            deleteStreamResult = delegate.deleteStream(deleteStreamRequest);
         }
+        return deleteStreamResult;
     }
 
     @Override
-    public void deleteStream(String streamName) {
+    public DeleteStreamResult deleteStream(String streamName) {
+        final DeleteStreamResult deleteStreamResult;
         try (Timer.Context time = deleteStreamTimer.time()) {
-            delegate.deleteStream(streamName);
+            deleteStreamResult = delegate.deleteStream(streamName);
         }
+        return deleteStreamResult;
     }
 
     @Override
@@ -133,6 +145,16 @@ public class KinesisMetricsProxy implements AmazonKinesis {
     }
 
     @Override
+    public DisableEnhancedMonitoringResult disableEnhancedMonitoring(DisableEnhancedMonitoringRequest disableEnhancedMonitoringRequest) {
+        return null;
+    }
+
+    @Override
+    public EnableEnhancedMonitoringResult enableEnhancedMonitoring(EnableEnhancedMonitoringRequest enableEnhancedMonitoringRequest) {
+        return null;
+    }
+
+    @Override
     public GetRecordsResult getRecords(GetRecordsRequest getRecordsRequest) {
         try (Timer.Context time = getRecordsTimer.time()) {
             return delegate.getRecords(getRecordsRequest);
@@ -161,10 +183,12 @@ public class KinesisMetricsProxy implements AmazonKinesis {
     }
 
     @Override
-    public void increaseStreamRetentionPeriod(IncreaseStreamRetentionPeriodRequest increaseStreamRetentionPeriodRequest) {
+    public IncreaseStreamRetentionPeriodResult increaseStreamRetentionPeriod(IncreaseStreamRetentionPeriodRequest increaseStreamRetentionPeriodRequest) {
+        final IncreaseStreamRetentionPeriodResult increaseStreamRetentionPeriodResult;
         try (Timer.Context time = increaseStreamRetentionPeriodTimer.time()) {
-            delegate.increaseStreamRetentionPeriod(increaseStreamRetentionPeriodRequest);
+            increaseStreamRetentionPeriodResult = delegate.increaseStreamRetentionPeriod(increaseStreamRetentionPeriodRequest);
         }
+        return increaseStreamRetentionPeriodResult;
     }
 
     @Override
@@ -203,17 +227,21 @@ public class KinesisMetricsProxy implements AmazonKinesis {
     }
 
     @Override
-    public void mergeShards(MergeShardsRequest mergeShardsRequest) {
+    public MergeShardsResult mergeShards(MergeShardsRequest mergeShardsRequest) {
+        final MergeShardsResult mergeShardsResult;
         try (Timer.Context time = mergeShardsTimer.time()) {
-            delegate.mergeShards(mergeShardsRequest);
+            mergeShardsResult = delegate.mergeShards(mergeShardsRequest);
         }
+        return mergeShardsResult;
     }
 
     @Override
-    public void mergeShards(String streamName, String shardToMerge, String adjacentShardToMerge) {
+    public MergeShardsResult mergeShards(String streamName, String shardToMerge, String adjacentShardToMerge) {
+        final MergeShardsResult mergeShardsResult;
         try (Timer.Context time = mergeShardsTimer.time()) {
-            delegate.mergeShards(streamName, shardToMerge, adjacentShardToMerge);
+            mergeShardsResult = delegate.mergeShards(streamName, shardToMerge, adjacentShardToMerge);
         }
+        return mergeShardsResult;
     }
 
     @Override
@@ -245,24 +273,30 @@ public class KinesisMetricsProxy implements AmazonKinesis {
     }
 
     @Override
-    public void removeTagsFromStream(RemoveTagsFromStreamRequest removeTagsFromStreamRequest) {
+    public RemoveTagsFromStreamResult removeTagsFromStream(RemoveTagsFromStreamRequest removeTagsFromStreamRequest) {
+        final RemoveTagsFromStreamResult removeTagsFromStreamResult;
         try (Timer.Context time = removeTagsFromStreamTimer.time()) {
-            delegate.removeTagsFromStream(removeTagsFromStreamRequest);
+            removeTagsFromStreamResult = delegate.removeTagsFromStream(removeTagsFromStreamRequest);
         }
+        return removeTagsFromStreamResult;
     }
 
     @Override
-    public void splitShard(SplitShardRequest splitShardRequest) {
+    public SplitShardResult splitShard(SplitShardRequest splitShardRequest) {
+        final SplitShardResult splitShardResult;
         try (Timer.Context time = splitShardTimer.time()) {
-            delegate.splitShard(splitShardRequest);
+            splitShardResult = delegate.splitShard(splitShardRequest);
         }
+        return splitShardResult;
     }
 
     @Override
-    public void splitShard(String streamName, String shardToSplit, String newStartingHashKey) {
+    public SplitShardResult splitShard(String streamName, String shardToSplit, String newStartingHashKey) {
+        final SplitShardResult splitShardResult;
         try (Timer.Context time = splitShardTimer.time()) {
-            delegate.splitShard(streamName, shardToSplit, newStartingHashKey);
+            splitShardResult = delegate.splitShard(streamName, shardToSplit, newStartingHashKey);
         }
+        return splitShardResult;
     }
 
     @Override

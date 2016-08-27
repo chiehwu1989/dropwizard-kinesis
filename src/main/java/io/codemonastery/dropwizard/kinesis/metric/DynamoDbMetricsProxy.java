@@ -28,6 +28,7 @@ public class DynamoDbMetricsProxy implements AmazonDynamoDB {
     private final Timer scanTimer;
     private final Timer updateItemTimer;
     private final Timer updateTableTimer;
+    private final Timer describeLimitsTimer;
 
     public DynamoDbMetricsProxy(AmazonDynamoDB delegate, MetricRegistry metrics, String name) {
         this.delegate = delegate;
@@ -44,6 +45,7 @@ public class DynamoDbMetricsProxy implements AmazonDynamoDB {
         scanTimer = metrics.timer(name + "-scan");
         updateItemTimer = metrics.timer(name + "-update-item");
         updateTableTimer = metrics.timer(name + "-update-table");
+        describeLimitsTimer = metrics.timer(name + "-describe-limits");
     }
 
     @Override
@@ -138,6 +140,14 @@ public class DynamoDbMetricsProxy implements AmazonDynamoDB {
         try(Timer.Context ignored = deleteTableTimer.time()) {
             return delegate.deleteTable(s);
         }
+    }
+
+    @Override
+    public DescribeLimitsResult describeLimits(DescribeLimitsRequest describeLimitsRequest) {
+        try(Timer.Context ignored = describeLimitsTimer.time()){
+            return delegate.describeLimits(describeLimitsRequest);
+        }
+
     }
 
     @Override
