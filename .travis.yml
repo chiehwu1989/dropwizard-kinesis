@@ -6,7 +6,7 @@ cache:
   directories:
   - $HOME/.m2
 before_install:
-  - openssl aes-256-cbc -K $encrypted_dadea0c5a8be_key -iv $encrypted_dadea0c5a8be_iv -in cm.private.key.enc -out cm.private.key -d
+  - openssl aes-256-cbc -K $encrypted_dadea0c5a8be_key -iv $encrypted_dadea0c5a8be_iv -in .travis/cm.private.key.enc -out .travis/cm.private.key -d
   - gpg --import .travis/cm.key
   - gpg -v --allow-secret-key-import --import .travis/cm.private.key
 install: mvn -DskipTests=true -Dbasepom.check.skip-all=true -B install
