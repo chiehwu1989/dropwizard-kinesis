@@ -5,6 +5,7 @@ import com.amazonaws.ResponseMetadata;
 import com.amazonaws.regions.Region;
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDB;
 import com.amazonaws.services.dynamodbv2.model.*;
+import com.amazonaws.services.dynamodbv2.waiters.AmazonDynamoDBWaiters;
 import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.Timer;
 
@@ -319,5 +320,10 @@ public class DynamoDbMetricsProxy implements AmazonDynamoDB {
     @Override
     public ResponseMetadata getCachedResponseMetadata(AmazonWebServiceRequest amazonWebServiceRequest) {
         return delegate.getCachedResponseMetadata(amazonWebServiceRequest);
+    }
+
+    @Override
+    public AmazonDynamoDBWaiters waiters() {
+        return new AmazonDynamoDBWaiters(delegate);
     }
 }
