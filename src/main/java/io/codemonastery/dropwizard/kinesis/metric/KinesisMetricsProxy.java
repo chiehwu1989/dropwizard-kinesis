@@ -5,6 +5,7 @@ import com.amazonaws.ResponseMetadata;
 import com.amazonaws.regions.Region;
 import com.amazonaws.services.kinesis.AmazonKinesis;
 import com.amazonaws.services.kinesis.model.*;
+import com.amazonaws.services.kinesis.waiters.AmazonKinesisWaiters;
 import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.Timer;
 import com.google.common.base.Preconditions;
@@ -307,5 +308,10 @@ public class KinesisMetricsProxy implements AmazonKinesis {
     @Override
     public ResponseMetadata getCachedResponseMetadata(AmazonWebServiceRequest request) {
         return delegate.getCachedResponseMetadata(request);
+    }
+
+    @Override
+    public AmazonKinesisWaiters waiters() {
+        return new AmazonKinesisWaiters(delegate);
     }
 }
