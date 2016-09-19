@@ -20,6 +20,7 @@ import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+@Ignore
 public class CircleApplicationIT {
 
     private static final Logger LOG = LoggerFactory.getLogger(CircleApplicationIT.class);

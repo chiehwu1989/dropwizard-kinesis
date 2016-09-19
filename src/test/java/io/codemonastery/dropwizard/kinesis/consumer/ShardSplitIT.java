@@ -3,6 +3,7 @@ package io.codemonastery.dropwizard.kinesis.consumer;
 import com.amazonaws.auth.DefaultAWSCredentialsProviderChain;
 import com.amazonaws.regions.Regions;
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDB;
+import com.amazonaws.services.dynamodbv2.model.DescribeTableResult;
 import com.amazonaws.services.kinesis.AmazonKinesis;
 import com.amazonaws.services.kinesis.clientlibrary.lib.worker.SimpleWorker;
 import com.amazonaws.services.kinesis.model.DescribeStreamResult;
@@ -16,6 +17,7 @@ import io.codemonastery.dropwizard.kinesis.EventEncoder;
 import io.codemonastery.dropwizard.kinesis.KinesisFactory;
 import io.codemonastery.dropwizard.kinesis.producer.Producer;
 import io.codemonastery.dropwizard.kinesis.producer.SimpleProducerFactory;
+import jdk.nashorn.internal.ir.annotations.Ignore;
 import org.junit.Before;
 import org.junit.Test;
 import org.slf4j.Logger;
@@ -31,6 +33,7 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+@Ignore
 public class ShardSplitIT {
 
     private static final Logger LOG = LoggerFactory.getLogger(ShardSplitIT.class);
@@ -73,13 +76,15 @@ public class ShardSplitIT {
                         return Long.parseLong(new String(bytes.array()));
                     }
                 });
+
     }
 
     @Test
     public void testName() throws Exception {
-//        blockingDeleteStream();
-//        blockingCreate(1);
+        blockingDeleteStream();
+        blockingCreate(1);
 
+        Thread.sleep(5000);
         ProducerThread producerThread = new ProducerThread(producer);
         Thread consumerThread = null;
         try {
@@ -204,7 +209,19 @@ public class ShardSplitIT {
                 Thread.sleep(1000);
             }
         } catch (ResourceNotFoundException e) {
-            //this is ok
+            // this is good.
+        }
+
+
+        try {
+            while (true){
+                DescribeTableResult describeTable = dynamoDB.describeTable(STREAM);
+                if ("ACTIVE".equalsIgnoreCase(describeTable.getTable().getTableStatus())) {
+                    dynamoDB.deleteTable(STREAM);
+                }
+            }
+        } catch (com.amazonaws.services.dynamodbv2.model.ResourceNotFoundException e) {
+            // this is good.
         }
     }
 }
