@@ -9,7 +9,6 @@ import com.amazonaws.services.kinesis.clientlibrary.lib.worker.SimpleWorker;
 import com.amazonaws.services.kinesis.model.DescribeStreamResult;
 import com.amazonaws.services.kinesis.model.ResourceNotFoundException;
 import com.amazonaws.services.kinesis.model.Shard;
-import com.amazonaws.services.kinesis.model.SplitShardResult;
 import com.codahale.metrics.MetricRegistry;
 import io.codemonastery.dropwizard.kinesis.DynamoDbFactory;
 import io.codemonastery.dropwizard.kinesis.EventDecoder;
@@ -18,6 +17,7 @@ import io.codemonastery.dropwizard.kinesis.KinesisFactory;
 import io.codemonastery.dropwizard.kinesis.producer.Producer;
 import io.codemonastery.dropwizard.kinesis.producer.SimpleProducerFactory;
 import jdk.nashorn.internal.ir.annotations.Ignore;
+import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.Test;
 import org.slf4j.Logger;
@@ -44,6 +44,11 @@ public class ShardSplitIT {
     private AmazonDynamoDB dynamoDB;
     private Producer<Long> producer;
     private ConsumerFactory<Long> consumerFactory;
+
+    @AfterClass
+    public void tearDown() throws Exception {
+        blockingDeleteStream();
+    }
 
     @Before
     public void setUp() throws Exception {
