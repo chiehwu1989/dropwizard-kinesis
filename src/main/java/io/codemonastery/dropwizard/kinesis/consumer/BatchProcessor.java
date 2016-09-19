@@ -78,6 +78,11 @@ public class BatchProcessor<E> implements IRecordProcessor {
     @Override
     public void shutdown(ShutdownInput shutdownInput) {
         metrics.processorShutdown(shardId);
+        try {
+            shutdownInput.getCheckpointer().checkpoint();
+        }catch (Exception e){
+            LOG.error("Error check-pointing for shutdown:", e);
+        }
     }
 
     /*

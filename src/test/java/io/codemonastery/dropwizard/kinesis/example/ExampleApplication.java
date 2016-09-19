@@ -30,6 +30,7 @@ public class ExampleApplication extends Application<ExampleConfiguration> {
         final AmazonDynamoDB dynamodb = configuration.getDynamoDb().build(environment, credentialsProvider, "dynamodb");
 
         final Producer<Event> producer = configuration.getProducer().build(environment, kinesis, "example-producer");
+
         //noinspection unused
         final SimpleWorker consumer = configuration.getConsumer()
                 .consumer(() -> event -> {

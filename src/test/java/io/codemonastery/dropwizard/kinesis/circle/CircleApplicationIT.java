@@ -6,6 +6,8 @@ import io.dropwizard.testing.junit.DropwizardAppRule;
 import org.junit.*;
 import org.junit.rules.RuleChain;
 import org.junit.rules.TestRule;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
@@ -20,6 +22,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 @Ignore
 public class CircleApplicationIT {
+
+    private static final Logger LOG = LoggerFactory.getLogger(CircleApplicationIT.class);
 
     @ClassRule
     public static final TestRule ORDERED_CLASS_RULE;
@@ -52,14 +56,15 @@ public class CircleApplicationIT {
 
     @Test
     public void someRecords() throws Exception {
+        Thread.sleep(10000);
         final List<String> expected = ImmutableList.of("hello seinfeld", "hello newman", "george!");
         {
             final String[] sendMe = expected.toArray(new String[expected.size()]);
             circleTarget
                     .request()
                     .post(Entity.entity(sendMe, MediaType.APPLICATION_JSON_TYPE));
+            LOG.info("Submitted records: " + expected);
         }
-        Thread.sleep(30000);
         {
             final int numRetries = 100;
             for (int i = 0; i < numRetries; i++) {
@@ -67,6 +72,7 @@ public class CircleApplicationIT {
                     final String[] actual = circleTarget
                             .request()
                             .get(String[].class);
+                    System.out.println(Arrays.asList(actual));
                     assertThat(Arrays.asList(actual)).isEqualTo(expected);
                     break;
                 } catch (AssertionError e) {
@@ -77,7 +83,32 @@ public class CircleApplicationIT {
                 Thread.sleep(2000);
             }
         }
-        Thread.sleep(60000);
     }
+
+    @Test
+    public void splitShards() throws Exception {
+        Thread.sleep(10000);
+
+        final List<String> expected = ImmutableList.of("hello seinfeld", "hello newman", "george!");
+        {
+            final int numRetries = 100;
+            for (int i = 0; i < numRetries; i++) {
+                try {
+                    final String[] actual = circleTarget
+                            .request()
+                            .get(String[].class);
+                    System.out.println(Arrays.asList(actual));
+                    assertThat(Arrays.asList(actual)).isEqualTo(expected);
+                    break;
+                } catch (AssertionError e) {
+                    if (i == numRetries - 1) {
+                        throw e;
+                    }
+                }
+                Thread.sleep(2000);
+            }
+        }
+    }
+
 
 }

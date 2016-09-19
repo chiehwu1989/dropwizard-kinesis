@@ -100,5 +100,10 @@ public final class RecordProcessor<E> implements IRecordProcessor {
     public void shutdown(ShutdownInput shutdownInput) {
         shardId = "UNKNOWN";
         metrics.processorShutdown(shardId);
+        try {
+            shutdownInput.getCheckpointer().checkpoint();
+        } catch (Exception e) {
+            LOG.error("Error check-pointing for shutdown:", e);
+        }
     }
 }
