@@ -35,9 +35,9 @@ public class Event {
 
         Event event = (Event) o;
 
-        if (id != null ? !id.equals(event.id) : event.id != null) return false;
-        if (name != null ? !name.equals(event.name) : event.name != null) return false;
-        return !(info != null ? !info.equals(event.info) : event.info != null);
+        return !(id != null ? !id.equals(event.id) : event.id != null) &&
+                !(name != null ? !name.equals(event.name) : event.name != null) &&
+                !(info != null ? !info.equals(event.info) : event.info != null);
 
     }
 

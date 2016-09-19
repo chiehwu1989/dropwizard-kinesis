@@ -170,7 +170,7 @@ public class ShardSplitIT {
         BigInteger end = new BigInteger(firstShard.getHashKeyRange().getEndingHashKey());
         BigInteger middle = start.add(end).divide(new BigInteger("2"));
 
-        SplitShardResult splitShard = kinesis.splitShard(STREAM, firstShard.getShardId(), middle.toString());
+        kinesis.splitShard(STREAM, firstShard.getShardId(), middle.toString());
 
         while (true) {
             Thread.sleep(5000);
@@ -201,6 +201,7 @@ public class ShardSplitIT {
     private void blockingDeleteStream() throws InterruptedException {
         LOG.info("Blocking delete...");
         try {
+            //noinspection InfiniteLoopStatement
             while (true) {
                 DescribeStreamResult describeStream = kinesis.describeStream(STREAM);
                 if ("ACTIVE".equalsIgnoreCase(describeStream.getStreamDescription().getStreamStatus())) {
@@ -214,6 +215,7 @@ public class ShardSplitIT {
 
 
         try {
+            //noinspection InfiniteLoopStatement
             while (true){
                 DescribeTableResult describeTable = dynamoDB.describeTable(STREAM);
                 if ("ACTIVE".equalsIgnoreCase(describeTable.getTable().getTableStatus())) {
