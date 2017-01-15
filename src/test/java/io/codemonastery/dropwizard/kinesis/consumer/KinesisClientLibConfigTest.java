@@ -15,7 +15,7 @@ public class KinesisClientLibConfigTest {
                 .makeKinesisClientLibConfiguration("foo");
 
         assertThat(otherConfig.getApplicationName()).isEqualTo("foo");
-        assertThat(otherConfig.getWorkerIdentifier()).isEqualTo("foo");
+        assertThat(otherConfig.getWorkerIdentifier()).startsWith("foo-");
     }
 
     @Test
