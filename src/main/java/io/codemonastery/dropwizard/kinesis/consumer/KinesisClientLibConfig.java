@@ -13,6 +13,8 @@ import javax.validation.Valid;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 
+import java.util.UUID;
+
 import static com.amazonaws.services.kinesis.clientlibrary.lib.worker.KinesisClientLibConfiguration.*;
 
 
@@ -195,7 +197,7 @@ public class KinesisClientLibConfig extends StreamConfiguration {
                 null,
                 null,
                 getFailOverTime().toMilliseconds(),
-                Optional.fromNullable(getWorkerId()).or(name),
+                Optional.fromNullable(getWorkerId()).or(name + UUID.randomUUID()),
                 getMaxRecords(),
                 getIdleTimeBetweenReads().toMilliseconds(),
                 isCallIfEmpty(),
