@@ -25,7 +25,7 @@ public class KinesisClientLibConfig extends StreamConfiguration {
     private String workerId;
 
     @NotNull
-    private  InitialPositionInStream initialPositionInStream = InitialPositionInStream.LATEST;
+    private InitialPositionInStream initialPositionInStream = InitialPositionInStream.LATEST;
 
     @Valid
     @NotNull
@@ -197,7 +197,7 @@ public class KinesisClientLibConfig extends StreamConfiguration {
                 null,
                 null,
                 getFailOverTime().toMilliseconds(),
-                Optional.fromNullable(getWorkerId()).or(name + UUID.randomUUID()),
+                Optional.fromNullable(getWorkerId()).or(name + "-" + UUID.randomUUID()),
                 getMaxRecords(),
                 getIdleTimeBetweenReads().toMilliseconds(),
                 isCallIfEmpty(),
